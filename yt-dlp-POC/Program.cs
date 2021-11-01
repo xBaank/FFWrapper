@@ -17,7 +17,7 @@ namespace yt_dlp_POC
                         PrintHelp();
                         break;
                     default:
-                        stream = yt_dlp.DownloadSong(args[0]);
+                        stream = YtDownloader.DownloadSong(args[0]).Result;
                         var a = OpusToPcm.GetPcm(stream);
                         break;
                 }

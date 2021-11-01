@@ -17,7 +17,6 @@ namespace yt_dlp_POC
         public static byte[] GetPcm(Stream stream)
         {
             long pos = FindPosition(stream, CLUSTER);
-            stream.Seek(pos, SeekOrigin.Begin);
             byte[] buffer = new byte[4];
             stream.Read(buffer, 0, buffer.Length);
             long size = BitConverter.ToUInt32(buffer,0);
