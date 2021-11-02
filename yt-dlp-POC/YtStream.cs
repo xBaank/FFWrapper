@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace yt_dlp_POC
 {
@@ -12,10 +13,10 @@ namespace yt_dlp_POC
         public YtStream(Stream stream,int size) : base(size)
         {
             this.stream = stream;
-            StartDownload();
+            Task.Run(() => StartDownload());
         }
 
-        private void StartDownload()
+        private Task StartDownload()
         {
             byte[] auxBuffer = new byte[BUFFERLENGTH];
             int chunkNumber = (int)Math.Ceiling((double) Capacity / BUFFERLENGTH);
@@ -25,9 +26,8 @@ namespace yt_dlp_POC
                 stream.Read(auxBuffer, 0, auxBuffer.Length);
                 base.Write(auxBuffer, 0, auxBuffer.Length);
                 int a = (int)Position;
-                
             }
-
+            return Task.CompletedTask;
         }
 
     }

@@ -10,7 +10,7 @@ namespace yt_dlp_POC
         {
             if (args.Length > 0)
             {
-                Stream stream;
+                MemoryStream stream;
                 switch (args[0])
                 {
                     case "-h":

@@ -12,14 +12,29 @@ namespace yt_dlp_POC
         static readonly byte[] CLUSTER = { 0x1f, 0x43,0xb6,0x75 };
         readonly byte[] TIMECODE = { 0xE7 };
         readonly byte[] BLOCK = { 0xA3 };
+        const int SIZE1 = 0x80; // 1 byte
+        const int SIZE2 = 0x40; // 2 bytes
+        const int SIZE3 = 0x20; // 3 bytes
 
-        
-        public static byte[] GetPcm(Stream stream)
+        public static byte[] GetPcm(MemoryStream stream)
         {
-            long pos = FindPosition(stream, CLUSTER);
-            byte[] buffer = new byte[4];
-            stream.Read(buffer, 0, buffer.Length);
-            long size = BitConverter.ToUInt32(buffer,0);
+            MemoryStream memoryStream = new MemoryStream(stream.GetBuffer());
+            //espero a que descargue algo y creo un nuevo memorystream con el mismo buffer para resetear la posicion
+            while (stream.Length == 0) { }
+            long pos = FindPosition(memoryStream, CLUSTER);
+            byte sizeSize = (byte)memoryStream.ReadByte();
+
+            if (sizeSize - SIZE3 < 16)
+                sizeSize = 3;
+            else if (sizeSize - SIZE2 < 16)
+                sizeSize = 2;
+            else if (sizeSize - SIZE1 < 16)
+                sizeSize = 1;
+
+            //primero byte, primer numero es la longitud del size.
+            byte[] buffer = new byte[sizeSize];
+            buffer[0] = sizeSize 
+            memoryStream.Read(buffer, 0, buffer.Length - 1);
             
             return CLUSTER;
         }
@@ -30,17 +45,15 @@ namespace yt_dlp_POC
 
             byte[] buffer = new byte[byteSequence.Length];
 
-            using (BufferedStream bufStream = new BufferedStream(stream, byteSequence.Length))
-            {
                 int i;
-                while ((i = bufStream.Read(buffer, 0, byteSequence.Length)) == byteSequence.Length)
+                while ((i = stream.Read(buffer, 0, byteSequence.Length)) == byteSequence.Length)
                 {
                     if (byteSequence.SequenceEqual(buffer))
-                        return bufStream.Position - byteSequence.Length;
+                        return stream.Position - byteSequence.Length;
                     else
-                        bufStream.Position -= byteSequence.Length - PadLeftSequence(buffer, byteSequence);
+                        stream.Position -= byteSequence.Length - PadLeftSequence(buffer, byteSequence);
                 }
-            }
+            
 
             return -1;
         }
