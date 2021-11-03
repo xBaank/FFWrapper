@@ -13,6 +13,7 @@ namespace yt_dlp_POC
         public YtStream(Stream stream,int size) : base(size)
         {
             this.stream = stream;
+            //Empieza la descarga en otro thread.
             Task.Run(() => StartDownload());
         }
 
