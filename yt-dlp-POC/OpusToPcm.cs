@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Concentus.Structs;
 using NEbml.Core;
 
 namespace yt_dlp_POC
@@ -10,7 +11,7 @@ namespace yt_dlp_POC
     public class OpusToPcm
     {
         //1f43b675
-        static readonly byte[] CLUSTER = { 0x1f, 0x43,0xb6,0x75 };
+        static readonly byte[] CLUSTER = { 0x1f, 0x43, 0xb6, 0x75 };
         static readonly byte[] TIMECODE = { 0xE7 };
         static readonly byte[] BLOCK = { 0xA3 };
         const byte SIZE1 = 0x80; // 1 byte
@@ -19,7 +20,6 @@ namespace yt_dlp_POC
 
         public static byte[] GetPcm(MemoryStream stream)
         {
-            EbmlReader ebmlReader = new EbmlReader(stream);
             MemoryStream memoryStream = new MemoryStream(stream.GetBuffer());
             //espero a que descargue algo y creo un nuevo memorystream con el mismo buffer para resetear la posicion
             while (stream.Length == 0) { }
@@ -27,24 +27,28 @@ namespace yt_dlp_POC
 
             while (posCluser != -1)
             {
-                posCluser = FindPosition(memoryStream, CLUSTER);
-                //size del size xd
+                posCluser = FindPosition(memoryStream, CLUSTER,true);
 
-                uint size = GetSize(memoryStream);
+                EbmlReader ebmlReader = new EbmlReader(memoryStream);
+                //ebmlReader.EnterContainer();
+                var cluster = ebmlReader.ReadAt(posCluser);
+                long clusterSize = ebmlReader.ElementSize;
 
                 long posBlock = 0;
 
-                while(posBlock != -1 && memoryStream.Position < posCluser + size )
+                while (posBlock != -1)
                 {
-                    posBlock = FindPosition(memoryStream, BLOCK);
-
-                    uint PosBlocksize = GetSize(memoryStream);
-
-
+                    posBlock = FindPosition(memoryStream, BLOCK,true);
+                    ebmlReader.EnterContainer();
+                    ebmlReader.ReadAt(posBlock);
+                    byte[] pcmBuffer = new byte[ebmlReader.ElementSize];
+                    ebmlReader.ReadBinary(pcmBuffer, 0, pcmBuffer.Length);
+                    OpusDecoder opusDecoder = new OpusDecoder(48000,2);
+                    opusDecoder.Decode();
                 }
 
             }
-            
+
             return CLUSTER;
         }
 
@@ -87,24 +91,31 @@ namespace yt_dlp_POC
             return BitConverter.ToUInt32(buffer, 0);
         }
 
-        public static long FindPosition(Stream stream, byte[] byteSequence)
+        public static long FindPosition(Stream stream, byte[] byteSequence, bool reset = false)
         {
+            long result = -1;
             if (byteSequence.Length > stream.Length)
-                return -1;
+                return result;
 
             byte[] buffer = new byte[byteSequence.Length];
 
-                int i;
-                while ((i = stream.Read(buffer, 0, byteSequence.Length)) == byteSequence.Length)
+            int i;
+            bool isFound = false;
+            while ((i = stream.Read(buffer, 0, byteSequence.Length)) == byteSequence.Length && !isFound)
+            {
+                if (byteSequence.SequenceEqual(buffer))
                 {
-                    if (byteSequence.SequenceEqual(buffer))
-                        return stream.Position - byteSequence.Length;
-                    else
-                        stream.Position -= byteSequence.Length - PadLeftSequence(buffer, byteSequence);
+                    result = stream.Position - byteSequence.Length;
+                    isFound = true;
                 }
-            
+                else
+                    stream.Position -= byteSequence.Length - PadLeftSequence(buffer, byteSequence);
+            }
 
-            return -1;
+            if (reset)
+                stream.Seek(0, SeekOrigin.Begin);
+
+            return result;
         }
 
         private static int PadLeftSequence(byte[] bytes, byte[] seqBytes)
@@ -126,5 +137,5 @@ namespace yt_dlp_POC
 
 
     }
-    
+
 }
