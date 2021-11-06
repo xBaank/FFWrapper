@@ -37,12 +37,10 @@ namespace yt_dlp_POC
                 ebmlReader.EnterContainer();
 
                 long posBlock = 0;
-
-                posBlock = FindPosition(memoryStream, BLOCK, true);
+                long startPos = FindPosition(memoryStream, BLOCK, false);
                 OpusDecoder opusDecoder = new OpusDecoder(48000, 2);
                 bool isError = false;
-
-                while (posBlock != -1 && !isError)
+                while (posBlock < clusterSize && !isError)
                 {
                     if (posBlock != 1)
                     {
@@ -51,10 +49,11 @@ namespace yt_dlp_POC
                         {
                             ebmlReader.ReadAt(posBlock);
                         }
-                        catch { ebmlReader.LeaveContainer(); isError = true; }
+                        catch(Exception ex) { ebmlReader.LeaveContainer(); isError = true; }
                         if (!isError)
                         {
-                            byte[] opusBuffer = new byte[ebmlReader.ElementSize];
+                            byte[] opusBuffer = new byte[ebmlReader.ElementSize - 4];
+                            memoryStream.Seek(memoryStream.Position + 4, SeekOrigin.Begin);
                             ebmlReader.ReadBinary(opusBuffer, 0, opusBuffer.Length);
                             int channelCount = OpusPacketInfo.GetNumEncodedChannels(opusBuffer, 0);
                             var a = OpusPacketInfo.GetEncoderMode(opusBuffer, 0);
@@ -66,14 +65,15 @@ namespace yt_dlp_POC
                                 int decodedSamples = opusDecoder.Decode(opusBuffer, 0, opusBuffer.Length, pcmBuffer, 0, frame_size);
                                 pcmContent.AddRange(pcmBuffer);
                             }
-                            catch { }
+                            catch(Exception ex) { }
                         }
-                        posBlock = FindPosition(memoryStream, BLOCK, false);
-                        memoryStream.Seek(posBlock, SeekOrigin.Begin);
+                        posBlock = FindPosition(memoryStream, BLOCK, false) - startPos;
+                        //memoryStream.Seek(posBlock, SeekOrigin.Begin);
 
                     }
 
                 }
+                memoryStream.Seek(ebmlReader.ElementPosition, SeekOrigin.Begin);
                 ebmlReader.LeaveContainer();
 
             }
