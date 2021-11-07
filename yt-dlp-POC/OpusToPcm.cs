@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Concentus.Structs;
 using NEbml.Core;
 
@@ -40,7 +41,8 @@ namespace yt_dlp_POC
                 long startPos = FindPosition(memoryStream, BLOCK, false);
                 OpusDecoder opusDecoder = new OpusDecoder(48000, 2);
                 bool isError = false;
-                while (posBlock < clusterSize && !isError)
+                bool isEnd = false;
+                while (posBlock < clusterSize && !isError && !isEnd)
                 {
                     if (posBlock != 1)
                     {
@@ -52,6 +54,7 @@ namespace yt_dlp_POC
                         catch(Exception ex) { ebmlReader.LeaveContainer(); isError = true; }
                         if (!isError)
                         {
+                            Thread.Sleep(2);
                             byte[] opusBuffer = new byte[ebmlReader.ElementSize - 4];
                             memoryStream.Seek(memoryStream.Position + 4, SeekOrigin.Begin);
                             ebmlReader.ReadBinary(opusBuffer, 0, opusBuffer.Length);
@@ -74,6 +77,7 @@ namespace yt_dlp_POC
 
                 }
                 memoryStream.Seek(ebmlReader.ElementPosition, SeekOrigin.Begin);
+                //isEnd = (ebmlReader.ElementPosition + ebmlReader.ElementSize) >= memoryStream.Length;
                 ebmlReader.LeaveContainer();
 
             }
