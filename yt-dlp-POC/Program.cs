@@ -1,4 +1,5 @@
 ﻿using Concentus.Structs;
+using NAudio.Wave;
 using System;
 using System.IO;
 
@@ -10,7 +11,7 @@ namespace yt_dlp_POC
         {
             if (args.Length > 0)
             {
-                MemoryStream stream;
+                YtStream stream;
                 switch (args[0])
                 {
                     case "-h":
@@ -18,7 +19,12 @@ namespace yt_dlp_POC
                         break;
                     default:
                         stream = YtDownloader.DownloadSong(args[0]).Result;
-                        var a = OpusToPcm.GetPcm(stream);
+                        short[] pcmBuffer = OpusToPcm.GetPcm(stream);
+                        byte[] pcmBufferBytes = new byte[pcmBuffer.Length * 2];
+                        Buffer.BlockCopy(pcmBuffer,0,pcmBufferBytes,0,pcmBufferBytes.Length);
+                        MemoryStream memoryStream = new MemoryStream(pcmBufferBytes);
+                        var rawSourceWaveStream = new RawSourceWaveStream(pcmBufferBytes,0,pcmBufferBytes.Length,new WaveFormat(48000,2));
+                        WaveFileWriter.CreateWaveFile("output.wav", rawSourceWaveStream);
                         break;
                 }
                 

@@ -12,117 +12,96 @@ namespace yt_dlp_POC
     public class OpusToPcm
     {
         //1f43b675
+        static readonly byte[] TRACKS = { 0x16, 0x54, 0xAE, 0x6B };
+
+        static readonly byte[] TRACKENTRY = { 0xAE };
+
+        static readonly byte[] CODECID = { 0x86 };
+        static readonly byte[] AUDIO = { 0xE1 };
+
+        static readonly byte[] SAMPLING = { 0xB5 };
+        static readonly byte[] CHANNELS = { 0x9F };
+
+
         static readonly byte[] CLUSTER = { 0x1f, 0x43, 0xb6, 0x75 };
         static readonly byte[] TIMECODE = { 0xE7 };
-        static readonly byte[] BLOCK = { 0xA3 };
-        const byte SIZE1 = 0x80; // 1 byte
-        const byte SIZE2 = 0x40; // 2 bytes
-        const byte SIZE3 = 0x20; // 3 bytes
+        static readonly byte[] SIMPLEBLOCK = { 0xA3 };
+        
 
-        public static short[] GetPcm(MemoryStream stream)
+
+        public static short[] GetPcm(YtStream songStream)
         {
-            MemoryStream memoryStream = new MemoryStream(stream.GetBuffer());
+            MemoryStream auxStream = new MemoryStream(songStream.GetBuffer());
             List<short> pcmContent = new List<short>();
             //espero a que descargue algo y creo un nuevo memorystream con el mismo buffer para resetear la posicion
-            while (stream.Length == 0) { }
-            long posCluser = 0;
+            while (songStream.Length == 0) { }
+            //position absolute
+            long posCluster = 0;
 
-            while (posCluser != -1)
+            while (posCluster != -1)
             {
-                posCluser = FindPosition(memoryStream, CLUSTER,true);
+                posCluster = FindPosition(auxStream, CLUSTER,true);
 
-                EbmlReader ebmlReader = new EbmlReader(memoryStream);
-                //ebmlReader.EnterContainer();
-                var cluster = ebmlReader.ReadAt(posCluser);
-                long clusterSize = ebmlReader.ElementSize;
-                ebmlReader.EnterContainer();
-
-                long posBlock = 0;
-                long startPos = FindPosition(memoryStream, BLOCK, false);
-                OpusDecoder opusDecoder = new OpusDecoder(48000, 2);
-                bool isError = false;
-                bool isEnd = false;
-                while (posBlock < clusterSize && !isError && !isEnd)
+                if (posCluster != -1)
                 {
-                    if (posBlock != 1)
+                    EbmlReader ebmlReader = new EbmlReader(auxStream);
+                    //ebmlReader.EnterContainer();
+                    ebmlReader.ReadAt(posCluster);
+                    long clusterSize = ebmlReader.ElementSize;
+                    ebmlReader.EnterContainer();
+
+                    //waits to download the first cluster
+                    while (songStream.DownloadedBytes < posCluster + clusterSize) { }
+
+                    //position relative to the cluster position
+                    long posBlock = 0;
+                    long startPos = FindPosition(auxStream, SIMPLEBLOCK, false);
+                    OpusDecoder opusDecoder = new OpusDecoder(48000, 2);
+                    bool isError = false;
+                    //bool isEnd = false;
+                    while (posBlock >= 0 && !isError && auxStream.Position < posCluster + clusterSize)
                     {
-                        isError = false;
-                        try
+                        if (posBlock != 1)
                         {
-                            ebmlReader.ReadAt(posBlock);
-                        }
-                        catch(Exception ex) { ebmlReader.LeaveContainer(); isError = true; }
-                        if (!isError)
-                        {
-                            Thread.Sleep(2);
-                            byte[] opusBuffer = new byte[ebmlReader.ElementSize - 4];
-                            memoryStream.Seek(memoryStream.Position + 4, SeekOrigin.Begin);
-                            ebmlReader.ReadBinary(opusBuffer, 0, opusBuffer.Length);
-                            int channelCount = OpusPacketInfo.GetNumEncodedChannels(opusBuffer, 0);
-                            var a = OpusPacketInfo.GetEncoderMode(opusBuffer, 0);
-                            int frames = OpusPacketInfo.GetNumFrames(opusBuffer, 0, opusBuffer.Length);
-                            int frame_size = OpusPacketInfo.GetNumSamples(opusBuffer, 0, opusBuffer.Length, 48000);
-                            short[] pcmBuffer = new short[frame_size * frames * channelCount];
+                            isError = false;
                             try
                             {
-                                int decodedSamples = opusDecoder.Decode(opusBuffer, 0, opusBuffer.Length, pcmBuffer, 0, frame_size);
-                                pcmContent.AddRange(pcmBuffer);
+                                ebmlReader.ReadAt(posBlock);
                             }
-                            catch(Exception ex) { }
+                            catch (Exception ex) { ebmlReader.LeaveContainer(); isError = true; }
+                            if (!isError)
+                            {
+                                byte[] opusBuffer = new byte[ebmlReader.ElementSize - 4];
+                                auxStream.Seek(auxStream.Position + 4, SeekOrigin.Begin);
+                                ebmlReader.ReadBinary(opusBuffer, 0, opusBuffer.Length);
+                                int channelCount = OpusPacketInfo.GetNumEncodedChannels(opusBuffer, 0);
+                                int frames = OpusPacketInfo.GetNumFrames(opusBuffer, 0, opusBuffer.Length);
+                                int frame_size = OpusPacketInfo.GetNumSamples(opusBuffer, 0, opusBuffer.Length, 48000);
+                                short[] pcmBuffer = new short[frame_size * frames * channelCount];
+                                try
+                                {
+                                    int decodedSamples = opusDecoder.Decode(opusBuffer, 0, opusBuffer.Length, pcmBuffer, 0, frame_size);
+                                    pcmContent.AddRange(pcmBuffer);
+                                }
+                                catch (Exception ex) { }
+                            }
+                            posBlock = FindPosition(auxStream, SIMPLEBLOCK, false) - startPos;
+                            //memoryStream.Seek(posBlock, SeekOrigin.Begin);
+
                         }
-                        posBlock = FindPosition(memoryStream, BLOCK, false) - startPos;
-                        //memoryStream.Seek(posBlock, SeekOrigin.Begin);
 
                     }
-
+                    auxStream.Seek(ebmlReader.ElementPosition, SeekOrigin.Begin);
+                    //isEnd = (ebmlReader.ElementPosition + ebmlReader.ElementSize) >= memoryStream.Length;
+                    ebmlReader.LeaveContainer();
                 }
-                memoryStream.Seek(ebmlReader.ElementPosition, SeekOrigin.Begin);
-                //isEnd = (ebmlReader.ElementPosition + ebmlReader.ElementSize) >= memoryStream.Length;
-                ebmlReader.LeaveContainer();
 
             }
 
             return pcmContent.ToArray();
         }
 
-        public static uint GetSize(MemoryStream memoryStream)
-        {
-            byte sizeSize = (byte)memoryStream.ReadByte();
-            //resta cantidad para quitar la parte del size(que es el primer bit)
-            byte firstByteRest = 0;
 
-            if (sizeSize - SIZE3 < 16)
-            {
-                sizeSize = 3;
-                firstByteRest = SIZE3;
-            }
-            else if (sizeSize - SIZE2 < 16)
-            {
-                sizeSize = 2;
-                firstByteRest = SIZE2;
-
-            }
-            else if (sizeSize - SIZE1 < 16)
-            {
-                sizeSize = 1;
-                firstByteRest = SIZE1;
-            }
-
-
-            byte[] buffer = new byte[4];
-            //Desde  donde tiene que empezar escribir en el buffer.
-            byte shiftRightSize = (byte)(4 - sizeSize);
-            //resto uno a la posicion para que vuelva a leer la parte del "size del size" y luego le resto lo que ocupa
-            memoryStream.Seek(memoryStream.Position - 1, SeekOrigin.Begin);
-            memoryStream.Read(buffer, shiftRightSize, sizeSize);
-            buffer[shiftRightSize] -= firstByteRest;
-            //si es littleendian se hace un reverse ya que lo lee al reves.
-            if (BitConverter.IsLittleEndian)
-            {
-                Array.Reverse(buffer);
-            }
-            return BitConverter.ToUInt32(buffer, 0);
-        }
 
         public static long FindPosition(Stream stream, byte[] byteSequence, bool reset = false)
         {
