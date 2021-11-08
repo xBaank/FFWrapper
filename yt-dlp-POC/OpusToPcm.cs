@@ -29,10 +29,10 @@ namespace yt_dlp_POC
         
 
 
-        public static short[] GetPcm(YtStream songStream,bool wantDecoded = false)
+        public static List<OpusPacket> GetPackets(YtStream songStream)
         {
             MemoryStream auxStream = new MemoryStream(songStream.GetBuffer());
-            List<short> content = new List<short>();
+            List<OpusPacket> opusContent = new List<OpusPacket>();
             //espero a que descargue algo y creo un nuevo memorystream con el mismo buffer para resetear la posicion
             WaitForDownloadedBytes(songStream, 1024 / 2);
             //posicion absoluta del cluster
@@ -71,17 +71,7 @@ namespace yt_dlp_POC
                             if (!isError)
                             {
                                 OpusPacket opusPacket = new OpusPacket(GetBuffer(ebmlReader, auxStream));
-
-                                    short[] pcmBuffer = new short[opusPacket.FrameSize * opusPacket.Frames * opusPacket.ChannelCount];
-
-                                    try
-                                    {
-                                    
-                                        int decodedSamples = opusDecoder.Decode(opusPacket.OpusBuffer, 0, opusPacket.OpusBuffer.Length, pcmBuffer, 0, opusPacket.FrameSize);
-                                        content.AddRange(pcmBuffer);
-                                    }
-
-                                    catch (Exception ex) { }
+                                opusContent.Add(opusPacket);
                                 
                             }
                             //relativo al clusterPos
@@ -96,8 +86,28 @@ namespace yt_dlp_POC
                 }
 
             }
+            
+            return opusContent;
+        }
 
-            return content.ToArray();
+        public static byte[] GetPcm(List<OpusPacket> opusPackets)
+        {
+            OpusDecoder opusDecoder = new OpusDecoder(48000,2);
+            List<byte> pcm = new List<byte>();
+            foreach(OpusPacket opusPacket in opusPackets)
+            {
+                try
+                {
+                    short[] pcmBuffer = new short[opusPacket.ChannelCount * opusPacket.Frames * opusPacket.FrameSize];
+                    int decodedSamples = opusDecoder.Decode(opusPacket.OpusBuffer, 0, opusPacket.OpusBuffer.Length, pcmBuffer, 0, opusPacket.FrameSize);
+                    byte[] pcmBufferInBytes = new byte[pcmBuffer.Length * 2];
+                    Buffer.BlockCopy(pcmBuffer, 0, pcmBufferInBytes, 0, pcmBufferInBytes.Length);
+                    pcm.AddRange(pcmBufferInBytes);
+                }
+
+                catch (Exception ex) { }
+            }
+            return pcm.ToArray();
         }
 
         private static byte[] GetBuffer(EbmlReader ebmlReader,Stream auxStream)

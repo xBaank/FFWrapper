@@ -10,6 +10,7 @@ namespace yt_dlp_POC
     {
         private const int BUFFERLENGTH = 1024;
         private Stream stream;
+        
         public long DownloadedBytes { get { return downloadedBytes; } }
         private long downloadedBytes;
         public YtStream(Stream stream,int size) : base(size)
