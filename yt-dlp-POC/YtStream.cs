@@ -26,9 +26,16 @@ namespace yt_dlp_POC
 
             for (int i = 0; i < chunkNumber; i++)
             {
+                //ultimo chunk tiene length diferente
+                if (i == chunkNumber - 1)
+                {
+                    auxBuffer = new byte[Capacity % BUFFERLENGTH];
+                }
+
                 stream.Read(auxBuffer, 0, auxBuffer.Length);
                 base.Write(auxBuffer, 0, auxBuffer.Length);
                 downloadedBytes = Position;
+               
             }
             return Task.CompletedTask;
         }
