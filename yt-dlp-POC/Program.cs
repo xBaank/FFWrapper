@@ -20,7 +20,7 @@ namespace yt_dlp_POC
                         break;
                     default:
                         stream = YtDownloader.DownloadSong(args[0]).Result;
-                        List<OpusPacket> opusPackets = OpusToPcm.GetPackets(stream);
+                        Queue<OpusPacket> opusPackets = OpusToPcm.GetPackets(stream);
                         byte[] pcmBufferBytes = OpusToPcm.GetPcm(opusPackets);
                         MemoryStream memoryStream = new MemoryStream(pcmBufferBytes);
                         var rawSourceWaveStream = new RawSourceWaveStream(pcmBufferBytes,0,pcmBufferBytes.Length,new WaveFormat(48000,2));
