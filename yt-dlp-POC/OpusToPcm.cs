@@ -6,12 +6,13 @@ using System.Text;
 using System.Threading;
 using Concentus.Structs;
 using NEbml.Core;
+using yt_dlp_POC.Models;
 
 namespace yt_dlp_POC
 {
     public class OpusToPcm
     {
-
+        //--------AUDIOINFO-----------
         static readonly byte[] TRACKS = { 0x16, 0x54, 0xAE, 0x6B };
 
         static readonly byte[] TRACKENTRY = { 0xAE };
@@ -22,13 +23,69 @@ namespace yt_dlp_POC
         static readonly byte[] SAMPLING = { 0xB5 }; //float
         static readonly byte[] CHANNELS = { 0x9F }; //uint
 
-
+        //--------AUDIODATA-----------
         static readonly byte[] CLUSTER = { 0x1f, 0x43, 0xb6, 0x75 };
         static readonly byte[] TIMECODE = { 0xE7 }; //binary
         static readonly byte[] SIMPLEBLOCK = { 0xA3 }; //binary
 
+        //--------SEEKINGINFO---------
+        static readonly byte[] CUES = { 0x1C, 0x53, 0xBB,0x6B }; //master
+        static readonly byte[] CUEPOINT = { 0xBB }; //master
+        static readonly byte[] CUETIME = { 0xB3}; //float
+        static readonly byte[] CUETRACKPOSITION = { 0xB7}; //master
+        static readonly byte[] CUETRACK = { 0xF7}; //uint
+        static readonly byte[] CUECLUSTERPOSITION = { 0xF1}; //uint
+
+        //--------CONSTANTES-----------
         const int ERRORCODE = -1;
         const string CODECNAME = "A_OPUS";
+
+        //--------VARIABLES----------- 
+        List<CluesterPosition> clusterPositions = new List<CluesterPosition>();
+
+
+        private void GetClusterPositions(MemoryStream memoryStream)
+        {
+
+            EbmlReader ebmlReader = new EbmlReader(memoryStream);
+
+            long cue = FindPosition(memoryStream, CUES,true);
+            ebmlReader.ReadAt(cue);
+            ebmlReader.EnterContainer();
+
+            long cuePoint = FindPosition(memoryStream, CUEPOINT,true);
+
+            while(cuePoint != ERRORCODE)
+            {
+
+                ebmlReader.ReadAt(cuePoint);
+
+                ebmlReader.EnterContainer();
+
+                long timePoint = FindPosition(memoryStream, CUETIME) - cuePoint;
+
+                ebmlReader.ReadAt(0);
+                ulong timeStamp = ebmlReader.ReadUInt();
+
+                long cueTrackPoint = FindPosition(memoryStream, CUETRACKPOSITION);
+
+                ebmlReader.ReadAt(cueTrackPoint - ebmlReader.ElementPosition);
+                ebmlReader.EnterContainer();
+
+                long cueClusterPos = FindPosition(memoryStream, CUECLUSTERPOSITION);
+                ebmlReader.ReadAt(0);
+                ulong clusterPos = ebmlReader.ReadUInt();
+
+                clusterPositions.Add(new CluesterPosition(timeStamp, clusterPos));
+
+                cuePoint = FindPosition(memoryStream, CUEPOINT,true);
+                ebmlReader.LeaveContainer();
+                ebmlReader.LeaveContainer();
+                memoryStream.Seek(cuePoint, SeekOrigin.Begin);  
+
+            }
+
+        }
 
         /// <summary>
         /// Extrae el formato de audio de opus
@@ -37,6 +94,7 @@ namespace yt_dlp_POC
         /// <returns>Formato de audio</returns>
         private static OpusFormat GetOpusFormat(MemoryStream memoryStream)
         {
+            
             OpusFormat opusFormat = null;
             //------------BUSCA LA POSICION Y RESETEA EL STREAM-----------
 
@@ -109,7 +167,7 @@ namespace yt_dlp_POC
             return codec == CODECNAME;
         }
 
-        public static Queue<OpusPacket> GetPackets(YtStream songStream)
+        public Queue<OpusPacket> GetPackets(YtStream songStream)
         {
             MemoryStream auxStream = new MemoryStream(songStream.GetBuffer());
             Queue<OpusPacket> opusContent = new Queue<OpusPacket>();
@@ -119,6 +177,7 @@ namespace yt_dlp_POC
             if (IsSupportedCodec(auxStream))
             {
                 OpusFormat opusFormat = GetOpusFormat(auxStream);
+                GetClusterPositions(auxStream);
                 long posCluster = 0;
 
                 while (posCluster != ERRORCODE)
