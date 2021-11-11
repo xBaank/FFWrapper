@@ -29,6 +29,7 @@ namespace yt_dlp_POC
         static readonly byte[] SIMPLEBLOCK = { 0xA3 }; //binary
 
         //--------SEEKINGINFO---------
+        static readonly byte[] SEEKHEAD = { 0x11, 0x4D, 0x9B, 0x74 }; 
         static readonly byte[] CUES = { 0x1C, 0x53, 0xBB,0x6B }; //master
         static readonly byte[] CUEPOINT = { 0xBB }; //master
         static readonly byte[] CUETIME = { 0xB3}; //float
@@ -43,22 +44,30 @@ namespace yt_dlp_POC
         //--------VARIABLES----------- 
         List<CluesterPosition> clusterPositions = new List<CluesterPosition>();
 
-
-        private void GetClusterPositions(MemoryStream memoryStream)
+        private ulong GetSeekHead(MemoryStream memoryStream)
         {
+            EbmlReader ebmlReader = new EbmlReader(memoryStream);
+            long posToAdd = FindPosition(memoryStream, SEEKHEAD, true);
 
+            return posToAdd != -1 ? (ulong)posToAdd : 0;
+        }
+
+        private void GetClusterPositions(MemoryStream memoryStream,ulong posToAdd)
+        {
             EbmlReader ebmlReader = new EbmlReader(memoryStream);
 
             long cue = FindPosition(memoryStream, CUES,true);
             ebmlReader.ReadAt(cue);
+            long size = ebmlReader.ElementSize;
             ebmlReader.EnterContainer();
 
-            long cuePoint = FindPosition(memoryStream, CUEPOINT,true);
+            long startPos = FindPosition(memoryStream, CUEPOINT);
+            long cuePoint = 0;
+            ebmlReader.ReadAt(cuePoint);
 
-            while(cuePoint != ERRORCODE)
+            while (cuePoint != ERRORCODE && cuePoint < size)
             {
 
-                ebmlReader.ReadAt(cuePoint);
 
                 ebmlReader.EnterContainer();
 
@@ -76,12 +85,14 @@ namespace yt_dlp_POC
                 ebmlReader.ReadAt(0);
                 ulong clusterPos = ebmlReader.ReadUInt();
 
-                clusterPositions.Add(new CluesterPosition(timeStamp, clusterPos));
+                clusterPositions.Add(new CluesterPosition(timeStamp, clusterPos + posToAdd));
 
-                cuePoint = FindPosition(memoryStream, CUEPOINT,true);
                 ebmlReader.LeaveContainer();
                 ebmlReader.LeaveContainer();
-                memoryStream.Seek(cuePoint, SeekOrigin.Begin);  
+                memoryStream.Seek(startPos + cuePoint+1, SeekOrigin.Begin);
+                cuePoint = FindPosition(memoryStream, CUEPOINT) - startPos;
+                ebmlReader.ReadAt(cuePoint);
+
 
             }
 
@@ -174,10 +185,11 @@ namespace yt_dlp_POC
 
             //--------------ESPERA A QUE SE DESCARGUE MEDIO MB----------------
             WaitForDownloadedBytes(songStream, 1024 / 2);
+            ulong posToAdd = GetSeekHead(auxStream);
             if (IsSupportedCodec(auxStream))
             {
                 OpusFormat opusFormat = GetOpusFormat(auxStream);
-                GetClusterPositions(auxStream);
+                GetClusterPositions(auxStream,posToAdd);
                 long posCluster = 0;
 
                 while (posCluster != ERRORCODE)

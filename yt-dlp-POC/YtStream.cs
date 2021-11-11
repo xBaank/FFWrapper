@@ -13,6 +13,7 @@ namespace yt_dlp_POC
         
         public long DownloadedBytes { get { return downloadedBytes; } }
         private long downloadedBytes;
+
         public YtStream(Stream stream,int size) : base(size)
         {
             this.stream = stream;
@@ -39,6 +40,10 @@ namespace yt_dlp_POC
                
             }
             return Task.CompletedTask;
+        }
+        public void Seek(long position)
+        {
+
         }
 
     }
