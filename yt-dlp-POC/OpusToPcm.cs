@@ -43,6 +43,13 @@ namespace yt_dlp_POC
 
         //--------VARIABLES----------- 
         List<CluesterPosition> clusterPositions = new List<CluesterPosition>();
+        Queue<OpusPacket> opusContent = new Queue<OpusPacket>();
+        long currentDecodingPos = 0;
+
+        //--------PROPIEDADES--------
+        public Queue<OpusPacket> OpusContent { get { return opusContent; } }
+        public bool HasNextPacket { get { return opusContent.Count > 0; } }
+
 
         private ulong GetSeekHead(MemoryStream memoryStream)
         {
@@ -181,7 +188,6 @@ namespace yt_dlp_POC
         public Queue<OpusPacket> GetPackets(YtStream songStream)
         {
             MemoryStream auxStream = new MemoryStream(songStream.GetBuffer());
-            Queue<OpusPacket> opusContent = new Queue<OpusPacket>();
 
             //--------------ESPERA A QUE SE DESCARGUE MEDIO MB----------------
             WaitForDownloadedBytes(songStream, 1024 / 2);
@@ -194,8 +200,9 @@ namespace yt_dlp_POC
 
                 while (posCluster != ERRORCODE)
                 {
+                    auxStream.Seek(currentDecodingPos, SeekOrigin.Begin);
                     posCluster = FindPosition(auxStream, CLUSTER, true);
-
+                    currentDecodingPos = posCluster;
                     if (posCluster != ERRORCODE)
                     {
                         EbmlReader ebmlReader = new EbmlReader(auxStream);
@@ -272,7 +279,15 @@ namespace yt_dlp_POC
             }
             return pcm.ToArray();
         }
-
+        /// <summary>
+        /// Seek the current decoding position.
+        /// </summary>
+        /// <param name="timeSpan">Time in miliseconds</param>
+        public void SeekToTimeStamp(TimeSpan timeSpan)
+        {
+            ulong clusterPos = clusterPositions.Where(i => timeSpan >= TimeSpan.FromMilliseconds(i.TimeStamp)).FirstOrDefault().ClusterPosition;
+            currentDecodingPos = (long)clusterPos;
+        }
         /// <summary>
         /// Extrae los datos del bloque
         /// </summary>

@@ -7,13 +7,15 @@ namespace yt_dlp_POC
 {
     public class OpusPacket
     {
-        public OpusPacket(byte[] buffer)
+        public OpusPacket(byte[] buffer,TimeSpan timeSpan)
         {
             OpusBuffer = buffer;
+            TimeSpan = timeSpan;
         }
         public int ChannelCount { get { return OpusPacketInfo.GetNumEncodedChannels(OpusBuffer, 0); } }
         public int Frames { get { return OpusPacketInfo.GetNumFrames(OpusBuffer, 0, OpusBuffer.Length); } }
         public int FrameSize { get { return OpusPacketInfo.GetNumSamples(OpusBuffer, 0, OpusBuffer.Length, 48000); } }
         public byte[] OpusBuffer { get; }
+        public TimeSpan TimeSpan { get; }
     }
 }

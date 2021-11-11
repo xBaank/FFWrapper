@@ -13,6 +13,7 @@ namespace yt_dlp_POC
         
         public long DownloadedBytes { get { return downloadedBytes; } }
         private long downloadedBytes;
+        private int i = 0;
 
         public YtStream(Stream stream,int size) : base(size)
         {
@@ -26,7 +27,7 @@ namespace yt_dlp_POC
             byte[] auxBuffer = new byte[BUFFERLENGTH];
             int chunkNumber = (int)Math.Ceiling((double) Capacity / BUFFERLENGTH);
 
-            for (int i = 0; i < chunkNumber; i++)
+            for (i = 0; i < chunkNumber; i++)
             {
                 //ultimo chunk tiene length diferente
                 if (i == chunkNumber - 1)
@@ -43,7 +44,8 @@ namespace yt_dlp_POC
         }
         public void Seek(long position)
         {
-
+            Position = position;
+            i = (int)Math.Ceiling((double)position / BUFFERLENGTH);
         }
 
     }
