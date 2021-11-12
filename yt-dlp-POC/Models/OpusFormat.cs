@@ -4,7 +4,7 @@ using System.Text;
 
 namespace yt_dlp_POC
 {
-     internal class OpusFormat
+     public class OpusFormat
     {
         public OpusFormat(float sz,int ch)
         {

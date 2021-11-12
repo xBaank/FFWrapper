@@ -2,7 +2,7 @@
   "profiles": {
     "yt-dlp-POC": {
       "commandName": "Project",
-      "commandLineArgs": "despacito"
+      "commandLineArgs": "\"Elden ring trailer\""
     }
   }
 }

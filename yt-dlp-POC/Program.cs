@@ -3,6 +3,8 @@ using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace yt_dlp_POC
 {
@@ -20,11 +22,12 @@ namespace yt_dlp_POC
                         break;
                     default:
                         stream = YtDownloader.DownloadSong(args[0]).Result;
-                        OpusToPcm opusToPcm = new OpusToPcm();
-                        Queue<OpusPacket> opusPackets = opusToPcm.GetPackets(stream);
-                        byte[] pcmBufferBytes = OpusToPcm.GetPcm(opusPackets);
+                        WebmOpus opus = new WebmOpus(stream);
+                        //List<OpusPacket> opusPackets =  opusToPcm.GetPackets(stream);
+                        while (!opus.HasFinished) { }
+                        byte[] pcmBufferBytes = WebmOpus.GetPcm(opus.OpusContent,opus.OpusFormat);
                         MemoryStream memoryStream = new MemoryStream(pcmBufferBytes);
-                        var rawSourceWaveStream = new RawSourceWaveStream(pcmBufferBytes,0,pcmBufferBytes.Length,new WaveFormat(48000,2));
+                        var rawSourceWaveStream = new RawSourceWaveStream(pcmBufferBytes,0,pcmBufferBytes.Length,new WaveFormat((int)opus.OpusFormat.sampleFrequency,opus.OpusFormat.channels));
                         WaveFileWriter.CreateWaveFile("output.wav", rawSourceWaveStream);
                         break;
                 }

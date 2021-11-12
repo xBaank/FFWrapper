@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,6 +20,14 @@ namespace yt_dlp_POC
         public YtStream(Stream stream,int size) : base(size)
         {
             this.stream = stream;
+            //Empieza la descarga en otro thread.
+            Task.Run(() => StartDownload());
+        }
+
+        public YtStream(string url, int size) : base(size)
+        {
+            HttpClient httpClient = new HttpClient();
+            this.stream = httpClient.GetStreamAsync(url).GetAwaiter().GetResult();
             //Empieza la descarga en otro thread.
             Task.Run(() => StartDownload());
         }
