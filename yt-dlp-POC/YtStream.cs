@@ -11,51 +11,52 @@ namespace yt_dlp_POC
     public class YtStream : MemoryStream
     {
         private const int BUFFERLENGTH = 1024;
-        private Stream stream;
-        
-        public long DownloadedBytes { get { return downloadedBytes; } }
         private long downloadedBytes;
-        private int i = 0;
+        private HttpClient httpClient;
 
-        public YtStream(Stream stream,int size) : base(size)
+        public long DownloadedBytes { get { return downloadedBytes; } }
+        public bool HasFinished { get; private set; }   
+
+        public YtStream(string url) : base((int)GetSize(url).Result)
         {
-            this.stream = stream;
+            httpClient = new HttpClient();
+            httpClient.BaseAddress = new Uri(url);
             //Empieza la descarga en otro thread.
-            Task.Run(() => StartDownload());
+            Task.Run(async () => await StartDownload());
         }
 
-        public YtStream(string url, int size) : base(size)
+        public static async Task<long> GetSize(string url)
         {
-            HttpClient httpClient = new HttpClient();
-            this.stream = httpClient.GetStreamAsync(url).GetAwaiter().GetResult();
-            //Empieza la descarga en otro thread.
-            Task.Run(() => StartDownload());
+            var request = HttpWebRequest.CreateHttp(url);
+            request.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1";
+            var response = (HttpWebResponse)(await request.GetResponseAsync());
+            var length = response.ContentLength;
+            return length;
         }
 
-        private Task StartDownload()
+        private async Task StartDownload()
         {
-            byte[] auxBuffer = new byte[BUFFERLENGTH];
             int chunkNumber = (int)Math.Ceiling((double) Capacity / BUFFERLENGTH);
-
-            for (i = 0; i < chunkNumber; i++)
+            for (int i = 0; i < chunkNumber; i++)
             {
                 //ultimo chunk tiene length diferente
-                if (i == chunkNumber - 1)
-                {
-                    auxBuffer = new byte[Capacity % BUFFERLENGTH];
-                }
+                HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
+                httpRequestMessage.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(i * BUFFERLENGTH, i * BUFFERLENGTH + BUFFERLENGTH - 1);
 
-                stream.Read(auxBuffer, 0, auxBuffer.Length);
+                //if (i == chunkNumber - 1)
+                //{
+                //    auxBuffer = new byte[Capacity % BUFFERLENGTH];
+                //}
+
+
+                var responseMessage = await httpClient.SendAsync(httpRequestMessage);
+                byte[] auxBuffer = await responseMessage.Content.ReadAsByteArrayAsync();
+                //stream.Read(auxBuffer, 0, auxBuffer.Length);
                 base.Write(auxBuffer, 0, auxBuffer.Length);
-                downloadedBytes = Position;
+                downloadedBytes = i * BUFFERLENGTH + BUFFERLENGTH;
                
             }
-            return Task.CompletedTask;
-        }
-        public void Seek(long position)
-        {
-            Position = position;
-            i = (int)Math.Ceiling((double)position / BUFFERLENGTH);
+            HasFinished = true;
         }
 
     }

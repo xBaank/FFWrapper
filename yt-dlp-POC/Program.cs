@@ -23,11 +23,11 @@ namespace yt_dlp_POC
                     default:
                         stream = YtDownloader.DownloadSong(args[0]).Result;
                         WebmOpus opus = new WebmOpus(stream);
-                        //List<OpusPacket> opusPackets =  opusToPcm.GetPackets(stream);
-                        while (!opus.HasFinished) { }
-                        byte[] pcmBufferBytes = WebmOpus.GetPcm(opus.OpusContent,opus.OpusFormat);
+                        //List<OpusPacket> opusPackets = opus.GetPackets(stream);
+                        while (!stream.HasFinished) { }
+                        byte[] pcmBufferBytes = WebmOpus.GetPcm(opus.OpusContent, opus.OpusFormat);
                         MemoryStream memoryStream = new MemoryStream(pcmBufferBytes);
-                        var rawSourceWaveStream = new RawSourceWaveStream(pcmBufferBytes,0,pcmBufferBytes.Length,new WaveFormat((int)opus.OpusFormat.sampleFrequency,opus.OpusFormat.channels));
+                        var rawSourceWaveStream = new RawSourceWaveStream(pcmBufferBytes, 0, pcmBufferBytes.Length, new WaveFormat((int)opus.OpusFormat.sampleFrequency, opus.OpusFormat.channels));
                         WaveFileWriter.CreateWaveFile("output.wav", rawSourceWaveStream);
                         break;
                 }

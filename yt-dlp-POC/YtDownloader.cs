@@ -26,7 +26,7 @@ namespace yt_dlp_POC
 
             var video = await youtubeClient.Videos.Streams.GetManifestAsync(queryresult.Id);
             var streamInfo = video.GetAudioOnlyStreams().Where(i => i.Container == Container.WebM && i.AudioCodec == "opus").FirstOrDefault();
-            return new YtStream(await httpClient.GetStreamAsync(streamInfo.Url), (int)streamInfo.Size.Bytes) ;
+            return new YtStream(streamInfo.Url) ;
         }
     }
 }
