@@ -2,7 +2,7 @@
   "profiles": {
     "yt-dlp-POC": {
       "commandName": "Project",
-      "commandLineArgs": "\"in the woods somewhere\""
+      "commandLineArgs": "\"elden ring trailer\""
     }
   }
 }

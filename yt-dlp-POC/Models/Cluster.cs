@@ -6,12 +6,12 @@ namespace yt_dlp_POC.Models
 {
     public class Cluster
     {
-        internal Cluster(List<OpusPacket>packets ,long timeStamp)
+        internal Cluster(List<OpusPacket>packets ,ulong timeStamp)
         {
             TimeStamp = timeStamp;
             Packets = packets;
         }
         public List<OpusPacket> Packets { get; }
-        public long TimeStamp { get; }
+        public ulong TimeStamp { get; }
     }
 }

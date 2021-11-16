@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>yt_dlp_POC</RootNamespace>
+    <StartupObject></StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,12 +13,6 @@
     <PackageReference Include="NEbml" Version="0.11.0" />
     <PackageReference Include="System.Linq.Async" Version="5.0.0" />
     <PackageReference Include="YoutubeExplode" Version="6.0.5" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="yt-dlp.exe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>
