@@ -10,12 +10,14 @@ namespace yt_dlp_POC
 {
     public class YtStream : MemoryStream
     {
-        private const int BUFFERLENGTH = 1024;
+        private const int BUFFERLENGTH = 1024 * 50;
         private long downloadedBytes;
         private HttpClient httpClient;
+        private int i;
 
         public long DownloadedBytes { get { return downloadedBytes; } }
-        public bool HasFinished { get; private set; }   
+        public bool HasFinished { get; private set; }
+        public bool IsComplete { get; private set; } = true;
 
         public YtStream(string url) : base((int)GetSize(url).Result)
         {
@@ -37,7 +39,7 @@ namespace yt_dlp_POC
         private async Task StartDownload()
         {
             int chunkNumber = (int)Math.Ceiling((double) Capacity / BUFFERLENGTH);
-            for (int i = 0; i < chunkNumber; i++)
+            for (i = 0; i < chunkNumber; i++)
             {
                 //ultimo chunk tiene length diferente
                 HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
@@ -51,12 +53,19 @@ namespace yt_dlp_POC
 
                 var responseMessage = await httpClient.SendAsync(httpRequestMessage);
                 byte[] auxBuffer = await responseMessage.Content.ReadAsByteArrayAsync();
+                base.Position = BUFFERLENGTH * i;
                 //stream.Read(auxBuffer, 0, auxBuffer.Length);
                 base.Write(auxBuffer, 0, auxBuffer.Length);
                 downloadedBytes = i * BUFFERLENGTH + BUFFERLENGTH;
                
             }
             HasFinished = true;
+        }
+
+        public void SeekTo(long position)
+        {
+            IsComplete = false;
+            i = (int)Math.Floor((decimal)((int)(position / BUFFERLENGTH))) - 1;
         }
 
     }

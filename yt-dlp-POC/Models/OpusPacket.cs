@@ -7,7 +7,7 @@ namespace yt_dlp_POC
 {
     public class OpusPacket
     {
-        public OpusPacket(byte[] buffer,int timeSpan)
+        internal OpusPacket(byte[] buffer,int timeSpan)
         {
             OpusBuffer = buffer;
             TimeSpan = timeSpan;

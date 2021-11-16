@@ -45,10 +45,15 @@ namespace yt_dlp_POC
         //--------VARIABLES----------- 
         List<CluesterPosition> clusterPositions = new List<CluesterPosition>();
         List<OpusPacket> opusContent = new List<OpusPacket>();
+        List<Cluster> downloadedClusters = new List<Cluster>();
         int currentDecodingIndex = 0;
+        bool clusterStarted = false;
+        private YtStream ytStream;
+        private bool isClustersDownloaded = false;
 
         //--------PROPIEDADES--------
         public List<OpusPacket> OpusContent { get { return opusContent; } }
+        public List<Cluster> Clusters { get { return downloadedClusters; } }
         public bool HasNextPacket { get { return opusContent.Count > 0; } }
         public bool HasFinished { get; private set; }
         public OpusFormat OpusFormat { get; private set; }
@@ -59,14 +64,17 @@ namespace yt_dlp_POC
         /// <param name="stream">Stream</param>
         public WebmOpus(YtStream stream)
         {
-            Task.Run( () => GetPackets(stream));
+            
+            ytStream = stream;
+            Task.Run(() => GetPackets(stream));
         }
 
         private ulong GetSeekHead(MemoryStream memoryStream)
         {
             EbmlReader ebmlReader = new EbmlReader(memoryStream);
             long posToAdd = FindPosition(memoryStream, SEEKHEAD, true);
-
+            ebmlReader.ReadAt(posToAdd);
+            memoryStream.Seek(posToAdd + ebmlReader.ElementSize, SeekOrigin.Begin);
             return posToAdd != -1 ? (ulong)posToAdd : 0;
         }
 
@@ -182,10 +190,25 @@ namespace yt_dlp_POC
                     long posTrackEntry = FindPosition(memoryStream, TRACKENTRY);
                     ebmlReader.ReadAt(0);
                     ebmlReader.EnterContainer();
-                    long posCodec = FindPosition(memoryStream, CODECID);
                     ebmlReader.ReadAt(0);
+                    ulong trackNumber = ebmlReader.ReadUInt();
+
+                    var startPos = ebmlReader.ElementPosition;
+                    ebmlReader.ReadAt(memoryStream.Position-startPos);
+
+                    ulong trackUID = ebmlReader.ReadUInt();
+                    ebmlReader.ReadAt(memoryStream.Position - startPos);
+
+                    ulong trackType = ebmlReader.ReadUInt();
+                    ebmlReader.ReadAt(memoryStream.Position - startPos);
+
+                    ulong flagLacing = ebmlReader.ReadUInt();
+                    ebmlReader.ReadAt(memoryStream.Position - startPos);
+
+                    //long posCodec = FindPosition(memoryStream, CODECID);
+                    //ebmlReader.ReadAt(0);
                     codec = ebmlReader.ReadUtf();
-                    isFound = true;
+                    isFound = codec == CODECNAME;
                 }
                 catch
                 {
@@ -193,16 +216,15 @@ namespace yt_dlp_POC
                     memoryStream.Seek(posTracks + 1, SeekOrigin.Begin);
                 };
             }
-            return codec == CODECNAME;
+            return isFound;
         }
 
         private List<OpusPacket> GetPackets(YtStream songStream)
         {
             MemoryStream auxStream = new MemoryStream(songStream.GetBuffer());
-            var b = songStream.GetBuffer();
 
             //--------------ESPERA A QUE SE DESCARGUE MEDIO MB----------------
-            WaitForDownloadedBytes(songStream, 1024 * 1024  / 10);
+            WaitForDownloadedBytes(1024 * 1024 / 10);
             ulong posToAdd = GetSeekHead(auxStream);
             if (IsSupportedCodec(auxStream))
             {
@@ -210,70 +232,75 @@ namespace yt_dlp_POC
                 OpusFormat = opusFormat;
                 GetClusterPositions(auxStream, posToAdd);
                 long posCluster = 0;
+                isClustersDownloaded = true;
 
                 for (currentDecodingIndex = 0; currentDecodingIndex < clusterPositions.Count; currentDecodingIndex++)
                 {
+                    clusterStarted = true;
+                    List<OpusPacket> opusPacketsCluster = new List<OpusPacket>();
                     auxStream.Seek(0, SeekOrigin.Begin);
                     posCluster = (long)clusterPositions[currentDecodingIndex].ClusterPosition;
                     if (posCluster != ERRORCODE)
                     {
+                        WaitForDownloadedBytes((long)posCluster + 20);
                         EbmlReader ebmlReader = new EbmlReader(auxStream);
                         long clusterSize = EnterCluster(ebmlReader, posCluster);
                         var startPos = auxStream.Position;
-                        //---DESCARTA EL TIMESTAMP DEL PRINCIPIO
+                        //---DESCARTA EL TIMESTAMP DEL PRINCIPIO---
                         ebmlReader.ReadAt(0);
+                        //---SE COGE EL TIME DESDE CLUSTERPOSTITIONS---
                         var time = ebmlReader.ReadUInt();
                         long nextClusterPos = clusterSize + posCluster;
-                        if(posCluster == 14483336)
-                        {
-                            Console.WriteLine(-1);
-                        }
-                        //------------- +10 because the size doesnt include flags, timestamp, etc-----------
-                        WaitForDownloadedBytes(songStream, nextClusterPos + 10);
+                        //------------- +10 PORQUE EL SIZE NO INCLUYE FLAGS,TIMESTAMP,ETC-----------
+                        WaitForDownloadedBytes(nextClusterPos + 10);
 
 
                         //-------------POSBLOCK ES RELATIVO A LA POSICION DEL PRIMER BLOQUE----------------
 
 
-                        long posBlock = FindPosition(auxStream, SIMPLEBLOCK)  - startPos;
-                        OpusDecoder opusDecoder = new OpusDecoder((int)opusFormat.sampleFrequency, opusFormat.channels);
-                        bool isError = false;
-                        while (!isError)
-                        {
-                            //------------SI LA POSICION DEL STREAM ES MAYOR A A LA DEL SIGUIENTE CLUSTER ENTONCES ERA EL ULTIMO CLUSTER--------
-                            isError = auxStream.Position > nextClusterPos;
-
-                            if (!isError)
+                            long posBlock = FindPosition(auxStream, SIMPLEBLOCK) - startPos;
+                            OpusDecoder opusDecoder = new OpusDecoder((int)opusFormat.sampleFrequency, opusFormat.channels);
+                            bool isError = false;
+                            while (!isError)
                             {
-                                try
-                                {
-                                    ebmlReader.ReadAt(posBlock);
-                                }
-                                catch {isError = true; }
+                                //------------SI LA POSICION DEL STREAM ES MAYOR A A LA DEL SIGUIENTE CLUSTER ENTONCES ERA EL ULTIMO CLUSTER--------
+                                isError = auxStream.Position > nextClusterPos;
 
                                 if (!isError)
                                 {
                                     try
                                     {
-                                        OpusPacket opusPacket = GetBuffer(ebmlReader, auxStream, (int)clusterPositions[currentDecodingIndex].TimeStamp);
-                                        opusContent.Add(opusPacket);
+                                        ebmlReader.ReadAt(posBlock);
                                     }
-                                    catch (Exception e) { ebmlReader.LeaveContainer();auxStream.Seek(nextClusterPos, SeekOrigin.Begin); }
+                                    catch { isError = true; }
+
+                                    if (!isError)
+                                    {
+                                        try
+                                        {
+                                            OpusPacket opusPacket = GetBuffer(ebmlReader, auxStream, (int)clusterPositions[currentDecodingIndex].TimeStamp);
+                                            opusContent.Add(opusPacket);
+                                            opusPacketsCluster.Add(opusPacket);
+                                        }
+                                        catch (Exception e) { ebmlReader.LeaveContainer(); auxStream.Seek(nextClusterPos, SeekOrigin.Begin); }
+                                    }
+                                    //---------------COMO LA POSICION DEL BLOQUE ES RELATIVA AL PRIMER BLOQUE SE RESTA LA POSICION--------
+                                    posBlock = FindPosition(auxStream, SIMPLEBLOCK) - startPos;
+                                    //---------------SI POSBLOCK ES NEGATIVO ENTONCES NO HA ENCONTRADO SIGUENTE BLOQUE------------
+                                    isError = posBlock < 0;
+
                                 }
-                                //---------------COMO LA POSICION DEL BLOQUE ES RELATIVA AL PRIMER BLOQUE SE RESTA LA POSICION--------
-                                posBlock = FindPosition(auxStream, SIMPLEBLOCK) - startPos;
-                                //---------------SI POSBLOCK ES NEGATIVO ENTONCES NO HA ENCONTRADO SIGUENTE BLOQUE------------
-                                isError = posBlock < 0;
 
                             }
+                            //------------------RESETEA LA POSICION AL BLOQUE Y SALE DEL CONTENEDOR--------------------
+                            auxStream.Seek(ebmlReader.ElementPosition, SeekOrigin.Begin);
 
-                        }
-                        //------------------RESETEA LA POSICION AL BLOQUE Y SALE DEL CONTENEDOR--------------------
-                        auxStream.Seek(ebmlReader.ElementPosition, SeekOrigin.Begin);
+                            ebmlReader.LeaveContainer();
 
-                        ebmlReader.LeaveContainer();
+                        
                     }
-
+                    downloadedClusters.Add(new Cluster(opusPacketsCluster, (long)clusterPositions[currentDecodingIndex].TimeStamp));
+                    clusterStarted = false;
                 }
             }
             HasFinished = true;
@@ -284,7 +311,7 @@ namespace yt_dlp_POC
         /// </summary>
         /// <param name="opusPackets"></param>
         /// <returns>Array de bytes decodificado</returns>
-        public static byte[] GetPcm(List<OpusPacket> opusPackets,OpusFormat opusFormat)
+        public static byte[] GetPcm(List<OpusPacket> opusPackets, OpusFormat opusFormat)
         {
             OpusDecoder opusDecoder = new OpusDecoder((int)opusFormat.sampleFrequency, opusFormat.channels);
             List<byte> pcm = new List<byte>();
@@ -303,7 +330,7 @@ namespace yt_dlp_POC
 
                 catch { }
             }
-            
+
             return pcm.ToArray();
         }
         public static byte[] GetPcm(OpusPacket opusPacket, OpusFormat opusFormat)
@@ -312,37 +339,35 @@ namespace yt_dlp_POC
             byte[] pcm = new byte[0];
 
 
-                try
-                {
-                    short[] pcmBuffer = new short[opusPacket.ChannelCount * opusPacket.Frames * opusPacket.FrameSize];
-                    int decodedSamples = opusDecoder.Decode(opusPacket.OpusBuffer, 0, opusPacket.OpusBuffer.Length, pcmBuffer, 0, opusPacket.FrameSize);
-                    byte[] pcmBufferInBytes = new byte[pcmBuffer.Length * 2];
-                    Buffer.BlockCopy(pcmBuffer, 0, pcmBufferInBytes, 0, pcmBufferInBytes.Length);
-                    pcm = pcmBufferInBytes;
-                }
+            try
+            {
+                short[] pcmBuffer = new short[opusPacket.ChannelCount * opusPacket.Frames * opusPacket.FrameSize];
+                int decodedSamples = opusDecoder.Decode(opusPacket.OpusBuffer, 0, opusPacket.OpusBuffer.Length, pcmBuffer, 0, opusPacket.FrameSize);
+                byte[] pcmBufferInBytes = new byte[pcmBuffer.Length * 2];
+                Buffer.BlockCopy(pcmBuffer, 0, pcmBufferInBytes, 0, pcmBufferInBytes.Length);
+                pcm = pcmBufferInBytes;
+            }
 
-                catch { }
+            catch { }
 
             return pcm;
-            
+
         }
         /// <summary>
         /// Seek the current decoding position.
         /// </summary>
         /// <param name="timeSpan">Time in miliseconds</param>
-        //public void SeekToTimeStamp(YtStream yt, int timeSpan)
-        //{
-        //    var clusterToSeek = clusterPositions.FirstOrDefault(i => (ulong)timeSpan <= i.TimeStamp);
-        //    var NextCluster = clusterPositions.FirstOrDefault(i => (ulong)timeSpan > i.TimeStamp);
-        //    yt.Seek((long)clusterToSeek.ClusterPosition);
-        //    if ((ulong)yt.DownloadedBytes <= NextCluster.ClusterPosition)
-        //    {
-        //        WaitForDownloadedBytes(yt, (long)NextCluster.ClusterPosition);
-        //    }
-
-        //    int i = clusterPositions.IndexOf(clusterToSeek);
-        //    currentDecodingIndex = i;
-        //}
+        public void SeekToTimeStamp(int timeSpan)
+        {
+            while (!isClustersDownloaded) { }
+            var clusterToSeek = clusterPositions.LastOrDefault(i => i.TimeStamp <= (ulong)timeSpan);
+            var NextCluster = clusterPositions.FirstOrDefault(i => (ulong)timeSpan <= i.TimeStamp);
+            while(clusterStarted) { }
+            int i = clusterPositions.IndexOf(clusterToSeek);
+            currentDecodingIndex = i - 1;
+            ytStream.SeekTo((long)clusterToSeek.ClusterPosition);
+            
+        }
         /// <summary>
         /// Extrae los datos del bloque
         /// </summary>
@@ -367,9 +392,9 @@ namespace yt_dlp_POC
         /// </summary>
         /// <param name="songStream">stream que esta descargando los datos</param>
         /// <param name="bytes">bytes hasta los que esperar</param>
-        private static void WaitForDownloadedBytes(YtStream songStream, long bytes)
+        private void WaitForDownloadedBytes(long bytes)
         {
-            while (songStream.DownloadedBytes < bytes) { }
+            while (ytStream.DownloadedBytes < bytes) { }
 
         }
         /// <summary>

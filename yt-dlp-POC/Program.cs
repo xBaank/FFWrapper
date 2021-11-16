@@ -21,8 +21,10 @@ namespace yt_dlp_POC
                         PrintHelp();
                         break;
                     default:
-                        stream = YtDownloader.DownloadSong(args[0]).Result;
+                        stream = YtDownloader.DownloadSong(args[0]).GetAwaiter().GetResult();
                         WebmOpus opus = new WebmOpus(stream);
+                        Thread.Sleep(789);
+                        opus.SeekToTimeStamp(150000);
                         //List<OpusPacket> opusPackets = opus.GetPackets(stream);
                         while (!stream.HasFinished) { }
                         byte[] pcmBufferBytes = WebmOpus.GetPcm(opus.OpusContent, opus.OpusFormat);
