@@ -11,7 +11,7 @@ using WebmOpus.Models;
 
 namespace WebmOpus
 {
-    public class WebmOpus
+    public class WebmToOpus
     {
         //--------AUDIOINFO-----------
         static readonly byte[] TRACKS = { 0x16, 0x54, 0xAE, 0x6B };
@@ -54,15 +54,19 @@ namespace WebmOpus
         //--------PROPIEDADES--------
         public List<OpusPacket> OpusContent { get { return opusContent; } }
         public List<Cluster> Clusters { get { return downloadedClusters; } }
-        //public bool HasNextPacket { get { return opusContent.Count > 0; } }
         public bool HasFinished { get; private set; }
         public OpusFormat OpusFormat { get; private set; }
+
+        //--------EVENTOS-----------
+        public event Func<object,Task> OnClusterDownloaded;
+        public event Func<object,Task> OnPacketDownloaded;
+        public event Func<object,Task> OnFinished;
 
         /// <summary>
         /// Empieza a extraer los paquetes del stream
         /// </summary>
         /// <param name="stream">Stream</param>
-        public WebmOpus(YtStream stream)
+        public WebmToOpus(YtStream stream)
         {
             
             ytStream = stream;
@@ -132,7 +136,7 @@ namespace WebmOpus
         private static OpusFormat GetOpusFormat(MemoryStream memoryStream)
         {
 
-            OpusFormat opusFormat = null;
+            OpusFormat? opusFormat = null;
             //------------BUSCA LA POSICION Y RESETEA EL STREAM-----------
 
             bool isFound = false;
@@ -223,7 +227,7 @@ namespace WebmOpus
         {
             MemoryStream auxStream = new MemoryStream(songStream.GetBuffer());
 
-            //--------------ESPERA A QUE SE DESCARGUE MEDIO MB----------------
+            //--------------ESPERA A QUE SE DESCARGUE 0.1 MB----------------
             WaitForDownloadedBytes(1024 * 1024 / 10);
             ulong posToAdd = GetSeekHead(auxStream);
             if (IsSupportedCodec(auxStream))
@@ -283,6 +287,7 @@ namespace WebmOpus
                                             OpusPacket opusPacket = GetBuffer(ebmlReader, auxStream, (int)clusterPositions[currentDecodingIndex].TimeStamp);
                                             opusContent.Add(opusPacket);
                                             opusPacketsCluster.Add(opusPacket);
+                                            OnPacketDownloaded?.Invoke(this);
                                         }
                                         catch (Exception e) { ebmlReader.LeaveContainer(); auxStream.Seek(nextClusterPos, SeekOrigin.Begin); }
                                     }
@@ -303,9 +308,11 @@ namespace WebmOpus
                     }
                     downloadedClusters.Add(new Cluster(opusPacketsCluster, (ulong)clusterPositions[currentDecodingIndex].TimeStamp));
                     clusterStarted = false;
+                    OnClusterDownloaded?.Invoke(this);
                 }
             }
             HasFinished = true;
+            OnFinished?.Invoke(this);
             return opusContent;
         }
         /// <summary>
@@ -362,13 +369,16 @@ namespace WebmOpus
         public void SeekToTimeStamp(int timeSpan)
         {
             while (!isClustersDownloaded) { }
+            if(HasFinished)
+            {
+                Task.Run(() => { GetPackets(ytStream); });
+            }
             var clusterToSeek = clusterPositions.LastOrDefault(i => i.TimeStamp <= (ulong)timeSpan);
             var NextCluster = clusterPositions.FirstOrDefault(i => (ulong)timeSpan <= i.TimeStamp);
             while(clusterStarted) { }
             int i = clusterPositions.IndexOf(clusterToSeek);
             currentDecodingIndex = i ;
             ytStream.SeekTo((long)clusterToSeek.ClusterPosition);
-            
         }
         /// <summary>
         /// Extrae los datos del bloque
@@ -461,6 +471,8 @@ namespace WebmOpus
             }
             return i;
         }
+
+
 
 
     }
