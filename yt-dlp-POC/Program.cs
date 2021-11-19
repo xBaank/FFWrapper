@@ -24,16 +24,14 @@ namespace yt_dlp_POC
                         break;
                     default:
                         Stopwatch stopwatch = Stopwatch.StartNew();
-                        Console.WriteLine(stopwatch.ElapsedMilliseconds);
                         stream = YtDownloader.DownloadSong(args[0]).GetAwaiter().GetResult();
+                        stopwatch.Stop();
                         Console.WriteLine(stopwatch.ElapsedMilliseconds);
                         WebmToOpus opus = new WebmToOpus(stream);
                         //Thread.Sleep(3000);
                         //opus.SeekToTimeStamp(173200);
                         //List<OpusPacket> opusPackets = opus.GetPackets(stream);
                         while(opus.Clusters.Count == 0)
-                        stopwatch.Stop();
-                        Console.WriteLine(stopwatch.ElapsedMilliseconds);
                         while (!stream.HasFinished) { }
                         byte[] pcmBufferBytes = WebmToOpus.GetPcm(opus.OpusContent, opus.OpusFormat);
                         MemoryStream memoryStream = new MemoryStream(pcmBufferBytes);

@@ -59,7 +59,7 @@ namespace WebmOpus
 
         //--------EVENTOS-----------
         public event Func<object,Task> OnClusterDownloaded;
-        public event Func<object,Task> OnPacketDownloaded;
+        public event Func<object,OpusPacket,Task> OnPacketDownloaded;
         public event Func<object,Task> OnFinished;
 
         /// <summary>
@@ -287,7 +287,7 @@ namespace WebmOpus
                                             OpusPacket opusPacket = GetBuffer(ebmlReader, auxStream, (int)clusterPositions[currentDecodingIndex].TimeStamp);
                                             opusContent.Add(opusPacket);
                                             opusPacketsCluster.Add(opusPacket);
-                                            OnPacketDownloaded?.Invoke(this);
+                                            OnPacketDownloaded?.Invoke(this,opusPacket);
                                         }
                                         catch (Exception e) { ebmlReader.LeaveContainer(); auxStream.Seek(nextClusterPos, SeekOrigin.Begin); }
                                     }

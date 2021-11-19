@@ -7,6 +7,7 @@ using System.Linq;
 using YoutubeExplode.Videos.Streams;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace WebmOpus
 {
@@ -19,13 +20,13 @@ namespace WebmOpus
         /// <returns>El stream sin reserva de memoria</returns>
         public async static Task<YtStream> DownloadSong(string query)
         {
+            
             YoutubeClient youtubeClient = new YoutubeClient();
             HttpClient httpClient = new HttpClient();
             var queryresult = await youtubeClient.Search.GetVideosAsync(query).FirstOrDefaultAsync();
-
-
             var video = await youtubeClient.Videos.Streams.GetManifestAsync(queryresult.Id);
-            var streamInfo = video.GetAudioOnlyStreams().Where(i => i.Container == Container.WebM && i.AudioCodec == "opus").FirstOrDefault();
+
+            var streamInfo = video.GetAudioOnlyStreams().Where(i => i.Container == Container.WebM && i.AudioCodec == "opus").GetWithHighestBitrate();
             return new YtStream(streamInfo.Url) ;
         }
     }
