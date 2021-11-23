@@ -4,14 +4,15 @@ using System.Text;
 
 namespace WebmOpus.Models
 {
-    internal class CluesterPosition
+    public class ClusterPosition
     {
-        public CluesterPosition(ulong timestamp, ulong clusterposition)
+        public ClusterPosition(ulong timestamp, ulong clusterposition)
         {
             TimeStamp = timestamp;
-            ClusterPosition = clusterposition;
+            ClusterPos = clusterposition;
         }
         public ulong TimeStamp { get; }
-        public ulong ClusterPosition { get; }
+        public ulong ClusterPos { get; }
+        public bool IsClusterDownloaded { get; internal set; }
     }
 }

@@ -10,7 +10,7 @@ namespace WebmOpus
 {
     public class YtStream : MemoryStream
     {
-        private const int BUFFERLENGTH = 1024 * 50;
+        private const int CLUSTERPOSLENGHT = 1024 * 100;
         private long downloadedBytes;
         private HttpClient httpClient;
         private int i;
@@ -18,16 +18,17 @@ namespace WebmOpus
         public long DownloadedBytes { get { return downloadedBytes; } }
         public bool HasFinished { get; private set; }
         public bool IsComplete { get; private set; } = true;
+        public bool ClusterPositionsDownloaded { get; private set; }
 
         public YtStream(string url) : base((int)GetSize(url).Result)
         {
             httpClient = new HttpClient();
             httpClient.BaseAddress = new Uri(url);
             //Empieza la descarga en otro thread.
-            Task.Run(async () => await StartDownload());
+            //Task.Run(async () => await StartDownload());
         }
 
-        public static async Task<long> GetSize(string url)
+        private static async Task<long> GetSize(string url)
         {
             var request = HttpWebRequest.CreateHttp(url);
             request.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1";
@@ -36,14 +37,44 @@ namespace WebmOpus
             return length;
         }
 
+        internal async Task<byte[]> DownloadClusterPositions()
+        {
+            HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
+            httpRequestMessage.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(0, CLUSTERPOSLENGHT - 1);
+
+
+            var responseMessage = await httpClient.SendAsync(httpRequestMessage);
+            byte[] auxBuffer = await responseMessage.Content.ReadAsByteArrayAsync();
+            base.Position = 0;
+            base.Write(auxBuffer, 0, auxBuffer.Length);
+            ClusterPositionsDownloaded = true;
+
+            return auxBuffer;
+        }
+
+        internal async Task<byte[]> DownloadCluster(ulong from, ulong to)
+        {
+            HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
+            httpRequestMessage.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue((long?)from, (long?)to);
+
+
+            var responseMessage = await httpClient.SendAsync(httpRequestMessage);
+            byte[] auxBuffer = await responseMessage.Content.ReadAsByteArrayAsync();
+            base.Position = (long)from;
+            base.Write(auxBuffer, 0, auxBuffer.Length);
+            ClusterPositionsDownloaded = true;
+
+            return auxBuffer;
+        }
+
         private async Task StartDownload()
         {
-            int chunkNumber = (int)Math.Ceiling((double) Capacity / BUFFERLENGTH);
+            int chunkNumber = (int)Math.Ceiling((double)Capacity / CLUSTERPOSLENGHT);
             for (i = 0; i < chunkNumber; i++)
             {
                 //ultimo chunk tiene length diferente
                 HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
-                httpRequestMessage.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(i * BUFFERLENGTH, i * BUFFERLENGTH + BUFFERLENGTH - 1);
+                httpRequestMessage.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(i * CLUSTERPOSLENGHT, i * CLUSTERPOSLENGHT + CLUSTERPOSLENGHT - 1);
 
                 //if (i == chunkNumber - 1)
                 //{
@@ -53,11 +84,11 @@ namespace WebmOpus
 
                 var responseMessage = await httpClient.SendAsync(httpRequestMessage);
                 byte[] auxBuffer = await responseMessage.Content.ReadAsByteArrayAsync();
-                base.Position = BUFFERLENGTH * i;
+                base.Position = CLUSTERPOSLENGHT * i;
                 //stream.Read(auxBuffer, 0, auxBuffer.Length);
                 base.Write(auxBuffer, 0, auxBuffer.Length);
-                downloadedBytes = i * BUFFERLENGTH + BUFFERLENGTH;
-               
+                downloadedBytes = i * CLUSTERPOSLENGHT + CLUSTERPOSLENGHT;
+
             }
             HasFinished = true;
         }
@@ -65,7 +96,7 @@ namespace WebmOpus
         public void SeekTo(long position)
         {
             IsComplete = false;
-            i = (int)Math.Floor((decimal)((int)(position / BUFFERLENGTH))) - 1;
+            i = (int)Math.Floor((decimal)((int)(position / CLUSTERPOSLENGHT))) - 1;
         }
 
     }

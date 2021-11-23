@@ -7,12 +7,13 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using WebmOpus;
+using WebmOpus.Models;
 
 namespace yt_dlp_POC
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             if (args.Length > 0)
             {
@@ -28,12 +29,13 @@ namespace yt_dlp_POC
                         stopwatch.Stop();
                         Console.WriteLine(stopwatch.ElapsedMilliseconds);
                         WebmToOpus opus = new WebmToOpus(stream);
+                        opus.OnClusterDownloaded += OnClusterDownload;
+                        opus.GetPackets().Wait();
+                        
                         //Thread.Sleep(3000);
                         //opus.SeekToTimeStamp(173200);
                         //List<OpusPacket> opusPackets = opus.GetPackets(stream);
-                        while(opus.Clusters.Count == 0)
-                        while (!stream.HasFinished) { }
-                        byte[] pcmBufferBytes = WebmToOpus.GetPcm(opus.OpusContent, opus.OpusFormat);
+                        byte[] pcmBufferBytes = WebmToOpus.GetPcm(packets, opus.OpusFormat);
                         MemoryStream memoryStream = new MemoryStream(pcmBufferBytes);
                         var rawSourceWaveStream = new RawSourceWaveStream(pcmBufferBytes, 0, pcmBufferBytes.Length, new WaveFormat((int)opus.OpusFormat.sampleFrequency, opus.OpusFormat.channels));
                         WaveFileWriter.CreateWaveFile("output.wav", rawSourceWaveStream);
@@ -50,6 +52,13 @@ namespace yt_dlp_POC
         private static void PrintHelp()
         {
             Console.WriteLine("yt-dlp-POC [Query] [Output]");
+        }
+        private static List<OpusPacket> packets = new List<OpusPacket>();
+
+        private static Task OnClusterDownload(object sender,Cluster cluster)
+        {
+            packets.AddRange(cluster.Packets);
+            return Task.CompletedTask;
         }
     }
 }
