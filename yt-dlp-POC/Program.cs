@@ -29,8 +29,7 @@ namespace yt_dlp_POC
                         stopwatch.Stop();
                         Console.WriteLine(stopwatch.ElapsedMilliseconds);
                         WebmToOpus opus = new WebmToOpus(stream);
-                        opus.OnClusterDownloaded += OnClusterDownload;
-                        opus.GetPackets().Wait();
+                        var packets = opus.GetPackets().Result;
                         //Thread.Sleep(3000);
                         //opus.SeekToTimeStamp(173200);
                         //List<OpusPacket> opusPackets = opus.GetPackets(stream);
@@ -51,13 +50,6 @@ namespace yt_dlp_POC
         private static void PrintHelp()
         {
             Console.WriteLine("yt-dlp-POC [Query] [Output]");
-        }
-        private static List<OpusPacket> packets = new List<OpusPacket>();
-
-        private static Task OnClusterDownload(object sender,Cluster cluster)
-        {
-            packets.AddRange(cluster.Packets);
-            return Task.CompletedTask;
         }
     }
 }

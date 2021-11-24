@@ -220,7 +220,7 @@ namespace WebmOpus
         /// <summary>
         /// Start Downloading all the content and calling the events
         /// </summary>
-        /// <returns></returns>
+        /// <returns>All opus packets</returns>
         public async Task<List<OpusPacket>> GetPackets()
         {
             List<Cluster> clusters = new List<Cluster>();
