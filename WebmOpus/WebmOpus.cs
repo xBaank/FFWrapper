@@ -221,13 +221,15 @@ namespace WebmOpus
         /// Start Downloading all the content and calling the events
         /// </summary>
         /// <returns></returns>
-        public async Task GetPackets()
+        public async Task<List<OpusPacket>> GetPackets()
         {
+            List<Cluster> clusters = new List<Cluster>();
             await DownloadClusterPositions();
             foreach(var clusterPos in clusterPositions)
-                await DownloadCluster(clusterPos);
+               clusters.Add(await DownloadCluster(clusterPos));
             HasFinished = true;
             OnFinished?.Invoke(this);
+            return clusters.SelectMany(i => i.Packets).ToList();
         }
         public async Task DownloadClusterPositions()
         {
