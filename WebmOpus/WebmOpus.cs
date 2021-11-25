@@ -52,6 +52,7 @@ namespace WebmOpus
         //--------PROPIEDADES--------
         public bool HasFinished { get; private set; }
         public OpusFormat OpusFormat { get; private set; }
+        public List<ClusterPosition> ClusterPositions { get { return clusterPositions; } }
 
         //--------EVENTOS-----------
         public event Func<object,Cluster,Task> OnClusterDownloaded;
@@ -218,10 +219,11 @@ namespace WebmOpus
             return isFound;
         }
         /// <summary>
-        /// Start Downloading all the content and calling the events
+        ///  packets for clusters
         /// </summary>
-        /// <returns>All opus packets</returns>
-        public async Task<List<OpusPacket>> GetPackets()
+        /// <param name="clusters">List of clusters that will be filled with packets</param>
+        /// <returns></returns>
+        public async Task<List<Cluster>> GetClusters()
         {
             List<Cluster> clusters = new List<Cluster>();
             await DownloadClusterPositions();
@@ -229,8 +231,21 @@ namespace WebmOpus
                clusters.Add(await DownloadCluster(clusterPos));
             HasFinished = true;
             OnFinished?.Invoke(this);
-            return clusters.SelectMany(i => i.Packets).ToList();
+            return clusters;
         }
+        /// <summary>
+        /// Start Downloading all the content and calling the events
+        /// </summary>
+        /// <returns></returns>
+        public async Task GetPackets()
+        {
+            await DownloadClusterPositions();
+            foreach (var clusterPos in clusterPositions)
+                await DownloadCluster(clusterPos);
+            HasFinished = true;
+            OnFinished?.Invoke(this);
+        }
+
         public async Task DownloadClusterPositions()
         {
             byte[] buffer = await ytStream.DownloadClusterPositions();
@@ -314,8 +329,8 @@ namespace WebmOpus
 
 
             }
-            Cluster cluster = new Cluster(opusPacketsCluster, clusterPositions[currentDecodingIndex].TimeStamp);
-            clusterPositions[currentDecodingIndex].IsClusterDownloaded = true;
+            Cluster cluster = new Cluster(opusPacketsCluster, clusterPosition.TimeStamp);
+            clusterPosition.IsClusterDownloaded = true;
             OnClusterDownloaded?.Invoke(this,cluster);
             return cluster;
             
@@ -367,24 +382,14 @@ namespace WebmOpus
             return pcm;
 
         }
+
         /// <summary>
-        /// Seek the current decoding position.
+        /// Get the cluster position
         /// </summary>
-        /// <param name="timeSpan">Time in miliseconds</param>
-        public void SeekToTimeStamp(int timeSpan)
-        {
-            while (!isClustersDownloaded) { }
-            if(HasFinished)
-            {
-                Task.Run(async () => await GetPackets());
-            }
-            var clusterToSeek = clusterPositions.LastOrDefault(i => i.TimeStamp <= (ulong)timeSpan);
-            var NextCluster = clusterPositions.FirstOrDefault(i => (ulong)timeSpan <= i.TimeStamp);
-            while(clusterStarted) { }
-            int i = clusterPositions.IndexOf(clusterToSeek);
-            currentDecodingIndex = i ;
-            ytStream.SeekTo((long)clusterToSeek.ClusterPos);
-        }
+        /// <param name="timeSpan">timespan for cluster</param>
+        /// <returns>the cluster position or null if not found</returns>
+        public ClusterPosition GetClusterPositionForTimeSpan(int timeSpan) => clusterPositions.LastOrDefault(i => i.TimeStamp <= (ulong)timeSpan);
+
         /// <summary>
         /// Extrae los datos del bloque
         /// </summary>

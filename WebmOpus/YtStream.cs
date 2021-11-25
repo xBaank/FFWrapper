@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using WebmOpus.Models;
 
 namespace WebmOpus
 {
@@ -65,38 +66,6 @@ namespace WebmOpus
             ClusterPositionsDownloaded = true;
 
             return auxBuffer;
-        }
-
-        private async Task StartDownload()
-        {
-            int chunkNumber = (int)Math.Ceiling((double)Capacity / CLUSTERPOSLENGHT);
-            for (i = 0; i < chunkNumber; i++)
-            {
-                //ultimo chunk tiene length diferente
-                HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
-                httpRequestMessage.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(i * CLUSTERPOSLENGHT, i * CLUSTERPOSLENGHT + CLUSTERPOSLENGHT - 1);
-
-                //if (i == chunkNumber - 1)
-                //{
-                //    auxBuffer = new byte[Capacity % BUFFERLENGTH];
-                //}
-
-
-                var responseMessage = await httpClient.SendAsync(httpRequestMessage);
-                byte[] auxBuffer = await responseMessage.Content.ReadAsByteArrayAsync();
-                base.Position = CLUSTERPOSLENGHT * i;
-                //stream.Read(auxBuffer, 0, auxBuffer.Length);
-                base.Write(auxBuffer, 0, auxBuffer.Length);
-                downloadedBytes = i * CLUSTERPOSLENGHT + CLUSTERPOSLENGHT;
-
-            }
-            HasFinished = true;
-        }
-
-        public void SeekTo(long position)
-        {
-            IsComplete = false;
-            i = (int)Math.Floor((decimal)((int)(position / CLUSTERPOSLENGHT))) - 1;
         }
 
     }

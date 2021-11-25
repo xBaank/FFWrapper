@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using WebmOpus;
@@ -17,7 +18,6 @@ namespace yt_dlp_POC
         {
             if (args.Length > 0)
             {
-                YtStream stream;
                 switch (args[0])
                 {
                     case "-h":
@@ -25,20 +25,30 @@ namespace yt_dlp_POC
                         break;
                     default:
                         Stopwatch stopwatch = Stopwatch.StartNew();
-                        stream = YtDownloader.DownloadSong(args[0]).GetAwaiter().GetResult();
+                        YtStream stream = YtDownloader.DownloadSong(args[0]).GetAwaiter().GetResult();
                         stopwatch.Stop();
                         Console.WriteLine(stopwatch.ElapsedMilliseconds);
                         WebmToOpus opus = new WebmToOpus(stream);
-                        var packets = opus.GetPackets().Result;
-                        //Thread.Sleep(3000);
-                        //opus.SeekToTimeStamp(173200);
-                        //List<OpusPacket> opusPackets = opus.GetPackets(stream);
-                        byte[] pcmBufferBytes = WebmToOpus.GetPcm(packets, opus.OpusFormat);
+                        //List<Cluster> clusters = opus.GetClusters().Result;
+
+                        //List<OpusPacket> packets = clusters.SelectMany(i => i.Packets).ToList();
+                        List<OpusPacket> opusPackets = new List<OpusPacket>();
+                        opus.DownloadClusterPositions().Wait();
+
+                        foreach(var clusterPos in opus.ClusterPositions)
+                        {
+                            var cluster = opus.DownloadCluster(clusterPos).Result;
+                            opusPackets.AddRange(cluster.Packets);
+                        }
+                        var c = opus.GetClusterPositionForTimeSpan(569);
+
+                        byte[] pcmBufferBytes = WebmToOpus.GetPcm(opusPackets, opus.OpusFormat);
                         MemoryStream memoryStream = new MemoryStream(pcmBufferBytes);
                         var rawSourceWaveStream = new RawSourceWaveStream(pcmBufferBytes, 0, pcmBufferBytes.Length, new WaveFormat((int)opus.OpusFormat.sampleFrequency, opus.OpusFormat.channels));
                         WaveFileWriter.CreateWaveFile("output.wav", rawSourceWaveStream);
                         break;
                 }
+                
                 
             }
             else
