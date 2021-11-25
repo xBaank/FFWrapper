@@ -4,7 +4,7 @@ Simple Webm opus demuxer for youtube videos
 ## Whats this for?
 This is basiclly a demuxer and decoder for the webm youtube videos.
 ## Does it work?
-I think so :V.
+I think so :V
 ## What can be done with this?
 Weeeell,I started this because i was trying to make a music discord bot.
 But I think it can be used for making a youtube music player, converter...
@@ -32,6 +32,6 @@ WaveFileWriter.CreateWaveFile("output.wav", rawSourceWaveStream);
 This is the first time I work with webm and ebml files so the code can be messy. 
 
 ### Libraries used
-- [Ebml-reaader](https://github.com/matthewn4444/EBMLReader)
+- [EbmlReader](https://github.com/matthewn4444/EBMLReader)
 - [Concentus](https://github.com/lostromb/concentus)
 - [YoutubeExplode](https://github.com/Tyrrrz/YoutubeExplode)
