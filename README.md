@@ -11,18 +11,20 @@ But I think it can be used for making a youtube music player, converter...
 
 ### Example
 ```cs
-YtStream stream = new YtStream(YtStream.GetSongUrl(args[0]).Result);
+YtStream stream = new YtStream(await YtStream.GetSongUrl("https://www.youtube.com/watch?v=E3Huy2cdih0"));
 WebmToOpus opus = new WebmToOpus(stream);
 List<OpusPacket> opusPackets = new List<OpusPacket>();
+//Download clusters positions
 await opus.DownloadClusterPositions();
-
+//Donwload all clusters
 foreach(var clusterPos in opus.ClusterPositions)
 {
     var cluster = await opus.DownloadCluster(clusterPos);
     opusPackets.AddRange(cluster.Packets);
 }
-
+//Decodes to pcm
 byte[] pcmBufferBytes = WebmToOpus.GetPcm(opusPackets, opus.OpusFormat);
+//Writes pcm to wav file
 MemoryStream memoryStream = new MemoryStream(pcmBufferBytes);
 var rawSourceWaveStream = new RawSourceWaveStream(pcmBufferBytes, 0, pcmBufferBytes.Length, new WaveFormat((int)opus.OpusFormat.sampleFrequency, opus.OpusFormat.channels));
 WaveFileWriter.CreateWaveFile("output.wav", rawSourceWaveStream);
