@@ -24,14 +24,8 @@ namespace yt_dlp_POC
                         PrintHelp();
                         break;
                     default:
-                        Stopwatch stopwatch = Stopwatch.StartNew();
-                        YtStream stream = YtDownloader.DownloadSong(args[0]).GetAwaiter().GetResult();
-                        stopwatch.Stop();
-                        Console.WriteLine(stopwatch.ElapsedMilliseconds);
+                        YtStream stream = new YtStream(YtStream.GetSongUrl(args[0]).Result);
                         WebmToOpus opus = new WebmToOpus(stream);
-                        //List<Cluster> clusters = opus.GetClusters().Result;
-
-                        //List<OpusPacket> packets = clusters.SelectMany(i => i.Packets).ToList();
                         List<OpusPacket> opusPackets = new List<OpusPacket>();
                         opus.DownloadClusterPositions().Wait();
 
