@@ -17,12 +17,12 @@ namespace WebmOpus
         private const int CLUSTERPOSLENGHT = 1024 * 100;
         private long downloadedBytes;
         private HttpClient httpClient;
-        private int i;
 
         public long DownloadedBytes { get { return downloadedBytes; } }
         public bool HasFinished { get; private set; }
         public bool IsComplete { get; private set; } = true;
         public bool ClusterPositionsDownloaded { get; private set; }
+        public int Size { get; private set; }
 
         /// <summary>
         /// Da la url de descarga
@@ -46,6 +46,7 @@ namespace WebmOpus
         {
             httpClient = new HttpClient();
             httpClient.BaseAddress = new Uri(url);
+            Size = Capacity;
             //Empieza la descarga en otro thread.
             //Task.Run(async () => await StartDownload());
         }

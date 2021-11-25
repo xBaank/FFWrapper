@@ -309,11 +309,12 @@ namespace WebmOpus
                         {
                             try
                             {
-                                OpusPacket opusPacket = GetBuffer(ebmlReader, auxStream, (int)clusterPositions[currentDecodingIndex].TimeStamp);
+                                OpusPacket opusPacket = GetBuffer(ebmlReader, auxStream, (int)clusterPosition.TimeStamp);
                                 opusPacketsCluster.Add(opusPacket);
                                 OnPacketDownloaded?.Invoke(this, opusPacket);
                             }
-                            catch (Exception e) { ebmlReader.LeaveContainer(); auxStream.Seek(nextClusterPos, SeekOrigin.Begin); }
+                            //Omit this block
+                            catch { auxStream.Position += 1; }
                         }
                         //---------------COMO LA POSICION DEL BLOQUE ES RELATIVA AL PRIMER BLOQUE SE RESTA LA POSICION--------
                         posBlock = FindPosition(auxStream, SIMPLEBLOCK) - startPos;
