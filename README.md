@@ -14,14 +14,13 @@ But I think it can be used for making a youtube music player, converter...
 YtStream stream = new YtStream(YtStream.GetSongUrl(args[0]).Result);
 WebmToOpus opus = new WebmToOpus(stream);
 List<OpusPacket> opusPackets = new List<OpusPacket>();
-opus.DownloadClusterPositions().Wait();
+await opus.DownloadClusterPositions();
 
 foreach(var clusterPos in opus.ClusterPositions)
 {
-    var cluster = opus.DownloadCluster(clusterPos).Result;
+    var cluster = await opus.DownloadCluster(clusterPos);
     opusPackets.AddRange(cluster.Packets);
 }
-var c = opus.GetClusterPositionForTimeSpan(569);
 
 byte[] pcmBufferBytes = WebmToOpus.GetPcm(opusPackets, opus.OpusFormat);
 MemoryStream memoryStream = new MemoryStream(pcmBufferBytes);

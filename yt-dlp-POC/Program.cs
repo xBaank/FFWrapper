@@ -34,7 +34,6 @@ namespace yt_dlp_POC
                             var cluster = opus.DownloadCluster(clusterPos).Result;
                             opusPackets.AddRange(cluster.Packets);
                         }
-                        var c = opus.GetClusterPositionForTimeSpan(569);
 
                         byte[] pcmBufferBytes = WebmToOpus.GetPcm(opusPackets, opus.OpusFormat);
                         MemoryStream memoryStream = new MemoryStream(pcmBufferBytes);
