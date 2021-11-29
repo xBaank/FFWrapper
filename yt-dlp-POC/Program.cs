@@ -31,7 +31,7 @@ namespace yt_dlp_POC
 
                         foreach(var clusterPos in opus.ClusterPositions)
                         {
-                            var cluster = opus.DownloadCluster(clusterPos).Result;
+                            var cluster = opus.DownloadCluster(clusterPos).GetAwaiter().GetResult();
                             opusPackets.AddRange(cluster.Packets);
                         }
 
