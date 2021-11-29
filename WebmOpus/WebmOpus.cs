@@ -278,7 +278,7 @@ namespace WebmOpus
             if (posCluster != ERRORCODE)
             {
                 EbmlReader ebmlReader = new EbmlReader(auxStream);
-                long clusterSize = EnterCluster(ebmlReader, 0);
+                long clusterSize = EnterContainer(ebmlReader, 0);
                 var startPos = auxStream.Position;
                 //---DESCARTA EL TIMESTAMP DEL PRINCIPIO---
                 ebmlReader.ReadAt(0);
@@ -425,14 +425,12 @@ namespace WebmOpus
         /// <param name="ebmlReader"></param>
         /// <param name="posCluster">Posicion del cluster</param>
         /// <returns></returns>
-        private static long EnterCluster(EbmlReader ebmlReader, long posCluster)
+        private static long EnterContainer(EbmlReader ebmlReader, long posCluster)
         {
             ebmlReader.ReadAt(posCluster);
             long clusterSize = ebmlReader.ElementSize;
             ebmlReader.EnterContainer();
             return clusterSize;
-
-            //waits to download the first cluster
         }
 
         private static long FindPosition(Stream stream, byte[] byteSequence, bool reset = false)

@@ -24,7 +24,7 @@ namespace yt_dlp_POC
                         PrintHelp();
                         break;
                     default:
-                        YtStream stream = new YtStream(YtStream.GetSongUrl(args[0]).Result);
+                        YtStream stream = new YtStream(YtStream.GetSongUrl(args[0]).GetAwaiter().GetResult());
                         WebmToOpus opus = new WebmToOpus(stream);
                         List<OpusPacket> opusPackets = new List<OpusPacket>();
                         opus.DownloadClusterPositions().Wait();
