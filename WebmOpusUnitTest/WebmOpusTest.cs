@@ -7,13 +7,20 @@ namespace WebmOpusUnitTest
     public class WebmOpusTest
     {
         [TestMethod]
-        public void DownloadVideos()
+        public void DownloadClustersPositionsTest()
         {
-            WebmToOpus webmToOpus = new WebmToOpus(new YtStream(YtStream.GetSongUrl("3434").Result));
+            Assert.AreEqual(true,IsDownloadClusterOk(VideoIds.Normal));
+            //Assert.AreEqual(true,IsDownloadClusterOk(VideoIds.LiveStream));
+            Assert.AreEqual(true,IsDownloadClusterOk(VideoIds.AgeRestricted));
+            Assert.AreEqual(true,IsDownloadClusterOk(VideoIds.ContainsDashManifest));
+            Assert.AreEqual(true,IsDownloadClusterOk(VideoIds.ContainsHighQualityStreams));
+            Assert.AreEqual(true,IsDownloadClusterOk(VideoIds.RatingDisabled));
+            Assert.AreEqual(true,IsDownloadClusterOk(VideoIds.Omnidirectional));
+        }
+        private static bool IsDownloadClusterOk(WebmToOpus webmToOpus)
+        {
             webmToOpus.DownloadClusterPositions().Wait();
-            var clustersPositions = webmToOpus.ClusterPositions;
-            var clusters = webmToOpus.GetClusters().Result;
-            Assert.IsNotNull(clustersPositions);
+            return webmToOpus.ClusterPositions.Count > 0;
         }
     }
 }

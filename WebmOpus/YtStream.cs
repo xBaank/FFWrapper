@@ -42,7 +42,7 @@ namespace WebmOpus
             return streamInfo.Url;
         }
 
-        public YtStream(string url) : base((int)GetSize(url).Result)
+        public YtStream(string url) : base((int)GetSize(url).GetAwaiter().GetResult())
         {
             httpClient = new HttpClient();
             httpClient.BaseAddress = new Uri(url);
@@ -53,10 +53,23 @@ namespace WebmOpus
 
         private static async Task<long> GetSize(string url)
         {
-            var request = HttpWebRequest.CreateHttp(url);
-            request.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1";
-            var response = (HttpWebResponse)(await request.GetResponseAsync());
-            var length = response.ContentLength;
+            bool isError = true;
+            long length  = 0;
+            do
+            {
+                try
+                {
+                    var request = HttpWebRequest.CreateHttp(url);
+                    request.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1";
+                    var response = (HttpWebResponse)(await request.GetResponseAsync());
+                    length = response.ContentLength;
+                    isError = false;
+                }
+                catch(Exception ex)
+                {
+                    isError = true;
+                }
+            } while (isError);
             return length;
         }
 
