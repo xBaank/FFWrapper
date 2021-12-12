@@ -11,7 +11,7 @@ using WebmOpus;
 using WebmOpus.Models;
 using YoutubeExplode;
 
-namespace yt_dlp_POC
+namespace WebmPoc
 {
     public class Program
     {
