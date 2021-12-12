@@ -69,6 +69,11 @@ namespace WebmOpus
             ytStream = stream;
         }
 
+        public WebmToOpus(string url)
+        {
+            ytStream = new YtStream(url);
+        }
+
         private ulong GetSeekHead(MemoryStream memoryStream)
         {
             EbmlReader ebmlReader = new EbmlReader(memoryStream);

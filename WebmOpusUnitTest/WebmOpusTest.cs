@@ -9,13 +9,24 @@ namespace WebmOpusUnitTest
         [TestMethod]
         public void DownloadClustersPositionsTest()
         {
-            Assert.AreEqual(true,IsDownloadClusterOk(VideoIds.Normal));
-            //Assert.AreEqual(true,IsDownloadClusterOk(VideoIds.LiveStream));
-            Assert.AreEqual(true,IsDownloadClusterOk(VideoIds.AgeRestricted));
-            Assert.AreEqual(true,IsDownloadClusterOk(VideoIds.ContainsDashManifest));
-            Assert.AreEqual(true,IsDownloadClusterOk(VideoIds.ContainsHighQualityStreams));
-            Assert.AreEqual(true,IsDownloadClusterOk(VideoIds.RatingDisabled));
-            Assert.AreEqual(true,IsDownloadClusterOk(VideoIds.Omnidirectional));
+            string normal;
+            string ageRestricted;
+            string containsDashManifes;
+            string ratingDisabled;
+            string omniDirectional;
+            Assert.IsNotNull(normal = YtStream.GetSongUrl(VideoIds.Normal).GetAwaiter().GetResult());
+            Assert.IsNotNull(ageRestricted = YtStream.GetSongUrl(VideoIds.AgeRestricted).GetAwaiter().GetResult());
+            Assert.IsNotNull(containsDashManifes = YtStream.GetSongUrl(VideoIds.ContainsHighQualityStreams).GetAwaiter().GetResult());
+            Assert.IsNotNull(ratingDisabled = YtStream.GetSongUrl(VideoIds.RatingDisabled).GetAwaiter().GetResult());
+            Assert.IsNotNull(omniDirectional = YtStream.GetSongUrl(VideoIds.Omnidirectional).GetAwaiter().GetResult());
+            Assert.IsTrue(IsDownloadClusterOk(new WebmToOpus(normal)));
+            Assert.IsTrue(IsDownloadClusterOk(new WebmToOpus(ageRestricted)));
+            Assert.IsTrue(IsDownloadClusterOk(new WebmToOpus(containsDashManifes)));
+            Assert.IsTrue(IsDownloadClusterOk(new WebmToOpus(ratingDisabled)));
+            Assert.IsTrue(IsDownloadClusterOk(new WebmToOpus(omniDirectional)));
+
+
+
         }
         private static bool IsDownloadClusterOk(WebmToOpus webmToOpus)
         {

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using WebmOpus.Models;
 using YoutubeExplode;
 using YoutubeExplode.Videos.Streams;
+using YoutubeExplode.Exceptions;
 
 namespace WebmOpus
 {
@@ -29,17 +30,23 @@ namespace WebmOpus
         /// </summary>
         /// <param name="query"></param>
         /// <returns>El stream sin reserva de memoria</returns>
-        public async static Task<string> GetSongUrl(string query)
+        public async static Task<string?> GetSongUrl(string query)
         {
+            try
+            {
 
-            YoutubeClient youtubeClient = new YoutubeClient();
-            HttpClient httpClient = new HttpClient();
-            var queryresult = await youtubeClient.Search.GetVideosAsync(query).FirstOrDefaultAsync();
-            var video = await youtubeClient.Videos.Streams.GetManifestAsync(queryresult.Id);
+                YoutubeClient youtubeClient = new YoutubeClient();
+                var queryresult = await youtubeClient.Search.GetVideosAsync(query).FirstOrDefaultAsync();
+                var video = await youtubeClient.Videos.Streams.GetManifestAsync(queryresult.Id);
 
 
-            var streamInfo = video.GetAudioOnlyStreams().Where(i => i.Container == Container.WebM && i.AudioCodec == "opus").GetWithHighestBitrate();
-            return streamInfo.Url;
+                var streamInfo = video.GetAudioOnlyStreams().Where(i => i.Container == Container.WebM && i.AudioCodec == "opus").GetWithHighestBitrate();
+                return streamInfo.Url;
+            }
+            catch (VideoUnavailableException ex)
+            {
+                return null;
+            }
         }
 
         public YtStream(string url) : base((int)GetSize(url).GetAwaiter().GetResult())

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using WebmOpus;
 using WebmOpus.Models;
+using YoutubeExplode;
 
 namespace yt_dlp_POC
 {
@@ -24,13 +25,30 @@ namespace yt_dlp_POC
                         PrintHelp();
                         break;
                     default:
-                        YtStream stream = new YtStream(YtStream.GetSongUrl("rXMX4YJ7Lks").GetAwaiter().GetResult());
+                        //SkRSXFQerZs
+                        //rXMX4YJ7Lks
+                        int errorCount = 0;
+                        for (int i = 0; i < 100; i++)
+                        {
+                            try
+                            {
+                                YoutubeClient youtubeClient = new YoutubeClient();
+                                youtubeClient.Videos.Streams.GetManifestAsync("SkRSXFQerZs").GetAwaiter().GetResult();
+                                Thread.Sleep(1000);
+                            }
+                            catch (Exception ex)
+                            {
+                                errorCount++;
+                            }
+                        }
+                        YtStream stream = new YtStream(YtStream.GetSongUrl("SkRSXFQerZs").GetAwaiter().GetResult());
                         WebmToOpus opus = new WebmToOpus(stream);
                         List<OpusPacket> opusPackets = new List<OpusPacket>();
                         opus.DownloadClusterPositions().Wait();
-
                         foreach(var clusterPos in opus.ClusterPositions)
                         {
+                            long percentage = (long)(((float)clusterPos.ClusterPos / stream.Size) * 100);
+                            Console.WriteLine($"{percentage}%");
                             var cluster = opus.DownloadCluster(clusterPos).GetAwaiter().GetResult();
                             opusPackets.AddRange(cluster.Packets);
                         }
