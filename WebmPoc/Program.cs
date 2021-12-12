@@ -25,23 +25,7 @@ namespace WebmPoc
                         PrintHelp();
                         break;
                     default:
-                        //SkRSXFQerZs
-                        //rXMX4YJ7Lks
-                        int errorCount = 0;
-                        for (int i = 0; i < 100; i++)
-                        {
-                            try
-                            {
-                                YoutubeClient youtubeClient = new YoutubeClient();
-                                youtubeClient.Videos.Streams.GetManifestAsync("SkRSXFQerZs").GetAwaiter().GetResult();
-                                Thread.Sleep(1000);
-                            }
-                            catch (Exception ex)
-                            {
-                                errorCount++;
-                            }
-                        }
-                        YtStream stream = new YtStream(YtStream.GetSongUrl("SkRSXFQerZs").GetAwaiter().GetResult());
+                        YtStream stream = new YtStream("https://www.youtube.com/watch?v=mYEA5A0Bjyo");
                         WebmToOpus opus = new WebmToOpus(stream);
                         List<OpusPacket> opusPackets = new List<OpusPacket>();
                         opus.DownloadClusterPositions().Wait();
@@ -53,6 +37,9 @@ namespace WebmPoc
                             opusPackets.AddRange(cluster.Packets);
                         }
 
+                        //This part convert the opus into raw pcm and saves it into a wav file
+                        //THIS IMPLEMENTATION TAKES TOO MUCH MEMORY USE!!!
+                        Console.WriteLine("Converting...");
                         byte[] pcmBufferBytes = WebmToOpus.GetPcm(opusPackets, opus.OpusFormat);
                         MemoryStream memoryStream = new MemoryStream(pcmBufferBytes);
                         var rawSourceWaveStream = new RawSourceWaveStream(pcmBufferBytes, 0, pcmBufferBytes.Length, new WaveFormat((int)opus.OpusFormat.sampleFrequency, opus.OpusFormat.channels));
