@@ -269,8 +269,7 @@ namespace WebmOpus
             List<OpusPacket> opusPacketsCluster = new List<OpusPacket>();
             long posCluster = (long)clusterPosition.ClusterPos;
             int nextClusterIndex = clusterPositions.IndexOf(clusterPosition) + 1;
-            long nextPos = 0;
-
+            long nextPos;
             if (nextClusterIndex < clusterPositions.Count)
                 nextPos = (long)clusterPositions[nextClusterIndex].ClusterPos;
             else
@@ -292,7 +291,6 @@ namespace WebmOpus
                 long nextClusterPos = clusterSize + posCluster;
 
                 //-------------POSBLOCK ES RELATIVO A LA POSICION DEL PRIMER BLOQUE----------------
-
 
                 long posBlock = FindPosition(auxStream, SIMPLEBLOCK) - startPos;
                 OpusDecoder opusDecoder = new OpusDecoder((int)OpusFormat.sampleFrequency, OpusFormat.channels);
@@ -325,16 +323,12 @@ namespace WebmOpus
                         posBlock = FindPosition(auxStream, SIMPLEBLOCK) - startPos;
                         //---------------SI POSBLOCK ES NEGATIVO ENTONCES NO HA ENCONTRADO SIGUENTE BLOQUE------------
                         isError = posBlock < 0;
-
                     }
-
                 }
                 //------------------RESETEA LA POSICION AL BLOQUE Y SALE DEL CONTENEDOR--------------------
-
                 ebmlReader.LeaveContainer();
-
-
             }
+
             Cluster cluster = new Cluster(opusPacketsCluster, clusterPosition.TimeStamp);
             clusterPosition.IsClusterDownloaded = true;
             OnClusterDownloaded?.Invoke(this,cluster);
@@ -414,16 +408,6 @@ namespace WebmOpus
             auxStream.Seek(auxStream.Position + 1, SeekOrigin.Begin); //omite los flags
             ebmlReader.ReadBinary(opusBuffer, 0, opusBuffer.Length);
             return new OpusPacket(opusBuffer, timeSpanInMs);
-        }
-        /// <summary>
-        /// Espera hasta que se descargue cierta cantidad de bytes
-        /// </summary>
-        /// <param name="songStream">stream que esta descargando los datos</param>
-        /// <param name="bytes">bytes hasta los que esperar</param>
-        private void WaitForDownloadedBytes(long bytes)
-        {
-            while (ytStream.DownloadedBytes < bytes) { }
-
         }
         /// <summary>
         /// Entra al cluster

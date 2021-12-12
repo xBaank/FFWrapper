@@ -1,37 +1,37 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using WebmOpus;
+using WebmOpus.Exceptions;
+using Xunit;
 
 namespace WebmOpusUnitTest
 {
-    [TestClass]
     public class WebmOpusTest
     {
-        [TestMethod]
-        public void DownloadClustersPositionsTest()
+        [Theory]
+        [InlineData(VideoIds.Normal)]
+        [InlineData(VideoIds.AgeRestricted)]
+        [InlineData(VideoIds.RatingDisabled)]
+        [InlineData(VideoIds.EmbedRestrictedByAuthor)]
+        [InlineData(VideoIds.EmbedRestrictedByYouTube)]
+        [InlineData(VideoIds.ContainsClosedCaptions)]
+        [InlineData(VideoIds.ContainsDashManifest)]
+        [InlineData(VideoIds.ContainsHighQualityStreams)]
+        [InlineData(VideoIds.LiveStreamRecording)]
+        [InlineData(VideoIds.HighDynamicRange)]
+        [InlineData(VideoIds.Omnidirectional)]
+        public void ClustersShouldDownload (string videoId)
         {
-            string normal;
-            string ageRestricted;
-            string containsDashManifes;
-            string ratingDisabled;
-            string omniDirectional;
-            Assert.IsNotNull(normal = YtStream.GetSongUrl(VideoIds.Normal).GetAwaiter().GetResult());
-            Assert.IsNotNull(ageRestricted = YtStream.GetSongUrl(VideoIds.AgeRestricted).GetAwaiter().GetResult());
-            Assert.IsNotNull(containsDashManifes = YtStream.GetSongUrl(VideoIds.ContainsHighQualityStreams).GetAwaiter().GetResult());
-            Assert.IsNotNull(ratingDisabled = YtStream.GetSongUrl(VideoIds.RatingDisabled).GetAwaiter().GetResult());
-            Assert.IsNotNull(omniDirectional = YtStream.GetSongUrl(VideoIds.Omnidirectional).GetAwaiter().GetResult());
-            Assert.IsTrue(IsDownloadClusterOk(new WebmToOpus(normal)));
-            Assert.IsTrue(IsDownloadClusterOk(new WebmToOpus(ageRestricted)));
-            Assert.IsTrue(IsDownloadClusterOk(new WebmToOpus(containsDashManifes)));
-            Assert.IsTrue(IsDownloadClusterOk(new WebmToOpus(ratingDisabled)));
-            Assert.IsTrue(IsDownloadClusterOk(new WebmToOpus(omniDirectional)));
-
-
-
+            WebmToOpus webmToOpus = new WebmToOpus(videoId);
+            var clusters = webmToOpus.GetClusters().GetAwaiter().GetResult();
+            Assert.True(clusters.Count > 0 && clusters.Count == webmToOpus.ClusterPositions.Count);
         }
-        private static bool IsDownloadClusterOk(WebmToOpus webmToOpus)
+        [Theory]
+        [InlineData(VideoIds.NonExisting)]
+        [InlineData(VideoIds.Private)]
+        [InlineData(VideoIds.Unlisted)]
+        public void ClustersShouldThrowException (string videoId)
         {
-            webmToOpus.DownloadClusterPositions().Wait();
-            return webmToOpus.ClusterPositions.Count > 0;
+            Assert.Throws<YtStreamException>(() => new WebmToOpus(videoId));   
         }
     }
 }
