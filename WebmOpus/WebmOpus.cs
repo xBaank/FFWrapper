@@ -44,6 +44,8 @@ namespace WebmOpus
 
         //--------VARIABLES----------- 
         List<ClusterPosition> clusterPositions = new List<ClusterPosition>();
+        OpusDecoder opusDecoder;
+
         int currentDecodingIndex = 0;
         bool clusterStarted = false;
         private YtStream ytStream;
@@ -195,21 +197,6 @@ namespace WebmOpus
                     long posTrackEntry = FindPosition(memoryStream, TRACKENTRY);
                     ebmlReader.ReadAt(0);
                     ebmlReader.EnterContainer();
-                    //ebmlReader.ReadAt(0);
-                    //ulong trackNumber = ebmlReader.ReadUInt();
-
-                    //var startPos = ebmlReader.ElementPosition;
-                    //ebmlReader.ReadAt(memoryStream.Position-startPos);
-
-                    //ulong trackUID = ebmlReader.ReadUInt();
-                    //ebmlReader.ReadAt(memoryStream.Position - startPos);
-
-                    //ulong trackType = ebmlReader.ReadUInt();
-                    //ebmlReader.ReadAt(memoryStream.Position - startPos);
-
-                    //ulong flagLacing = ebmlReader.ReadUInt();
-                    //ebmlReader.ReadAt(memoryStream.Position - startPos);
-
                     long posCodec = FindPosition(memoryStream, CODECID);
                     ebmlReader.ReadAt(0);
                     codec = ebmlReader.ReadUtf();
@@ -260,6 +247,8 @@ namespace WebmOpus
             {
                 OpusFormat opusFormat = GetOpusFormat(auxStream);
                 OpusFormat = opusFormat;
+                opusDecoder = new OpusDecoder((int)opusFormat.sampleFrequency, opusFormat.channels);
+
                 GetClusterPositions(auxStream, posToAdd);
             }
         }
@@ -340,9 +329,8 @@ namespace WebmOpus
         /// </summary>
         /// <param name="opusPackets"></param>
         /// <returns>Array de bytes decodificado</returns>
-        public static byte[] GetPcm(List<OpusPacket> opusPackets, OpusFormat opusFormat)
+        public byte[] GetPcm(List<OpusPacket> opusPackets)
         {
-            OpusDecoder opusDecoder = new OpusDecoder((int)opusFormat.sampleFrequency, opusFormat.channels);
             List<byte> pcm = new List<byte>();
 
             foreach (var opus in opusPackets)
@@ -362,9 +350,8 @@ namespace WebmOpus
 
             return pcm.ToArray();
         }
-        public static byte[] GetPcm(OpusPacket opusPacket, OpusFormat opusFormat)
+        public byte[] GetPcm(OpusPacket opusPacket)
         {
-            OpusDecoder opusDecoder = new OpusDecoder((int)opusFormat.sampleFrequency, opusFormat.channels);
             byte[] pcm = new byte[0];
 
 
