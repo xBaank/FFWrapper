@@ -45,15 +45,13 @@ namespace WebmOpus
         //--------VARIABLES----------- 
         List<ClusterPosition> clusterPositions = new List<ClusterPosition>();
         OpusDecoder opusDecoder;
-
-        int currentDecodingIndex = 0;
-        bool clusterStarted = false;
         private YtStream ytStream;
-        private bool isClustersDownloaded = false;
+
 
         //--------PROPIEDADES--------
         public bool HasFinished { get; private set; }
         public OpusFormat OpusFormat { get; private set; }
+        public int? Bitrate { get { return ytStream.Bitrate; } }
         public List<ClusterPosition> ClusterPositions { get { return clusterPositions; } }
 
         //--------EVENTOS-----------
@@ -215,44 +213,48 @@ namespace WebmOpus
         /// </summary>
         /// <param name="clusters">List of clusters that will be filled with packets</param>
         /// <returns></returns>
-        public async Task<List<Cluster>> GetClusters()
+        public async Task<List<Cluster>> GetClusters(CancellationToken cancellationToken = default)
         {
             List<Cluster> clusters = new List<Cluster>();
-            await DownloadClusterPositions();
-            foreach(var clusterPos in clusterPositions)
-               clusters.Add(await DownloadCluster(clusterPos));
-            HasFinished = true;
-            OnFinished?.Invoke(this);
+            await DownloadClusterPositions(cancellationToken);
+            foreach (var clusterPos in clusterPositions)
+            {
+                var cluster = await DownloadCluster(clusterPos, cancellationToken);
+                if (!cancellationToken.IsCancellationRequested)
+                    clusters.Add(cluster);
+            }
+            HasFinished = !cancellationToken.IsCancellationRequested;
+            if(!cancellationToken.IsCancellationRequested)
+                OnFinished?.Invoke(this);
             return clusters;
         }
         /// <summary>
         /// Start Downloading all the content and calling the events
         /// </summary>
         /// <returns></returns>
-        public async Task GetPackets()
+        public async Task GetPackets(CancellationToken cancellationToken = default)
         {
-            await DownloadClusterPositions();
+            await DownloadClusterPositions(cancellationToken);
             foreach (var clusterPos in clusterPositions)
-                await DownloadCluster(clusterPos);
+                await DownloadCluster(clusterPos,cancellationToken);
             HasFinished = true;
             OnFinished?.Invoke(this);
         }
 
-        public async Task DownloadClusterPositions()
+        public async Task DownloadClusterPositions(CancellationToken cancellationToken = default)
         {
             byte[] buffer = await ytStream.DownloadClusterPositions();
             MemoryStream auxStream = new MemoryStream(buffer);
             ulong posToAdd = GetSeekHead(auxStream);
-            if (IsSupportedCodec(auxStream))
+            if (IsSupportedCodec(auxStream) && !cancellationToken.IsCancellationRequested)
             {
-                OpusFormat opusFormat = GetOpusFormat(auxStream);
-                OpusFormat = opusFormat;
-                opusDecoder = new OpusDecoder((int)opusFormat.sampleFrequency, opusFormat.channels);
+                OpusFormat = GetOpusFormat(auxStream);
+                opusDecoder = new OpusDecoder((int)OpusFormat.sampleFrequency, OpusFormat.channels);
 
                 GetClusterPositions(auxStream, posToAdd);
             }
         }
-        public async Task<Cluster> DownloadCluster(ClusterPosition clusterPosition)
+        public async Task<Cluster> DownloadCluster(ClusterPosition clusterPosition,CancellationToken cancellationToken = default)
         {
             
             List<OpusPacket> opusPacketsCluster = new List<OpusPacket>();
@@ -264,11 +266,11 @@ namespace WebmOpus
             else
                 nextPos = ytStream.Capacity;
 
-            byte[] buffer = await ytStream.DownloadCluster((ulong)posCluster, (ulong)nextPos);
+            byte[] buffer = await ytStream.DownloadCluster((ulong)posCluster, (ulong)nextPos,cancellationToken);
                 
             MemoryStream auxStream = new MemoryStream(buffer);
             //checkea si ya se ha procesado el cluster
-            if (posCluster != ERRORCODE)
+            if (posCluster != ERRORCODE && !cancellationToken.IsCancellationRequested)
             {
                 EbmlReader ebmlReader = new EbmlReader(auxStream);
                 long clusterSize = EnterContainer(ebmlReader, 0);
@@ -284,12 +286,12 @@ namespace WebmOpus
                 long posBlock = FindPosition(auxStream, SIMPLEBLOCK) - startPos;
                 OpusDecoder opusDecoder = new OpusDecoder((int)OpusFormat.sampleFrequency, OpusFormat.channels);
                 bool isError = false;
-                while (!isError)
+                while (!isError && !cancellationToken.IsCancellationRequested)
                 {
                     //------------SI LA POSICION DEL STREAM ES MAYOR A A LA DEL SIGUIENTE CLUSTER ENTONCES ERA EL ULTIMO CLUSTER--------
                     isError = auxStream.Position > nextClusterPos;
 
-                    if (!isError)
+                    if (!isError && !cancellationToken.IsCancellationRequested)
                     {
                         try
                         {
@@ -297,7 +299,7 @@ namespace WebmOpus
                         }
                         catch { isError = true; }
 
-                        if (!isError)
+                        if (!isError && !cancellationToken.IsCancellationRequested)
                         {
                             try
                             {
@@ -319,8 +321,9 @@ namespace WebmOpus
             }
 
             Cluster cluster = new Cluster(opusPacketsCluster, clusterPosition.TimeStamp);
-            clusterPosition.IsClusterDownloaded = true;
-            OnClusterDownloaded?.Invoke(this,cluster);
+            clusterPosition.IsClusterDownloaded = !cancellationToken.IsCancellationRequested;
+            if(!cancellationToken.IsCancellationRequested)
+                OnClusterDownloaded?.Invoke(this,cluster);
             return cluster;
             
         }

@@ -22,13 +22,14 @@ namespace WebmOpus
 
         public bool ClusterPositionsDownloaded { get; private set; }
         public int Size { get; private set; }
+        public int? Bitrate { get; private set; }
 
         /// <summary>
         /// Da la url de descarga
         /// </summary>
         /// <param name="query"></param>
         /// <returns>Url de descarga o nulo si no se pudo encontrar</returns>
-        public async static Task<string> GetSongUrl(string query)
+        public async static Task<IStreamInfo> GetSongUrl(string query)
         {
                 YoutubeClient youtubeClient = new YoutubeClient();
                 var queryresult = await youtubeClient.Search.GetVideosAsync(query).FirstOrDefaultAsync();
@@ -36,21 +37,23 @@ namespace WebmOpus
                 if (queryresult == null)
                     throw new YtStreamException($"Couldn't find any video for {query}");
                 var video = await youtubeClient.Videos.Streams.GetManifestAsync(queryresult.Id);
-
-                var streamInfo = video.GetAudioOnlyStreams().Where(i => i.Container == Container.WebM && i.AudioCodec == "opus").GetWithHighestBitrate();
-                return streamInfo.Url;
+                var streamInfo = video.GetAudioOnlyStreams().Where(i => i.Container == Container.WebM && i.AudioCodec == "opus").OrderBy(i => i.Bitrate.BitsPerSecond).FirstOrDefault();
+                return streamInfo;
         }
 
-        public YtStream(string urlOrQuery) : base(GetSize(ref urlOrQuery))
+        public YtStream(string urlOrQuery,int? bitrate = null) : base(GetSize(ref urlOrQuery,ref bitrate))
         {
             httpClient = new HttpClient();
             httpClient.BaseAddress = new Uri(urlOrQuery);
             Size = Capacity;
+            Bitrate = bitrate;
         }
 
-        private static int GetSize(ref string urlOrQuery)
+        private static int GetSize(ref string urlOrQuery,ref int? bitrate)
         {
-            urlOrQuery =  GetSongUrl(urlOrQuery).GetAwaiter().GetResult();
+            var info = GetSongUrl(urlOrQuery).GetAwaiter().GetResult();
+            urlOrQuery = info.Url;
+            bitrate = (int?)info.Bitrate.BitsPerSecond;
             bool isError = true;
             long length = 0;
             for (int i = 0; i < 5 && isError; i++)
@@ -76,13 +79,13 @@ namespace WebmOpus
             return (int)length;
         }
 
-        internal async Task<byte[]> DownloadClusterPositions()
+        internal async Task<byte[]> DownloadClusterPositions(CancellationToken cancellationToken = default)
         {
             HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
             httpRequestMessage.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(0, CLUSTERPOSLENGHT - 1);
 
 
-            var responseMessage = await httpClient.SendAsync(httpRequestMessage);
+            var responseMessage = await httpClient.SendAsync(httpRequestMessage,cancellationToken);
             byte[] auxBuffer = await responseMessage.Content.ReadAsByteArrayAsync();
             base.Position = 0;
             base.Write(auxBuffer, 0, auxBuffer.Length);
@@ -91,13 +94,13 @@ namespace WebmOpus
             return auxBuffer;
         }
 
-        internal async Task<byte[]> DownloadCluster(ulong from, ulong to)
+        internal async Task<byte[]> DownloadCluster(ulong from, ulong to,CancellationToken cancellationToken = default)
         {
             HttpRequestMessage httpRequestMessage = new HttpRequestMessage();
             httpRequestMessage.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue((long?)from, (long?)to);
 
 
-            var responseMessage = await httpClient.SendAsync(httpRequestMessage);
+            var responseMessage = await httpClient.SendAsync(httpRequestMessage,cancellationToken);
             byte[] auxBuffer = await responseMessage.Content.ReadAsByteArrayAsync();
             base.Position = (long)from;
             base.Write(auxBuffer, 0, auxBuffer.Length);
