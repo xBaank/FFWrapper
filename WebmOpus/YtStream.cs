@@ -89,8 +89,9 @@ namespace WebmOpus
             byte[] auxBuffer = await responseMessage.Content.ReadAsByteArrayAsync();
             base.Position = 0;
             base.Write(auxBuffer, 0, auxBuffer.Length);
-            ClusterPositionsDownloaded = true;
-
+            ClusterPositionsDownloaded = !cancellationToken.IsCancellationRequested;
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException();
             return auxBuffer;
         }
 

@@ -224,8 +224,11 @@ namespace WebmOpus
                     clusters.Add(cluster);
             }
             HasFinished = !cancellationToken.IsCancellationRequested;
-            if(!cancellationToken.IsCancellationRequested)
+            if (HasFinished)
                 OnFinished?.Invoke(this);
+            else
+                throw new OperationCanceledException();
+
             return clusters;
         }
         /// <summary>
@@ -237,13 +240,17 @@ namespace WebmOpus
             await DownloadClusterPositions(cancellationToken);
             foreach (var clusterPos in clusterPositions)
                 await DownloadCluster(clusterPos,cancellationToken);
-            HasFinished = true;
-            OnFinished?.Invoke(this);
+            HasFinished = !cancellationToken.IsCancellationRequested;
+            if(HasFinished)
+                OnFinished?.Invoke(this);
+            else
+                throw new OperationCanceledException();
+
         }
 
         public async Task DownloadClusterPositions(CancellationToken cancellationToken = default)
         {
-            byte[] buffer = await ytStream.DownloadClusterPositions();
+            byte[] buffer = await ytStream.DownloadClusterPositions(cancellationToken);
             MemoryStream auxStream = new MemoryStream(buffer);
             ulong posToAdd = GetSeekHead(auxStream);
             if (IsSupportedCodec(auxStream) && !cancellationToken.IsCancellationRequested)
@@ -253,6 +260,8 @@ namespace WebmOpus
 
                 GetClusterPositions(auxStream, posToAdd);
             }
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException();
         }
         public async Task<Cluster> DownloadCluster(ClusterPosition clusterPosition,CancellationToken cancellationToken = default)
         {
@@ -321,9 +330,14 @@ namespace WebmOpus
             }
 
             Cluster cluster = new Cluster(opusPacketsCluster, clusterPosition.TimeStamp);
-            clusterPosition.IsClusterDownloaded = !cancellationToken.IsCancellationRequested;
-            if(!cancellationToken.IsCancellationRequested)
-                OnClusterDownloaded?.Invoke(this,cluster);
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                clusterPosition.IsClusterDownloaded = true;
+                OnClusterDownloaded?.Invoke(this, cluster);
+            }
+            else
+                throw new OperationCanceledException();
+
             return cluster;
             
         }
