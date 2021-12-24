@@ -18,6 +18,7 @@ namespace WebmOpusUnitTest
         [InlineData(VideoIds.ContainsHighQualityStreams)]
         [InlineData(VideoIds.LiveStreamRecording)]
         [InlineData(VideoIds.HighDynamicRange)]
+        [InlineData(VideoIds.JujutsuKaisen)]
         [InlineData(VideoIds.Omnidirectional)]
         public void ClustersShouldDownload (string videoId)
         {

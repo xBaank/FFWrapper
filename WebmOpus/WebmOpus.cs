@@ -195,10 +195,28 @@ namespace WebmOpus
                     long posTrackEntry = FindPosition(memoryStream, TRACKENTRY);
                     ebmlReader.ReadAt(0);
                     ebmlReader.EnterContainer();
-                    long posCodec = FindPosition(memoryStream, CODECID);
                     ebmlReader.ReadAt(0);
-                    codec = ebmlReader.ReadUtf();
-                    isFound = codec == CODECNAME;
+                    ulong trackNumber = ebmlReader.ReadUInt();
+
+                    var startPos = ebmlReader.ElementPosition;
+                    ebmlReader.ReadAt(memoryStream.Position - startPos);
+
+                    ulong trackUID = ebmlReader.ReadUInt();
+                    ebmlReader.ReadAt(memoryStream.Position - startPos);
+
+                    ulong trackType = ebmlReader.ReadUInt();
+                    ebmlReader.ReadAt(memoryStream.Position - startPos);
+
+                    ulong flagLacing = ebmlReader.ReadUInt();
+                    ebmlReader.ReadAt(memoryStream.Position - startPos);
+
+                    string language = ebmlReader.ReadUtf();
+                    ebmlReader.ReadAt(memoryStream.Position - startPos);
+
+                    string codecID = ebmlReader.ReadUtf();
+                    ebmlReader.ReadAt(memoryStream.Position - startPos);
+
+                    isFound = codecID == CODECNAME;
                 }
                 catch
                 {
@@ -253,13 +271,18 @@ namespace WebmOpus
             byte[] buffer = await ytStream.DownloadClusterPositions(cancellationToken);
             MemoryStream auxStream = new MemoryStream(buffer);
             ulong posToAdd = GetSeekHead(auxStream);
-            if (IsSupportedCodec(auxStream) && !cancellationToken.IsCancellationRequested)
+            bool isSupportedCodec = IsSupportedCodec(auxStream);
+            if (!isSupportedCodec)
+                throw new NotSupportedException("Codec not supported");
+
+            if (isSupportedCodec && !cancellationToken.IsCancellationRequested)
             {
                 OpusFormat = GetOpusFormat(auxStream);
                 opusDecoder = new OpusDecoder((int)OpusFormat.sampleFrequency, OpusFormat.channels);
 
                 GetClusterPositions(auxStream, posToAdd);
             }
+
             if (cancellationToken.IsCancellationRequested)
                 throw new OperationCanceledException();
         }

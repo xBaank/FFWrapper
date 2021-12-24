@@ -25,7 +25,7 @@ namespace WebmPoc
                         PrintHelp();
                         break;
                     default:
-                        YtStream stream = new YtStream("https://www.youtube.com/watch?v=zRs58D34OLY");
+                        YtStream stream = new YtStream("https://www.youtube.com/watch?v=KJWrvoMlHvY");
                         WebmToOpus opus = new WebmToOpus(stream);
                         List<OpusPacket> opusPackets = new List<OpusPacket>();
                         opus.DownloadClusterPositions().Wait();
