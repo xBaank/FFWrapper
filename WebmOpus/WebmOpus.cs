@@ -44,14 +44,14 @@ namespace WebmOpus
 
         //--------VARIABLES----------- 
         List<ClusterPosition> clusterPositions = new List<ClusterPosition>();
-        int currentDecodingIndex = 0;
-        bool clusterStarted = false;
+        OpusDecoder opusDecoder;
         private YtStream ytStream;
-        private bool isClustersDownloaded = false;
+
 
         //--------PROPIEDADES--------
         public bool HasFinished { get; private set; }
         public OpusFormat OpusFormat { get; private set; }
+        public int? Bitrate { get { return ytStream.Bitrate; } }
         public List<ClusterPosition> ClusterPositions { get { return clusterPositions; } }
 
         //--------EVENTOS-----------
@@ -67,6 +67,11 @@ namespace WebmOpus
         {
             
             ytStream = stream;
+        }
+
+        public WebmToOpus(string url)
+        {
+            ytStream = new YtStream(url);
         }
 
         private ulong GetSeekHead(MemoryStream memoryStream)
@@ -178,8 +183,7 @@ namespace WebmOpus
             bool isFound = false;
             string codec = String.Empty;
             long posTracks = 0;
-            while (!isFound && posTracks != ERRORCODE)
-            {
+            
                 try
                 {
                     EbmlReader ebmlReader = new EbmlReader(memoryStream);
@@ -190,32 +194,34 @@ namespace WebmOpus
                     long posTrackEntry = FindPosition(memoryStream, TRACKENTRY);
                     ebmlReader.ReadAt(0);
                     ebmlReader.EnterContainer();
-                    //ebmlReader.ReadAt(0);
-                    //ulong trackNumber = ebmlReader.ReadUInt();
-
-                    //var startPos = ebmlReader.ElementPosition;
-                    //ebmlReader.ReadAt(memoryStream.Position-startPos);
-
-                    //ulong trackUID = ebmlReader.ReadUInt();
-                    //ebmlReader.ReadAt(memoryStream.Position - startPos);
-
-                    //ulong trackType = ebmlReader.ReadUInt();
-                    //ebmlReader.ReadAt(memoryStream.Position - startPos);
-
-                    //ulong flagLacing = ebmlReader.ReadUInt();
-                    //ebmlReader.ReadAt(memoryStream.Position - startPos);
-
-                    long posCodec = FindPosition(memoryStream, CODECID);
                     ebmlReader.ReadAt(0);
-                    codec = ebmlReader.ReadUtf();
-                    isFound = codec == CODECNAME;
+                    ulong trackNumber = ebmlReader.ReadUInt();
+
+                    var startPos = ebmlReader.ElementPosition;
+                    ebmlReader.ReadAt(memoryStream.Position - startPos);
+
+                    ulong trackUID = ebmlReader.ReadUInt();
+                    ebmlReader.ReadAt(memoryStream.Position - startPos);
+
+                    ulong trackType = ebmlReader.ReadUInt();
+                    ebmlReader.ReadAt(memoryStream.Position - startPos);
+
+                    ulong flagLacing = ebmlReader.ReadUInt();
+                    ebmlReader.ReadAt(memoryStream.Position - startPos);
+
+                    string languageOrCodec = ebmlReader.ReadUtf();
+                    ebmlReader.ReadAt(memoryStream.Position - startPos);
+
+                    string codecID = ebmlReader.ReadUtf();
+                    ebmlReader.ReadAt(memoryStream.Position - startPos);
+
+                    isFound = codecID == CODECNAME || languageOrCodec == CODECNAME;
                 }
                 catch
                 {
                     isFound = false;
-                    memoryStream.Seek(posTracks + 1, SeekOrigin.Begin);
                 };
-            }
+            
             return isFound;
         }
         /// <summary>
@@ -223,62 +229,82 @@ namespace WebmOpus
         /// </summary>
         /// <param name="clusters">List of clusters that will be filled with packets</param>
         /// <returns></returns>
-        public async Task<List<Cluster>> GetClusters()
+        public async Task<List<Cluster>> GetClusters(CancellationToken cancellationToken = default)
         {
             List<Cluster> clusters = new List<Cluster>();
-            await DownloadClusterPositions();
-            foreach(var clusterPos in clusterPositions)
-               clusters.Add(await DownloadCluster(clusterPos));
-            HasFinished = true;
-            OnFinished?.Invoke(this);
+            await DownloadClusterPositions(cancellationToken);
+            foreach (var clusterPos in clusterPositions)
+            {
+                var cluster = await DownloadCluster(clusterPos, cancellationToken);
+                if (!cancellationToken.IsCancellationRequested)
+                    clusters.Add(cluster);
+            }
+            HasFinished = !cancellationToken.IsCancellationRequested;
+            if (HasFinished)
+                OnFinished?.Invoke(this);
+            else
+                throw new OperationCanceledException();
+
             return clusters;
         }
         /// <summary>
         /// Start Downloading all the content and calling the events
         /// </summary>
         /// <returns></returns>
-        public async Task GetPackets()
+        public async Task GetPackets(CancellationToken cancellationToken = default)
         {
-            await DownloadClusterPositions();
+            await DownloadClusterPositions(cancellationToken);
             foreach (var clusterPos in clusterPositions)
-                await DownloadCluster(clusterPos);
-            HasFinished = true;
-            OnFinished?.Invoke(this);
+                await DownloadCluster(clusterPos,cancellationToken);
+            HasFinished = !cancellationToken.IsCancellationRequested;
+            if(HasFinished)
+                OnFinished?.Invoke(this);
+            else
+                throw new OperationCanceledException();
+
         }
 
-        public async Task DownloadClusterPositions()
+        public async Task DownloadClusterPositions(CancellationToken cancellationToken = default)
         {
-            byte[] buffer = await ytStream.DownloadClusterPositions();
+            byte[] buffer = await ytStream.DownloadClusterPositions(cancellationToken);
             MemoryStream auxStream = new MemoryStream(buffer);
             ulong posToAdd = GetSeekHead(auxStream);
-            if (IsSupportedCodec(auxStream))
+            bool isSupportedCodec = IsSupportedCodec(auxStream);
+
+            if (!isSupportedCodec)
+                throw new NotSupportedException("Codec not supported");
+
+            if (isSupportedCodec && !cancellationToken.IsCancellationRequested)
             {
-                OpusFormat opusFormat = GetOpusFormat(auxStream);
-                OpusFormat = opusFormat;
+                OpusFormat = GetOpusFormat(auxStream);
+                opusDecoder = new OpusDecoder((int)OpusFormat.sampleFrequency, OpusFormat.channels);
+
                 GetClusterPositions(auxStream, posToAdd);
             }
+
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException();
         }
-        public async Task<Cluster> DownloadCluster(ClusterPosition clusterPosition)
+        public async Task<Cluster> DownloadCluster(ClusterPosition clusterPosition,CancellationToken cancellationToken = default)
         {
             
             List<OpusPacket> opusPacketsCluster = new List<OpusPacket>();
             long posCluster = (long)clusterPosition.ClusterPos;
             int nextClusterIndex = clusterPositions.IndexOf(clusterPosition) + 1;
-            long nextPos = 0;
-
+            long nextPos;
             if (nextClusterIndex < clusterPositions.Count)
                 nextPos = (long)clusterPositions[nextClusterIndex].ClusterPos;
             else
                 nextPos = ytStream.Capacity;
 
-            byte[] buffer = await ytStream.DownloadCluster((ulong)posCluster, (ulong)nextPos);
+            byte[] buffer = await ytStream.DownloadCluster((ulong)posCluster, (ulong)nextPos,cancellationToken);
                 
             MemoryStream auxStream = new MemoryStream(buffer);
             //checkea si ya se ha procesado el cluster
-            if (posCluster != ERRORCODE)
+            if (posCluster != ERRORCODE && !cancellationToken.IsCancellationRequested)
             {
                 EbmlReader ebmlReader = new EbmlReader(auxStream);
-                long clusterSize = EnterCluster(ebmlReader, 0);
+                long clusterSize = EnterContainer(ebmlReader, 0);
                 var startPos = auxStream.Position;
                 //---DESCARTA EL TIMESTAMP DEL PRINCIPIO---
                 ebmlReader.ReadAt(0);
@@ -288,16 +314,15 @@ namespace WebmOpus
 
                 //-------------POSBLOCK ES RELATIVO A LA POSICION DEL PRIMER BLOQUE----------------
 
-
                 long posBlock = FindPosition(auxStream, SIMPLEBLOCK) - startPos;
                 OpusDecoder opusDecoder = new OpusDecoder((int)OpusFormat.sampleFrequency, OpusFormat.channels);
                 bool isError = false;
-                while (!isError)
+                while (!isError && !cancellationToken.IsCancellationRequested)
                 {
                     //------------SI LA POSICION DEL STREAM ES MAYOR A A LA DEL SIGUIENTE CLUSTER ENTONCES ERA EL ULTIMO CLUSTER--------
                     isError = auxStream.Position > nextClusterPos;
 
-                    if (!isError)
+                    if (!isError && !cancellationToken.IsCancellationRequested)
                     {
                         try
                         {
@@ -305,7 +330,7 @@ namespace WebmOpus
                         }
                         catch { isError = true; }
 
-                        if (!isError)
+                        if (!isError && !cancellationToken.IsCancellationRequested)
                         {
                             try
                             {
@@ -320,19 +345,21 @@ namespace WebmOpus
                         posBlock = FindPosition(auxStream, SIMPLEBLOCK) - startPos;
                         //---------------SI POSBLOCK ES NEGATIVO ENTONCES NO HA ENCONTRADO SIGUENTE BLOQUE------------
                         isError = posBlock < 0;
-
                     }
-
                 }
                 //------------------RESETEA LA POSICION AL BLOQUE Y SALE DEL CONTENEDOR--------------------
-
                 ebmlReader.LeaveContainer();
-
-
             }
+
             Cluster cluster = new Cluster(opusPacketsCluster, clusterPosition.TimeStamp);
-            clusterPosition.IsClusterDownloaded = true;
-            OnClusterDownloaded?.Invoke(this,cluster);
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                clusterPosition.IsClusterDownloaded = true;
+                OnClusterDownloaded?.Invoke(this, cluster);
+            }
+            else
+                throw new OperationCanceledException();
+
             return cluster;
             
         }
@@ -341,9 +368,8 @@ namespace WebmOpus
         /// </summary>
         /// <param name="opusPackets"></param>
         /// <returns>Array de bytes decodificado</returns>
-        public static byte[] GetPcm(List<OpusPacket> opusPackets, OpusFormat opusFormat)
+        public byte[] GetPcm(List<OpusPacket> opusPackets)
         {
-            OpusDecoder opusDecoder = new OpusDecoder((int)opusFormat.sampleFrequency, opusFormat.channels);
             List<byte> pcm = new List<byte>();
 
             foreach (var opus in opusPackets)
@@ -363,9 +389,8 @@ namespace WebmOpus
 
             return pcm.ToArray();
         }
-        public static byte[] GetPcm(OpusPacket opusPacket, OpusFormat opusFormat)
+        public byte[] GetPcm(OpusPacket opusPacket)
         {
-            OpusDecoder opusDecoder = new OpusDecoder((int)opusFormat.sampleFrequency, opusFormat.channels);
             byte[] pcm = new byte[0];
 
 
@@ -411,29 +436,17 @@ namespace WebmOpus
             return new OpusPacket(opusBuffer, timeSpanInMs);
         }
         /// <summary>
-        /// Espera hasta que se descargue cierta cantidad de bytes
-        /// </summary>
-        /// <param name="songStream">stream que esta descargando los datos</param>
-        /// <param name="bytes">bytes hasta los que esperar</param>
-        private void WaitForDownloadedBytes(long bytes)
-        {
-            while (ytStream.DownloadedBytes < bytes) { }
-
-        }
-        /// <summary>
         /// Entra al cluster
         /// </summary>
         /// <param name="ebmlReader"></param>
         /// <param name="posCluster">Posicion del cluster</param>
         /// <returns></returns>
-        private static long EnterCluster(EbmlReader ebmlReader, long posCluster)
+        private static long EnterContainer(EbmlReader ebmlReader, long posCluster)
         {
             ebmlReader.ReadAt(posCluster);
             long clusterSize = ebmlReader.ElementSize;
             ebmlReader.EnterContainer();
             return clusterSize;
-
-            //waits to download the first cluster
         }
 
         private static long FindPosition(Stream stream, byte[] byteSequence, bool reset = false)

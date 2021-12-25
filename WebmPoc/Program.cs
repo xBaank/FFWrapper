@@ -9,8 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using WebmOpus;
 using WebmOpus.Models;
+using YoutubeExplode;
 
-namespace yt_dlp_POC
+namespace WebmPoc
 {
     public class Program
     {
@@ -24,18 +25,22 @@ namespace yt_dlp_POC
                         PrintHelp();
                         break;
                     default:
-                        YtStream stream = new YtStream(YtStream.GetSongUrl(args[0]).Result);
+                        YtStream stream = new YtStream("https://www.youtube.com/watch?v=KJWrvoMlHvY");
                         WebmToOpus opus = new WebmToOpus(stream);
                         List<OpusPacket> opusPackets = new List<OpusPacket>();
                         opus.DownloadClusterPositions().Wait();
-
                         foreach(var clusterPos in opus.ClusterPositions)
                         {
+                            long percentage = (long)(((float)clusterPos.ClusterPos / stream.Size) * 100);
+                            Console.WriteLine($"{percentage}%");
                             var cluster = opus.DownloadCluster(clusterPos).GetAwaiter().GetResult();
                             opusPackets.AddRange(cluster.Packets);
                         }
 
-                        byte[] pcmBufferBytes = WebmToOpus.GetPcm(opusPackets, opus.OpusFormat);
+                        //This part convert the opus into raw pcm and saves it into a wav file
+                        //THIS IMPLEMENTATION TAKES TOO MUCH MEMORY USE!!!
+                        Console.WriteLine("Converting...");
+                        byte[] pcmBufferBytes = opus.GetPcm(opusPackets);
                         MemoryStream memoryStream = new MemoryStream(pcmBufferBytes);
                         var rawSourceWaveStream = new RawSourceWaveStream(pcmBufferBytes, 0, pcmBufferBytes.Length, new WaveFormat((int)opus.OpusFormat.sampleFrequency, opus.OpusFormat.channels));
                         WaveFileWriter.CreateWaveFile("output.wav", rawSourceWaveStream);
