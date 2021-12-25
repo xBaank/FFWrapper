@@ -183,8 +183,7 @@ namespace WebmOpus
             bool isFound = false;
             string codec = String.Empty;
             long posTracks = 0;
-            while (!isFound && posTracks != ERRORCODE)
-            {
+            
                 try
                 {
                     EbmlReader ebmlReader = new EbmlReader(memoryStream);
@@ -210,20 +209,19 @@ namespace WebmOpus
                     ulong flagLacing = ebmlReader.ReadUInt();
                     ebmlReader.ReadAt(memoryStream.Position - startPos);
 
-                    string language = ebmlReader.ReadUtf();
+                    string languageOrCodec = ebmlReader.ReadUtf();
                     ebmlReader.ReadAt(memoryStream.Position - startPos);
 
                     string codecID = ebmlReader.ReadUtf();
                     ebmlReader.ReadAt(memoryStream.Position - startPos);
 
-                    isFound = codecID == CODECNAME;
+                    isFound = codecID == CODECNAME || languageOrCodec == CODECNAME;
                 }
                 catch
                 {
                     isFound = false;
-                    memoryStream.Seek(posTracks + 1, SeekOrigin.Begin);
                 };
-            }
+            
             return isFound;
         }
         /// <summary>
