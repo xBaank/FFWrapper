@@ -270,6 +270,7 @@ namespace WebmOpus
             MemoryStream auxStream = new MemoryStream(buffer);
             ulong posToAdd = GetSeekHead(auxStream);
             bool isSupportedCodec = IsSupportedCodec(auxStream);
+
             if (!isSupportedCodec)
                 throw new NotSupportedException("Codec not supported");
 
