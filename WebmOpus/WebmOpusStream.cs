@@ -11,56 +11,34 @@ using YoutubeExplode;
 using YoutubeExplode.Videos.Streams;
 using YoutubeExplode.Exceptions;
 using System.Threading;
-using WebmOpus.Exceptions;
 
 namespace WebmOpus
 {
-    public class YtStream : MemoryStream
+    public class WebmOpusStream : MemoryStream
     {
         private const int CLUSTERPOSLENGHT = 1024 * 100;
         private HttpClient httpClient;
 
         public bool ClusterPositionsDownloaded { get; private set; }
         public int Size { get; private set; }
-        public int? Bitrate { get; private set; }
 
-        /// <summary>
-        /// Da la url de descarga
-        /// </summary>
-        /// <param name="query"></param>
-        /// <returns>Url de descarga o nulo si no se pudo encontrar</returns>
-        public async static Task<IStreamInfo> GetSongUrl(string query)
-        {
-                YoutubeClient youtubeClient = new YoutubeClient();
-                var queryresult = await youtubeClient.Search.GetVideosAsync(query).FirstOrDefaultAsync();
 
-                if (queryresult == null)
-                    throw new YtStreamException($"Couldn't find any video for {query}");
-                var video = await youtubeClient.Videos.Streams.GetManifestAsync(queryresult.Id);
-                var streamInfo = video.GetAudioOnlyStreams().Where(i => i.Container == Container.WebM && i.AudioCodec == "opus").OrderBy(i => i.Bitrate.BitsPerSecond).FirstOrDefault();
-                return streamInfo;
-        }
-
-        public YtStream(string urlOrQuery,int? bitrate = null) : base(GetSize(ref urlOrQuery,ref bitrate))
+        public WebmOpusStream(string url) : base(GetSize(url))
         {
             httpClient = new HttpClient();
-            httpClient.BaseAddress = new Uri(urlOrQuery);
+            httpClient.BaseAddress = new Uri(url);
             Size = Capacity;
-            Bitrate = bitrate;
         }
 
-        private static int GetSize(ref string urlOrQuery,ref int? bitrate)
+        private static int GetSize(string url)
         {
-            var info = GetSongUrl(urlOrQuery).GetAwaiter().GetResult();
-            urlOrQuery = info.Url;
-            bitrate = (int?)info.Bitrate.BitsPerSecond;
             bool isError = true;
             long length = 0;
             for (int i = 0; i < 5 && isError; i++)
             {
                 try
                 {
-                    var request = WebRequest.CreateHttp(urlOrQuery);
+                    var request = WebRequest.CreateHttp(url);
                     request.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1";
                     var response = (HttpWebResponse)(request.GetResponseAsync().GetAwaiter().GetResult());
                     length = response.ContentLength;
@@ -72,9 +50,6 @@ namespace WebmOpus
                     Thread.Sleep(1000);
                 }
             }
-
-            if (isError)
-                throw new YtStreamException($"Couldn't get size for {urlOrQuery}");
 
             return (int)length;
         }

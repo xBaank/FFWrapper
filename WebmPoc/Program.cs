@@ -1,15 +1,10 @@
-﻿using Concentus.Structs;
-using NAudio.Wave;
+﻿using NAudio.Wave;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using WebmOpus;
-using WebmOpus.Models;
-using YoutubeExplode;
+using WebmPOC;
 
 namespace WebmPoc
 {
@@ -25,7 +20,9 @@ namespace WebmPoc
                         PrintHelp();
                         break;
                     default:
-                        YtStream stream = new YtStream("https://www.youtube.com/watch?v=KJWrvoMlHvY");
+                        var song = YtUtils.GetSongsUrl("1b3FAg2j0As").GetAwaiter().GetResult();
+                        var streamInfo = YtUtils.GetStreamInfo(song.FirstOrDefault()).GetAwaiter().GetResult();
+                        WebmOpusStream stream = new WebmOpusStream(streamInfo.Url);
                         WebmToOpus opus = new WebmToOpus(stream);
                         List<OpusPacket> opusPackets = new List<OpusPacket>();
                         opus.DownloadClusterPositions().Wait();

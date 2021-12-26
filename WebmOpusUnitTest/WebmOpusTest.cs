@@ -1,6 +1,6 @@
 using System;
 using WebmOpus;
-using WebmOpus.Exceptions;
+using WebmPOC;
 using Xunit;
 
 namespace WebmOpusUnitTest
@@ -20,19 +20,25 @@ namespace WebmOpusUnitTest
         [InlineData(VideoIds.HighDynamicRange)]
         [InlineData(VideoIds.JujutsuKaisen)]
         [InlineData(VideoIds.Omnidirectional)]
+        [InlineData(VideoIds.PlaylistId)]
         public void ClustersShouldDownload (string videoId)
         {
-            WebmToOpus webmToOpus = new WebmToOpus(videoId);
-            var clusters = webmToOpus.GetClusters().GetAwaiter().GetResult();
-            Assert.True(clusters.Count > 0 && clusters.Count == webmToOpus.ClusterPositions.Count);
+            var songs = YtUtils.GetSongsUrl(videoId).GetAwaiter().GetResult();
+            foreach (var song in songs)
+            {
+                var streamManifest = YtUtils.GetStreamInfo(song).GetAwaiter().GetResult();
+                WebmToOpus webmToOpus = new WebmToOpus(streamManifest.Url);
+                var clusters = webmToOpus.GetClusters().GetAwaiter().GetResult();
+                Assert.True(clusters.Count > 0 && webmToOpus.ClusterPositions.Count > 0 && clusters.Count == webmToOpus.ClusterPositions.Count);
+            }
         }
         [Theory]
         [InlineData(VideoIds.NonExisting)]
         [InlineData(VideoIds.Private)]
         [InlineData(VideoIds.Unlisted)]
-        public void ClustersShouldThrowException (string videoId)
+        public void YtUtilsThrowException(string videoId)
         {
-            Assert.Throws<YtStreamException>(() => new WebmToOpus(videoId));   
+            Assert.Throws<Exception>(() => YtUtils.GetSongsUrl(videoId).GetAwaiter().GetResult());
         }
     }
 }

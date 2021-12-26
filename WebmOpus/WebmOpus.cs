@@ -45,13 +45,12 @@ namespace WebmOpus
         //--------VARIABLES----------- 
         List<ClusterPosition> clusterPositions = new List<ClusterPosition>();
         OpusDecoder opusDecoder;
-        private YtStream ytStream;
+        private WebmOpusStream ytStream;
 
 
         //--------PROPIEDADES--------
         public bool HasFinished { get; private set; }
         public OpusFormat OpusFormat { get; private set; }
-        public int? Bitrate { get { return ytStream.Bitrate; } }
         public List<ClusterPosition> ClusterPositions { get { return clusterPositions; } }
 
         //--------EVENTOS-----------
@@ -63,7 +62,7 @@ namespace WebmOpus
         /// Empieza a extraer los paquetes del stream
         /// </summary>
         /// <param name="stream">Stream</param>
-        public WebmToOpus(YtStream stream)
+        public WebmToOpus(WebmOpusStream stream)
         {
             
             ytStream = stream;
@@ -71,7 +70,7 @@ namespace WebmOpus
 
         public WebmToOpus(string url)
         {
-            ytStream = new YtStream(url);
+            ytStream = new WebmOpusStream(url);
         }
 
         private ulong GetSeekHead(MemoryStream memoryStream)

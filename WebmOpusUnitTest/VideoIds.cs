@@ -22,6 +22,7 @@ namespace WebmOpusUnitTest
         public const string RatingDisabled = "5VGm0dczmHc";
         public const string ContainsClosedCaptions = "YltHGKX80Y8";
         public const string JujutsuKaisen = "KJWrvoMlHvY";
+        public const string PlaylistId = "PL9A3ABDEAD72720E8";
         //public const string Unlisted = "IpZhObvHGJA";
         //public const string Private = "pb_hHv3fByo";
         //public const string NonExisting = "qld9w0b-1ao";
