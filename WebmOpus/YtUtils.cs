@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using YoutubeExplode;
 using YoutubeExplode.Playlists;
@@ -38,9 +39,27 @@ namespace WebmPOC
         public static async Task<IStreamInfo> GetStreamInfo(IVideo video)
         {
             YoutubeClient youtubeClient = new YoutubeClient();
-            var streamManifest = await youtubeClient.Videos.Streams.GetManifestAsync(video.Id);
-            var streamInfo = streamManifest.GetAudioOnlyStreams().Where(i => i.Container == Container.WebM && i.AudioCodec == "opus").OrderBy(i => i.Bitrate.BitsPerSecond).FirstOrDefault() ?? throw new Exception("Playable streams not found");
-            return streamInfo;
+            AudioOnlyStreamInfo? audio = null;
+            bool retry = true;
+            int retries = 5;
+            while (retries > 0 && retry == true)
+            {
+                try
+                {
+                    var streamManifest = await youtubeClient.Videos.Streams.GetManifestAsync(video.Id);
+                    audio = streamManifest.GetAudioOnlyStreams().Where(i => i.Container == Container.WebM && i.AudioCodec == "opus").OrderBy(i => i.Bitrate.BitsPerSecond).FirstOrDefault();
+                    retry = false;
+                }
+                catch 
+                {
+                    retry = true;
+                    retries--;
+                    Thread.Sleep(1000);
+                }
+            }
+            if (audio is null)
+                throw new Exception("Playable streams not found");
+            return audio;
         }
     }
 }
