@@ -2,12 +2,9 @@
 Simple Webm opus demuxer for youtube videos
 
 ## Whats this for?
-This is basiclly a demuxer and decoder for the webm youtube videos.
-## Does it work?
-I think so :V
+This is basically a demuxer and decoder for the webm youtube videos.
 ## What can be done with this?
-Weeeell,I started this because i was trying to make a music discord bot.
-But I think it can be used for making a youtube music player, converter...
+It can demuxe webm files.
 
 ### Example
 ```cs
@@ -29,7 +26,14 @@ MemoryStream memoryStream = new MemoryStream(pcmBufferBytes);
 var rawSourceWaveStream = new RawSourceWaveStream(pcmBufferBytes, 0, pcmBufferBytes.Length, new WaveFormat((int)opus.OpusFormat.sampleFrequency, opus.OpusFormat.channels));
 WaveFileWriter.CreateWaveFile("output.wav", rawSourceWaveStream);
 ```
-This is the first time I work with webm and ebml files so the code can be messy. 
+# TODO
+- [X] Audio track
+- [ ] Video track
+- [ ] Blocks and Block Groups
+- [X] Simpleblocks
+- [ ] Multiple tracks
+- [ ] Local files
+
 
 ### Libraries used
 - [EbmlReader](https://github.com/matthewn4444/EBMLReader)
