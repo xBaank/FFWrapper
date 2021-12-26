@@ -21,7 +21,7 @@ namespace WebmPoc
                         break;
                     default:
                         var song = YtUtils.GetSongsUrl("1b3FAg2j0As").GetAwaiter().GetResult();
-                        var streamInfo = YtUtils.GetStreamInfo(song.FirstOrDefault()).GetAwaiter().GetResult();
+                        var streamInfo = YtUtils.GetStreamInfo(song.FirstOrDefault().Id).GetAwaiter().GetResult();
                         WebmOpusStream stream = new WebmOpusStream(streamInfo.Url);
                         WebmToOpus opus = new WebmToOpus(stream);
                         List<OpusPacket> opusPackets = new List<OpusPacket>();

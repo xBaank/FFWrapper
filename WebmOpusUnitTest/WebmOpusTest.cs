@@ -26,7 +26,7 @@ namespace WebmOpusUnitTest
             var songs = YtUtils.GetSongsUrl(videoId).GetAwaiter().GetResult();
             foreach (var song in songs)
             {
-                var streamManifest = YtUtils.GetStreamInfo(song).GetAwaiter().GetResult();
+                var streamManifest = YtUtils.GetStreamInfo(song.Id).GetAwaiter().GetResult();
                 WebmToOpus webmToOpus = new WebmToOpus(streamManifest.Url);
                 var clusters = webmToOpus.GetClusters().GetAwaiter().GetResult();
                 Assert.True(clusters.Count > 0 && webmToOpus.ClusterPositions.Count > 0 && clusters.Count == webmToOpus.ClusterPositions.Count);
