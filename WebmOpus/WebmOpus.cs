@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Concentus.Structs;
@@ -421,7 +420,7 @@ namespace WebmOpus
         /// <param name="ebmlReader"></param>
         /// <param name="auxStream"></param>
         /// <returns>array de bytes con los datos del bloque</returns>
-        private static OpusPacket GetBuffer(EbmlReader ebmlReader, Stream auxStream, int relativeTime)
+        private OpusPacket GetBuffer(EbmlReader ebmlReader, Stream auxStream, int relativeTime)
         {
             byte[] opusBuffer = new byte[ebmlReader.ElementSize - 4];
             byte[] timeSpan = new byte[2]; // signed int16
@@ -432,7 +431,7 @@ namespace WebmOpus
             int timeSpanInMs = (BitConverter.ToInt16(timeSpan, 0) + relativeTime);
             auxStream.Seek(auxStream.Position + 1, SeekOrigin.Begin); //omite los flags
             ebmlReader.ReadBinary(opusBuffer, 0, opusBuffer.Length);
-            return new OpusPacket(opusBuffer, timeSpanInMs);
+            return new OpusPacket(opusBuffer, timeSpanInMs,OpusFormat);
         }
         /// <summary>
         /// Entra al cluster
