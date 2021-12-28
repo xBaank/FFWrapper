@@ -3,6 +3,14 @@
     "yt-dlp-POC": {
       "commandName": "Project",
       "commandLineArgs": "\"9bZkp7q19f0\""
+    },
+    "WSL": {
+      "commandName": "WSL2",
+      "environmentVariables": {},
+      "distributionName": ""
+    },
+    "Docker": {
+      "commandName": "Docker"
     }
   }
 }

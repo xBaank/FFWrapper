@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "WebmOpusUnitTest": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
