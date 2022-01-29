@@ -15,4 +15,16 @@
     <PackageReference Include="YoutubeExplode" Version="6.0.7" />
   </ItemGroup>
 
+
+	<ItemGroup>
+	  <Folder Include="FFMPEG\" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <None Update="FFMPEG\ffmpeg.exe">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 </Project>

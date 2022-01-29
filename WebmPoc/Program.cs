@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using WebmOpus;
+using WebmOpus.Models;
 using WebmPOC;
 
 namespace WebmPoc
@@ -12,6 +13,11 @@ namespace WebmPoc
     {
         public static void Main(string[] args)
         {
+            FFmpegClient fFmpegClient = new FFmpegClient(Directory.GetCurrentDirectory()+"/FFMPEG/ffmpeg.exe");
+            var song = YtUtils.GetSongsUrl("9bZkp7q19f0").GetAwaiter().GetResult();
+            var streamInfo = YtUtils.GetStreamInfo(song.FirstOrDefault().Id).GetAwaiter().GetResult();
+            Stream stream1 = fFmpegClient.ConvertToStream(streamInfo.Url);
+            
             if (args.Length > 0)
             {
                 switch (args[0])
@@ -20,8 +26,8 @@ namespace WebmPoc
                         PrintHelp();
                         break;
                     default:
-                        var song = YtUtils.GetSongsUrl("1b3FAg2j0As").GetAwaiter().GetResult();
-                        var streamInfo = YtUtils.GetStreamInfo(song.FirstOrDefault().Id).GetAwaiter().GetResult();
+                        song = YtUtils.GetSongsUrl("1b3FAg2j0As").GetAwaiter().GetResult();
+                        streamInfo = YtUtils.GetStreamInfo(song.FirstOrDefault().Id).GetAwaiter().GetResult();
                         WebmOpusStream stream = new WebmOpusStream(streamInfo.Url);
                         WebmToOpus opus = new WebmToOpus(stream);
                         List<OpusPacket> opusPackets = new List<OpusPacket>();
