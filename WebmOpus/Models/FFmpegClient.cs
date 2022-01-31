@@ -9,73 +9,82 @@ namespace WebmOpus.Models
     public class FFmpegClient
     {
         public string Path { get; }
-        public event Func<Object, byte[]> Output;
-        public event Action<string> Error;
+        public event Func<Object, byte[]>? OutputReceived;
+        public event Action<string>? ErrorReceived;
         public FFmpegClient(string ffmpegPath) => Path = System.IO.Path.GetFullPath(ffmpegPath);
 
-        public Stream ConvertToStream(string input) => Conversion(input);
-        public Stream ConvertToStream(Stream input) => Conversion(input);
-        public void Convert(string input, string output) => Conversion(input, output);
-        public void Convert(Stream input, string output) => Conversion(input, output);
+        public Stream ConvertToStream(string input,MediaTypes outputType) => FFmpegProcess()
+            .RaiseErrorEvents(ErrorRecieved)
+            .From(input).ToStream(outputType);
 
+        public Stream ConvertToStream(Stream input,MediaTypes inputType,MediaTypes outputType) => FFmpegProcess()
+            .RaiseErrorEvents(ErrorRecieved)
+            .From(input,inputType).ToStream(outputType);
 
-        internal Stream Conversion<T>(T input)
+        public void Convert(string input, string output) => FFmpegProcess()
+            .RaiseErrorEvents(ErrorRecieved)
+            .From(input).To(output);
+
+        public void Convert(Stream input, string output, MediaTypes inputType) => FFmpegProcess()
+            .RaiseErrorEvents(ErrorRecieved)
+            .From(input,inputType).To(output);
+
+        public void ConvertRaisingEvents(string input) => FFmpegProcess()
+            .RaiseErrorEvents(ErrorRecieved).RaiseOutputEvents(OutputRecieved)
+            .From(input).Start();
+        public void ConvertRaisingEvents(Stream input, MediaTypes inputType) => FFmpegProcess()
+            .RaiseErrorEvents(ErrorRecieved).RaiseOutputEvents(OutputRecieved)
+            .From(input,inputType).Start();
+
+        private FFmpegProcess FFmpegProcess()
         {
-            if (input.IsNullOrWhiteSpaced())
-                throw new ArgumentNullException("Input cannot be null or whitespaced");
-
-            return FFmpegProcess<T>(input, default).StartProcess().WaitExit().ToStream();
-
-        }
-
-        internal void Conversion<T>(T input, string output)
-        {
-            if (input.IsNullOrWhiteSpaced())
-                throw new ArgumentNullException("Input cannot be null or whitespaced");
-
-            FFmpegProcess<T>(input, output).StartProcess().WaitExit();
-
-        }
-
-        private Process FFmpegProcess<I>(I input, string? output = default)
-        {
-
-            bool isStreamInput = !input.IsString();
-            bool isStreamOutput = output.IsNullOrWhiteSpaced();
-            string inputArgs = isStreamInput ? $"-i pipe:" : $"-i '{input}'";
-            string outputArgs = isStreamOutput ? "-f opus pipe:" : $"-o {output}";
-
-
-            Process process = new Process();
+            FFmpegProcess process = new FFmpegProcess();
 
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.CreateNoWindow = true;
             process.StartInfo.FileName = Path;
-            process.StartInfo.Arguments = $"{inputArgs} {outputArgs}";
-            process.StartInfo.RedirectStandardOutput = isStreamOutput;
-            process.StartInfo.RedirectStandardInput = isStreamInput;
-            process.StartInfo.RedirectStandardError = true;
-            process.OutputDataReceived += OutputRecieved;
-            process.ErrorDataReceived += ErrorRecieved;
-
-            //TODO: piping to input if it's stream type
 
             return process;
         }
+
         private void OutputRecieved(object sender, DataReceivedEventArgs dataReceivedEventArgs)
         {
             if (dataReceivedEventArgs.Data is null)
                 return;
+            Console.WriteLine(dataReceivedEventArgs.Data);
 
-            Output?.Invoke(Encoding.ASCII.GetBytes(dataReceivedEventArgs.Data));
+            OutputReceived?.Invoke(Encoding.ASCII.GetBytes(dataReceivedEventArgs.Data));
 
         }
+
         private void ErrorRecieved(object sender, DataReceivedEventArgs dataReceivedEventArgs)
         {
             if (dataReceivedEventArgs.Data is null)
                 return;
+            Console.WriteLine(dataReceivedEventArgs.Data);
 
-            Error?.Invoke(dataReceivedEventArgs.Data);
+            FFmpegProcess process = sender as FFmpegProcess;
+
+            if(process.StartInfo.RedirectStandardOutput)
+                WriteToOutput(process);
+
+            
+
+            ErrorReceived?.Invoke(dataReceivedEventArgs.Data);
+        }
+
+        private void WriteToOutput(FFmpegProcess process)
+        {
+            MemoryStream ms = new MemoryStream();
+            byte[] bytes = new byte[4096];
+            int bytesToWrite;
+
+            while ((bytesToWrite = process.StandardOutput.BaseStream.Read(bytes, 0, 4096)) != 0)
+            {
+                process.StandardInput.BaseStream.Write(bytes, 0, bytesToWrite);
+                process.StandardInput.BaseStream.Flush();
+            }
+            process.Output = ms;
         }
     }
 

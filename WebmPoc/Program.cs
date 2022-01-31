@@ -16,7 +16,10 @@ namespace WebmPoc
             FFmpegClient fFmpegClient = new FFmpegClient(Directory.GetCurrentDirectory()+"/FFMPEG/ffmpeg.exe");
             var song = YtUtils.GetSongsUrl("9bZkp7q19f0").GetAwaiter().GetResult();
             var streamInfo = YtUtils.GetStreamInfo(song.FirstOrDefault().Id).GetAwaiter().GetResult();
-            Stream stream1 = fFmpegClient.ConvertToStream(streamInfo.Url);
+            var filea = File.Open("asd.mp3", FileMode.Open);
+            Stream stream1 = fFmpegClient.ConvertToStream(filea,MediaTypes.MP3,MediaTypes.OPUS);
+            FileStream file = new FileStream("asd.webm", FileMode.OpenOrCreate);
+            stream1.CopyTo(file);
             
             if (args.Length > 0)
             {
