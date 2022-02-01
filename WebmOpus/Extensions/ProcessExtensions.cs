@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
@@ -11,25 +12,21 @@ namespace WebmOpus.Extensions
     public static class ProcessExtensions
     {
 
-        internal static Stream ToStream(this FFmpegProcess process,MediaTypes type)
+        internal static FFmpegProcess ToStream(this FFmpegProcess process, Stream output, string type)
         {
-            if (process.isOutputEventRaised)
-                throw new InvalidOperationException("Cannot convert to stream with outputEvent raised");
-
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.Arguments += $" -f {type} pipe:";
+            process.Output = output;
 
-            process.StartProcess();
-
-            return process.Output;
+            return process;
         }
 
-        internal static void To(this FFmpegProcess process, string output)
+        internal static FFmpegProcess To(this FFmpegProcess process, string output)
         {
             process.StartInfo.RedirectStandardOutput = false;
-            process.StartInfo.Arguments += $" -o {output}";
+            process.StartInfo.Arguments += $" {output}";
 
-            process.StartProcess();
+            return process;
         }
 
         internal static FFmpegProcess From(this FFmpegProcess process, Stream input,MediaTypes type)
@@ -64,7 +61,7 @@ namespace WebmOpus.Extensions
             return process;
         }
 
-        internal static FFmpegProcess StartProcess(this FFmpegProcess process)
+        internal static FFmpegProcess StartProcess(this FFmpegProcess process, Stream? input = default, Stream? output = default)
         {
             process.Start();
 
@@ -74,23 +71,54 @@ namespace WebmOpus.Extensions
             if (process.StartInfo.RedirectStandardOutput && process.isOutputEventRaised)
                 process.BeginOutputReadLine();
 
-            //TODO: avoid deadlock
-            if (process.Input != null)
-            {
-                MemoryStream ms = new MemoryStream();
-                byte[] bytes = new byte[4096];
-                int bytesToWrite;
 
-                while ((bytesToWrite = process.Input.Read(bytes, 0, 4096)) != 0)
-                {
-                    process.StandardInput.BaseStream.Write(bytes, 0, bytesToWrite);
-                    process.StandardInput.BaseStream.Flush();
-                }
-                process.Output = ms;
-            }
-                    
+            List<Task> tasks = new List<Task>();
+
+            if (process.StartInfo.RedirectStandardInput)
+                tasks.Add(process.PipeInput());
+
+            if (process.StartInfo.RedirectStandardOutput)
+                tasks.Add(process.PipeOutput());
+
+            Task.WaitAll(tasks.ToArray());
 
             return process;
+        }
+
+        private static Task PipeInput(this FFmpegProcess process)
+        {
+            if (process.Input == null)
+                throw new Exception("Input set to null");
+
+            return Task.Run(async () =>
+            {
+                byte[] bytes = new byte[4096];
+                int bytesRead;
+
+                while ((bytesRead = await process.Input.ReadAsync(bytes, 0, bytes.Length)) != 0)
+                    await process.StandardInput.BaseStream.WriteAsync(bytes, 0, bytesRead);
+
+                process.StandardInput.Close();
+            });
+        }
+
+        private static Task PipeOutput(this FFmpegProcess process)
+        {
+            if (process.Output == null)
+                throw new Exception("Output set to null");
+
+            if (process.isOutputEventRaised)
+                throw new InvalidOperationException("Cannot convert to stream with outputEvent raised");
+
+            return Task.Run(async () =>
+            {
+                byte[] bytes = new byte[4096];
+                int bytesRead;
+
+                while ((bytesRead = await process.StandardOutput.BaseStream.ReadAsync(bytes, 0, bytes.Length)) != 0)
+                    await process.Output.WriteAsync(bytes, 0, bytesRead);
+
+            });
         }
     }
 }
