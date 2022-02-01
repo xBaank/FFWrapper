@@ -51,7 +51,7 @@ namespace WebmOpus.Models
             return this;
         }
 
-        public FFmpegProcess RaiseOutputEvents(Action<Object, DataReceivedEventArgs> action)
+        public FFmpegProcess RaiseOutputEvents(Action<object, DataReceivedEventArgs> action)
         {
             StartInfo.RedirectStandardOutput = true;
             isOutputEventRaised = true;
@@ -60,7 +60,7 @@ namespace WebmOpus.Models
             return this;
         }
 
-        public FFmpegProcess RaiseErrorEvents(Action<Object, DataReceivedEventArgs> action)
+        public FFmpegProcess RaiseErrorEvents(Action<object, DataReceivedEventArgs> action)
         {
             StartInfo.RedirectStandardError = true;
             isErrorEventRaised = true;
