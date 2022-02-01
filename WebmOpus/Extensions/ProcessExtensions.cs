@@ -21,7 +21,7 @@ namespace WebmOpus.Extensions
             return process;
         }
 
-        internal static FFmpegProcess To(this FFmpegProcess process, MediaTypes output)
+        internal static FFmpegProcess To(this FFmpegProcess process, string output)
         {
             process.StartInfo.RedirectStandardOutput = false;
             process.StartInfo.Arguments += $" {output}";
