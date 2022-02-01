@@ -4,86 +4,111 @@ using System;
 
 using WebmOpus.Models;
 using System.IO;
+using WebmOpus.Extensions;
 
 namespace WebmOpus.Builders
 {
-    public static class FFmpegProcessBuilder
+    public partial class FFmpegProcessBuilder
     {
-        public static FFmpegProcess Build() => new FFmpegProcess();
+        private FFmpegProcess ffmpegProcess;
+        public FFmpegProcessBuilder() => ffmpegProcess = new FFmpegProcess();
+        public FFmpegProcess Build() => ffmpegProcess;
 
-        public static FFmpegProcess ShellExecute(this FFmpegProcess fFmpegProcess, bool value)
+        public FFmpegProcessBuilder ShellExecute(bool value)
         {
-            fFmpegProcess.StartInfo.UseShellExecute = value;
-            return fFmpegProcess;
+            ffmpegProcess.StartInfo.UseShellExecute = value;
+            return this;
         }
 
-        public static FFmpegProcess CreateNoWindow(this FFmpegProcess fFmpegProcess, bool value)
+        public FFmpegProcessBuilder CreateNoWindow(bool value)
         {
-            fFmpegProcess.StartInfo.CreateNoWindow = value;
-            return fFmpegProcess;
+            ffmpegProcess.StartInfo.CreateNoWindow = value;
+            return this;
         }
 
-        public static FFmpegProcess Path(this FFmpegProcess fFmpegProcess, string value)
+        public FFmpegProcessBuilder Path(string value)
         {
-            fFmpegProcess.StartInfo.FileName = value;
-            return fFmpegProcess;
+            ffmpegProcess.StartInfo.FileName = value;
+            return this;
         }
 
-        public static FFmpegProcess RaiseOutputEvents(this FFmpegProcess fFmpegProcess, Action<object, DataReceivedEventArgs> action)
+        public FFmpegProcessBuilder RaiseOutputEvents(Action<object, DataReceivedEventArgs> action)
         {
-            fFmpegProcess.OutputDataReceived += new DataReceivedEventHandler(action);
-            fFmpegProcess.isOutputEventRaised = true;
-            return fFmpegProcess;
+            ffmpegProcess.OutputDataReceived += new DataReceivedEventHandler(action);
+            ffmpegProcess.isOutputEventRaised = true;
+            return this;
         }
 
-        public static FFmpegProcess RaiseErrorEvents(this FFmpegProcess fFmpegProcess, Action<object, DataReceivedEventArgs> action)
+        public FFmpegProcessBuilder RaiseErrorEvents(Action<object, DataReceivedEventArgs> action)
         {
-            fFmpegProcess.ErrorDataReceived += new DataReceivedEventHandler(action);
-            fFmpegProcess.isErrorEventRaised = true;
-            return fFmpegProcess;
+            ffmpegProcess.ErrorDataReceived += new DataReceivedEventHandler(action);
+            ffmpegProcess.isErrorEventRaised = true;
+            return this;
         }
 
-        public static FFmpegProcess RedirectOutput(this FFmpegProcess fFmpegProcess, bool value)
+        public FFmpegProcessBuilder RedirectOutput(bool value)
         {
-            fFmpegProcess.StartInfo.RedirectStandardOutput = true;
-            return fFmpegProcess;
+            ffmpegProcess.StartInfo.RedirectStandardOutput = true;
+            return this;
         }
 
-        public static FFmpegProcess RedirectInput(this FFmpegProcess fFmpegProcess, bool value)
+        public FFmpegProcessBuilder RedirectInput(bool value)
         {
-            fFmpegProcess.StartInfo.RedirectStandardInput = true;
-            return fFmpegProcess;
+            ffmpegProcess.StartInfo.RedirectStandardInput = true;
+            return this;
         }
 
-        public static FFmpegProcess RedirectError(this FFmpegProcess fFmpegProcess, bool value)
+        public FFmpegProcessBuilder RedirectError(bool value)
         {
-            fFmpegProcess.StartInfo.RedirectStandardError = true;
-            return fFmpegProcess;
+            ffmpegProcess.StartInfo.RedirectStandardError = true;
+            return this;
         }
 
-        public static FFmpegProcess AddArguments(this FFmpegProcess fFmpegProcess, string args)
+        public FFmpegProcessBuilder AddArguments(string args)
         {
-            fFmpegProcess.StartInfo.Arguments += args;
-            return fFmpegProcess;
+            ffmpegProcess.StartInfo.Arguments += args;
+            return this;
         }
 
-        public static FFmpegProcess SetArguments(this FFmpegProcess fFmpegProcess, string args)
+        public FFmpegProcessBuilder SetArguments(string args)
         {
-            fFmpegProcess.StartInfo.Arguments = args;
-            return fFmpegProcess;
+            ffmpegProcess.StartInfo.Arguments = args;
+            return this;
         }
 
-        public static FFmpegProcess SetInput(this FFmpegProcess fFmpegProcess, Stream stream)
+        public FFmpegProcessBuilder SetInput(Stream stream)
         {
-            fFmpegProcess.Input = stream;
-            return fFmpegProcess;
+            ffmpegProcess.Input = stream;
+            return this;
         }
 
-        public static FFmpegProcess SetOutput(this FFmpegProcess fFmpegProcess, Stream stream)
+        public FFmpegProcessBuilder SetOutput(Stream stream)
         {
-            fFmpegProcess.Output = stream;
-            return fFmpegProcess;
+            ffmpegProcess.Output = stream;
+            return this;
         }
 
     }
+
+    public partial class FFmpegProcessBuilder
+    {
+        public FFmpegProcessBuilder ToStream(Stream output, MediaTypes type) =>
+            RedirectOutput(true)
+            .AddArguments($" -f {type.GetArgs()} pipe:")
+            .SetOutput(output);
+
+        public FFmpegProcessBuilder To(string output) =>
+            RedirectOutput(false)
+            .AddArguments($" {output}");
+
+        public FFmpegProcessBuilder From(Stream input, MediaTypes type) =>
+            AddArguments($"-f {type.GetArgs()} -i pipe:")
+            .RedirectInput(true)
+            .SetInput(input);
+
+        public FFmpegProcessBuilder From(string input) =>
+            AddArguments($"-i {input}")
+            .RedirectInput(false);
+    }
 }
+
