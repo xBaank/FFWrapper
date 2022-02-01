@@ -12,7 +12,7 @@ namespace WebmOpus.Extensions
     public static class ProcessExtensions
     {
 
-        internal static FFmpegProcess ToStream(this FFmpegProcess process, Stream output, string type)
+        internal static FFmpegProcess ToStream(this FFmpegProcess process, Stream output, MediaTypes type)
         {
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.Arguments += $" -f {type} pipe:";
@@ -21,7 +21,7 @@ namespace WebmOpus.Extensions
             return process;
         }
 
-        internal static FFmpegProcess To(this FFmpegProcess process, string output)
+        internal static FFmpegProcess To(this FFmpegProcess process, MediaTypes output)
         {
             process.StartInfo.RedirectStandardOutput = false;
             process.StartInfo.Arguments += $" {output}";
