@@ -8,8 +8,9 @@ using WebmOpus.Extensions;
 
 namespace WebmOpus.Builders
 {
-    public partial class FFmpegProcessBuilder
+    public class FFmpegProcessBuilder
     {
+        //TODO move to process extensions process methods 
         private FFmpegProcess ffmpegProcess;
         public FFmpegProcessBuilder() => ffmpegProcess = new FFmpegProcess();
         public FFmpegProcess Build() => ffmpegProcess;
@@ -66,7 +67,7 @@ namespace WebmOpus.Builders
 
         public FFmpegProcessBuilder AddArguments(string args)
         {
-            ffmpegProcess.StartInfo.Arguments += args;
+            ffmpegProcess.StartInfo.Arguments += $" {args}";
             return this;
         }
 
@@ -88,13 +89,9 @@ namespace WebmOpus.Builders
             return this;
         }
 
-    }
-
-    public partial class FFmpegProcessBuilder
-    {
-        public FFmpegProcessBuilder ToStream(Stream output, MediaTypes type) =>
+        public FFmpegProcessBuilder To(Stream output, MediaTypes type) =>
             RedirectOutput(true)
-            .AddArguments($" -f {type.GetArgs()} pipe:")
+            .AddArguments($"-f {type.GetArgs()} pipe:")
             .SetOutput(output);
 
         public FFmpegProcessBuilder To(string output) =>

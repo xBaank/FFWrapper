@@ -12,23 +12,27 @@ namespace WebmOpus.Models
         public string Path { get; }
         public event Func<object, byte[]>? OutputReceived;
         public event Action<string>? ErrorReceived;
+
         public FFmpegClient(string ffmpegPath) => Path = System.IO.Path.GetFullPath(ffmpegPath);
 
         public void ConvertToStream(string input, Stream output, MediaTypes outputType) => CreateFFmpegBuilder()
+            .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .From(input)
-            .ToStream(output, outputType)
+            .To(output, outputType)
             .Build()
             .StartProcess();
 
         public void ConvertToStream(Stream input, MediaTypes inputType, Stream output, MediaTypes outputType) => CreateFFmpegBuilder()
+            .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .From(input, inputType)
-            .ToStream(output, outputType)
+            .To(output, outputType)
             .Build()
             .StartProcess();
 
         public void Convert(string input, string output) => CreateFFmpegBuilder()
+            .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .From(input)
             .To(output)
@@ -36,6 +40,7 @@ namespace WebmOpus.Models
             .StartProcess();
 
         public void Convert(Stream input, string output, MediaTypes inputType) => CreateFFmpegBuilder()
+            .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .From(input, inputType)
             .To(output)
@@ -57,9 +62,9 @@ namespace WebmOpus.Models
             .StartProcess();
 
         private FFmpegProcessBuilder CreateFFmpegBuilder() => new FFmpegProcessBuilder()
-                .ShellExecute(false)
-                .CreateNoWindow(true)
-                .Path(Path);
+            .ShellExecute(false)
+            .CreateNoWindow(true)
+            .Path(Path);
 
 
         private void OutputRecieved(object sender, DataReceivedEventArgs dataReceivedEventArgs)

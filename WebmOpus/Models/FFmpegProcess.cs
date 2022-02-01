@@ -8,7 +8,7 @@ using WebmOpus.Extensions;
 
 namespace WebmOpus.Models
 {
-    public partial class FFmpegProcess : Process
+    public class FFmpegProcess : Process
     {
         public Stream? Input { get; set; }
         public Stream? Output { get; set; }
@@ -50,10 +50,6 @@ namespace WebmOpus.Models
 
             });
         }
-    }
-
-    public partial class FFmpegProcess : Process
-    {
 
         public FFmpegProcess StartProcess(Stream? input = default, Stream? output = default)
         {
