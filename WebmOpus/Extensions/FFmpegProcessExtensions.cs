@@ -2,20 +2,19 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Pipes;
-using System.Text;
 using System.Threading.Tasks;
+
 using WebmOpus.Models;
 
 namespace WebmOpus.Extensions
 {
-    public static class ProcessExtensions
+    public static class FFmpegProcessExtensions
     {
 
         internal static FFmpegProcess ToStream(this FFmpegProcess process, Stream output, MediaTypes type)
         {
             process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.Arguments += $" -f {type} pipe:";
+            process.StartInfo.Arguments += $" -f {type.GetArgs()} pipe:";
             process.Output = output;
 
             return process;
@@ -29,9 +28,9 @@ namespace WebmOpus.Extensions
             return process;
         }
 
-        internal static FFmpegProcess From(this FFmpegProcess process, Stream input,MediaTypes type)
+        internal static FFmpegProcess From(this FFmpegProcess process, Stream input, MediaTypes type)
         {
-            process.StartInfo.Arguments = $"-f {type} -i pipe:";
+            process.StartInfo.Arguments = $"-f {type.GetArgs()} -i pipe:";
             process.StartInfo.RedirectStandardInput = true;
             process.Input = input;
 
@@ -41,7 +40,7 @@ namespace WebmOpus.Extensions
         internal static FFmpegProcess From(this FFmpegProcess process, string input)
         {
             process.StartInfo.Arguments = $"-i {input}";
-            process.StartInfo.RedirectStandardInput = true; 
+            process.StartInfo.RedirectStandardInput = true;
             return process;
         }
 

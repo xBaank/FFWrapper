@@ -19,7 +19,7 @@ namespace WebmOpus.Models
 
         public void ConvertToStream(Stream input, MediaTypes inputType, Stream output, MediaTypes outputType) => FFmpegProcess()
             .RaiseErrorEvents(ErrorRecieved)
-            .From(input,inputType).ToStream(output,outputType).StartProcess();
+            .From(input, inputType).ToStream(output, outputType).StartProcess();
 
         public void Convert(string input, string output) => FFmpegProcess()
             .RaiseErrorEvents(ErrorRecieved)
@@ -27,14 +27,15 @@ namespace WebmOpus.Models
 
         public void Convert(Stream input, string output, MediaTypes inputType) => FFmpegProcess()
             .RaiseErrorEvents(ErrorRecieved)
-            .From(input,inputType).To(output).StartProcess();
+            .From(input, inputType).To(output).StartProcess();
 
         public void ConvertRaisingEvents(string input) => FFmpegProcess()
             .RaiseErrorEvents(ErrorRecieved).RaiseOutputEvents(OutputRecieved)
-            .From(input).Start();
+            .From(input).StartProcess();
+
         public void ConvertRaisingEvents(Stream input, MediaTypes inputType) => FFmpegProcess()
             .RaiseErrorEvents(ErrorRecieved).RaiseOutputEvents(OutputRecieved)
-            .From(input,inputType).Start();
+            .From(input, inputType).StartProcess();
 
         private FFmpegProcess FFmpegProcess()
         {
