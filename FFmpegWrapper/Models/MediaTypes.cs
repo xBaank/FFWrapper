@@ -1,4 +1,4 @@
-﻿namespace WebmOpus.Models
+﻿namespace FFmpegWrapper.Models
 {
     public enum MediaTypes
     {

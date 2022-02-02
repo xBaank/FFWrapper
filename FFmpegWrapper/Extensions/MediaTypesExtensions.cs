@@ -1,7 +1,7 @@
 ﻿
-using WebmOpus.Models;
+using FFmpegWrapper.Models;
 
-namespace WebmOpus.Extensions
+namespace FFmpegWrapper.Extensions
 {
     internal static class MediaTypesExtensions
     {

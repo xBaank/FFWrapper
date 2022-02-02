@@ -4,9 +4,9 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-using WebmOpus.Builders;
+using FFmpegWrapper.Builders;
 
-namespace WebmOpus.Models
+namespace FFmpegWrapper.Models
 {
     public partial class FFmpegClient
     {

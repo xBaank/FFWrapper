@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace WebmOpus.Extensions
+namespace FFmpegWrapper.Extensions
 {
     public static class TaskExtensions
     {

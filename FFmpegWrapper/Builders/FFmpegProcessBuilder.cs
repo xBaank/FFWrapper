@@ -4,9 +4,9 @@ using System;
 
 using WebmOpus.Models;
 using System.IO;
-using WebmOpus.Extensions;
+using FFmpegWrapper.Extensions;
 
-namespace WebmOpus.Builders
+namespace FFmpegWrapper.Builders
 {
     public class FFmpegProcessBuilder
     {

@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
-using WebmOpus.Extensions;
+using FFmpegWrapper.Extensions;
 
-namespace WebmOpus.Models
+namespace FFmpegWrapper.Models
 {
     public class FFmpegProcess : Process
     {

@@ -3,8 +3,10 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <Nullable>enable</Nullable>
-    <Description>decodes webm opus packets</Description>
+    <Description>A ffmpeg wrapper that uses a fluent api to work with</Description>
     <Version>0.0.2.8</Version>
+    <AssemblyName>FFmpegWrapper</AssemblyName>
+    <RootNamespace>FFmpegWrapper</RootNamespace>
   </PropertyGroup>
 
 

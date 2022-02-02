@@ -1,5 +1,5 @@
 ﻿
-namespace WebmOpus.Extensions
+namespace FFmpegWrapper.Extensions
 {
     internal static class ObjectExtensions
     {
