@@ -10,10 +10,16 @@ namespace WebmOpus.Models
 {
     public class FFmpegProcess : Process
     {
+
+        private List<Task> tasks = new List<Task>();
+
         public Stream? Input { get; set; }
         public Stream? Output { get; set; }
         public bool isOutputEventRaised { get; set; } = false;
         public bool isErrorEventRaised { get; set; } = false;
+
+        public void Start(Stream? input = default, Stream? output = default) => StartProcess().tasks.WaitAll();
+        public Task StartAsync(Stream? input = default, Stream? output = default) => StartProcess().tasks.WhenAll();
 
         private Task PipeInput()
         {
@@ -51,9 +57,9 @@ namespace WebmOpus.Models
             });
         }
 
-        public FFmpegProcess StartProcess(Stream? input = default, Stream? output = default)
+        private FFmpegProcess StartProcess()
         {
-            Start();
+            base.Start();
 
             if (StartInfo.RedirectStandardError && isErrorEventRaised)
                 BeginErrorReadLine();
@@ -69,8 +75,6 @@ namespace WebmOpus.Models
 
             if (StartInfo.RedirectStandardOutput)
                 tasks.Add(PipeOutput());
-
-            Task.WaitAll(tasks.ToArray());
 
             return this;
         }

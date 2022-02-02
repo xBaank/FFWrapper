@@ -10,7 +10,6 @@ namespace WebmOpus.Builders
 {
     public class FFmpegProcessBuilder
     {
-        //TODO move to process extensions process methods 
         private FFmpegProcess ffmpegProcess;
         public FFmpegProcessBuilder() => ffmpegProcess = new FFmpegProcess();
         public FFmpegProcess Build() => ffmpegProcess;

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 using WebmOpus.Builders;
 
@@ -21,7 +22,15 @@ namespace WebmOpus.Models
             .From(input)
             .To(output, outputType)
             .Build()
-            .StartProcess();
+            .Start();
+
+        public Task ConvertToStreamAsync(string input, Stream output, MediaTypes outputType) => CreateFFmpegBuilder()
+            .RedirectError(true)
+            .RaiseErrorEvents(ErrorRecieved)
+            .From(input)
+            .To(output, outputType)
+            .Build()
+            .StartAsync();
 
         public void ConvertToStream(Stream input, MediaTypes inputType, Stream output, MediaTypes outputType) => CreateFFmpegBuilder()
             .RedirectError(true)
@@ -29,7 +38,15 @@ namespace WebmOpus.Models
             .From(input, inputType)
             .To(output, outputType)
             .Build()
-            .StartProcess();
+            .Start();
+
+        public Task ConvertToStreamAsync(Stream input, MediaTypes inputType, Stream output, MediaTypes outputType) => CreateFFmpegBuilder()
+            .RedirectError(true)
+            .RaiseErrorEvents(ErrorRecieved)
+            .From(input, inputType)
+            .To(output, outputType)
+            .Build()
+            .StartAsync();
 
         public void Convert(string input, string output) => CreateFFmpegBuilder()
             .RedirectError(true)
@@ -37,7 +54,15 @@ namespace WebmOpus.Models
             .From(input)
             .To(output)
             .Build()
-            .StartProcess();
+            .Start();
+
+        public Task ConvertAsync(string input, string output) => CreateFFmpegBuilder()
+           .RedirectError(true)
+           .RaiseErrorEvents(ErrorRecieved)
+           .From(input)
+           .To(output)
+           .Build()
+           .StartAsync();
 
         public void Convert(Stream input, string output, MediaTypes inputType) => CreateFFmpegBuilder()
             .RedirectError(true)
@@ -45,21 +70,15 @@ namespace WebmOpus.Models
             .From(input, inputType)
             .To(output)
             .Build()
-            .StartProcess();
+            .Start();
 
-        public void ConvertRaisingEvents(string input) => CreateFFmpegBuilder()
+        public void ConvertAsync(Stream input, string output, MediaTypes inputType) => CreateFFmpegBuilder()
+            .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
-            .RaiseOutputEvents(OutputRecieved)
-            .From(input)
-            .Build()
-            .StartProcess();
-
-        public void ConvertRaisingEvents(Stream input, MediaTypes inputType) => CreateFFmpegBuilder()
-            .RaiseErrorEvents(ErrorRecieved)
-            .RaiseOutputEvents(OutputRecieved)
             .From(input, inputType)
+            .To(output)
             .Build()
-            .StartProcess();
+            .StartAsync();
 
         private FFmpegProcessBuilder CreateFFmpegBuilder() => new FFmpegProcessBuilder()
             .ShellExecute(false)
