@@ -48,19 +48,19 @@ namespace WebmOpus.Builders
 
         public FFmpegProcessBuilder RedirectOutput(bool value)
         {
-            ffmpegProcess.StartInfo.RedirectStandardOutput = true;
+            ffmpegProcess.StartInfo.RedirectStandardOutput = value;
             return this;
         }
 
         public FFmpegProcessBuilder RedirectInput(bool value)
         {
-            ffmpegProcess.StartInfo.RedirectStandardInput = true;
+            ffmpegProcess.StartInfo.RedirectStandardInput = value;
             return this;
         }
 
         public FFmpegProcessBuilder RedirectError(bool value)
         {
-            ffmpegProcess.StartInfo.RedirectStandardError = true;
+            ffmpegProcess.StartInfo.RedirectStandardError = value;
             return this;
         }
 

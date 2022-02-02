@@ -72,7 +72,7 @@ namespace WebmOpus.Models
             .Build()
             .Start();
 
-        public void ConvertAsync(Stream input, string output, MediaTypes inputType) => CreateFFmpegBuilder()
+        public Task ConvertAsync(Stream input, string output, MediaTypes inputType) => CreateFFmpegBuilder()
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .From(input, inputType)

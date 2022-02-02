@@ -68,8 +68,6 @@ namespace WebmOpus.Models
                 BeginOutputReadLine();
 
 
-            List<Task> tasks = new List<Task>();
-
             if (StartInfo.RedirectStandardInput)
                 tasks.Add(PipeInput());
 
