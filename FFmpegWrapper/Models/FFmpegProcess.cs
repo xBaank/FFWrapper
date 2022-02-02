@@ -8,27 +8,42 @@ using FFmpegWrapper.Extensions;
 
 namespace FFmpegWrapper.Models
 {
+    /// <summary>
+    /// FFmpeg process, use FFmpegProcessBuilder to create a FFmpegProcess or FFmpegClient to convert mediaFiles
+    /// </summary>
     public class FFmpegProcess : Process
     {
 
+        /// <inheritdoc />
+        public new event Func<Exception>? ErrorDataReceived;
+        /// <inheritdoc />
+        public new event Func<byte[]>? OutputDataReceived;
+
         private List<Task> tasks = new List<Task>();
 
-        public Stream? Input { get; set; }
-        public Stream? Output { get; set; }
-        public bool isOutputEventRaised { get; set; } = false;
-        public bool isErrorEventRaised { get; set; } = false;
+        internal Stream? Input { get; set; }
+        internal Stream? Output { get; set; }
+        internal bool isOutputEventRaised { get; set; } = false;
+        internal bool isErrorEventRaised { get; set; } = false;
+        internal int InputBuffer { get; set; } = 4096;
+        internal int OutputBuffer { get; set; } = 4096;
 
-        public void Start(Stream? input = default, Stream? output = default) => StartProcess().tasks.WaitAll();
-        public Task StartAsync(Stream? input = default, Stream? output = default) => StartProcess().tasks.WhenAll();
+        internal FFmpegProcess()
+        {
+            //Don't allow end user to create process directly
+        }
+
+        public new void Start() => StartProcess().tasks.WaitAll();
+        public Task StartAsync() => StartProcess().tasks.WhenAll();
 
         private Task PipeInput()
         {
             if (Input == null)
-                throw new Exception("Input set to null");
+                throw new NullReferenceException("Input set to null");
 
             return Task.Run(async () =>
             {
-                byte[] bytes = new byte[4096];
+                byte[] bytes = new byte[InputBuffer];
                 int bytesRead;
 
                 while ((bytesRead = await Input.ReadAsync(bytes, 0, bytes.Length)) != 0)
@@ -41,14 +56,14 @@ namespace FFmpegWrapper.Models
         private Task PipeOutput()
         {
             if (Output == null)
-                throw new Exception("Output set to null");
+                throw new NullReferenceException("Output set to null");
 
             if (isOutputEventRaised)
                 throw new InvalidOperationException("Cannot convert to stream with outputEvent raised");
 
             return Task.Run(async () =>
             {
-                byte[] bytes = new byte[4096];
+                byte[] bytes = new byte[OutputBuffer];
                 int bytesRead;
 
                 while ((bytesRead = await StandardOutput.BaseStream.ReadAsync(bytes, 0, bytes.Length)) != 0)
@@ -61,6 +76,7 @@ namespace FFmpegWrapper.Models
         {
             base.Start();
 
+            //TODO don't use default process events
             if (StartInfo.RedirectStandardError && isErrorEventRaised)
                 BeginErrorReadLine();
 

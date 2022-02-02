@@ -88,6 +88,20 @@ namespace FFmpegWrapper.Builders
             return this;
         }
 
+        public FFmpegProcessBuilder SetInputBuffer(int value)
+        {
+            ffmpegProcess.InputBuffer = value;
+            return this;
+        }
+
+        public FFmpegProcessBuilder SetOutputBuffer(int value)
+        {
+            ffmpegProcess.OutputBuffer = value;
+            return this;
+        }
+
+
+
         public FFmpegProcessBuilder To(Stream output, MediaTypes type) =>
             RedirectOutput(true)
             .AddArguments($"-f {type.GetArgs()} pipe:")
