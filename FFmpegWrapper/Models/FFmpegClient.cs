@@ -11,8 +11,9 @@ namespace FFmpegWrapper.Models
     public partial class FFmpegClient
     {
         public string Path { get; }
-        public event Func<object, byte[]>? OutputReceived;
-        public event Action<string>? ErrorReceived;
+        //TODO change objects to ffmpegclient and ffmpegprocess types
+        public event Action<object, object, byte[]>? OutputReceived;
+        public event Action<object, object, string>? ErrorReceived;
 
         public FFmpegClient(string ffmpegPath) => Path = System.IO.Path.GetFullPath(ffmpegPath);
 
@@ -85,25 +86,13 @@ namespace FFmpegWrapper.Models
             .CreateNoWindow(true)
             .Path(Path);
 
-
-        private void OutputRecieved(object sender, DataReceivedEventArgs dataReceivedEventArgs)
+        private void ErrorRecieved(object sender, string message)
         {
-            if (dataReceivedEventArgs.Data is null)
-                return;
-            Console.WriteLine(dataReceivedEventArgs.Data);
-
-            OutputReceived?.Invoke(Encoding.ASCII.GetBytes(dataReceivedEventArgs.Data));
-
+            ErrorReceived?.Invoke(this, sender, message);
+            Console.WriteLine(message);
         }
 
-        private void ErrorRecieved(object sender, DataReceivedEventArgs dataReceivedEventArgs)
-        {
-            if (dataReceivedEventArgs.Data is null)
-                return;
-            Console.WriteLine(dataReceivedEventArgs.Data);
-
-            ErrorReceived?.Invoke(dataReceivedEventArgs.Data);
-        }
+        private void OutputRecieved(object sender, byte[] bytes) => OutputReceived?.Invoke(this, sender, bytes);
     }
 
 }

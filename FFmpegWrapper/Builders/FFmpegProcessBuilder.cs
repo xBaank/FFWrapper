@@ -10,9 +10,10 @@ namespace FFmpegWrapper.Builders
 {
     public class FFmpegProcessBuilder
     {
-        private FFmpegProcess ffmpegProcess;
         public FFmpegProcessBuilder() => ffmpegProcess = new FFmpegProcess();
         public FFmpegProcess Build() => ffmpegProcess;
+
+        private FFmpegProcess ffmpegProcess;
 
         public FFmpegProcessBuilder ShellExecute(bool value)
         {
@@ -32,17 +33,15 @@ namespace FFmpegWrapper.Builders
             return this;
         }
 
-        public FFmpegProcessBuilder RaiseOutputEvents(Action<object, DataReceivedEventArgs> action)
+        public FFmpegProcessBuilder RaiseOutputEvents(Action<object, byte[]> action)
         {
-            ffmpegProcess.OutputDataReceived += new DataReceivedEventHandler(action);
-            ffmpegProcess.isOutputEventRaised = true;
+            ffmpegProcess.OutputDataReceived += action;
             return this;
         }
 
-        public FFmpegProcessBuilder RaiseErrorEvents(Action<object, DataReceivedEventArgs> action)
+        public FFmpegProcessBuilder RaiseErrorEvents(Action<object, string> action)
         {
-            ffmpegProcess.ErrorDataReceived += new DataReceivedEventHandler(action);
-            ffmpegProcess.isErrorEventRaised = true;
+            ffmpegProcess.ErrorDataReceived += action;
             return this;
         }
 

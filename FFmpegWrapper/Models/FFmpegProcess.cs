@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 using FFmpegWrapper.Extensions;
@@ -14,19 +15,18 @@ namespace FFmpegWrapper.Models
     public class FFmpegProcess : Process
     {
 
-        /// <inheritdoc />
-        public new event Func<Exception>? ErrorDataReceived;
-        /// <inheritdoc />
-        public new event Func<byte[]>? OutputDataReceived;
 
-        private List<Task> tasks = new List<Task>();
+        public new event Action<object, string?>? ErrorDataReceived;
+        public new event Action<object, byte[]>? OutputDataReceived;
 
         internal Stream? Input { get; set; }
         internal Stream? Output { get; set; }
-        internal bool isOutputEventRaised { get; set; } = false;
-        internal bool isErrorEventRaised { get; set; } = false;
+        internal string? Error { get; set; }
         internal int InputBuffer { get; set; } = 4096;
         internal int OutputBuffer { get; set; } = 4096;
+
+        private List<Task> tasks = new List<Task>();
+
 
         internal FFmpegProcess()
         {
@@ -58,16 +58,34 @@ namespace FFmpegWrapper.Models
             if (Output == null)
                 throw new NullReferenceException("Output set to null");
 
-            if (isOutputEventRaised)
-                throw new InvalidOperationException("Cannot convert to stream with outputEvent raised");
-
             return Task.Run(async () =>
             {
                 byte[] bytes = new byte[OutputBuffer];
                 int bytesRead;
 
                 while ((bytesRead = await StandardOutput.BaseStream.ReadAsync(bytes, 0, bytes.Length)) != 0)
+                {
                     await Output.WriteAsync(bytes, 0, bytesRead);
+                    CallOutputEvent(bytes);
+                }
+
+            });
+        }
+
+        private Task PipeError()
+        {
+            return Task.Run(async () =>
+            {
+                StringBuilder stringBuilder = new StringBuilder();
+
+                while (!StandardError.EndOfStream)
+                {
+                    string? line = await StandardError.ReadLineAsync();
+                    CallErrorEvent(line);
+                    stringBuilder.AppendLine(line);
+                }
+
+                CallErrorEvent(stringBuilder.ToString());
 
             });
         }
@@ -76,21 +94,19 @@ namespace FFmpegWrapper.Models
         {
             base.Start();
 
-            //TODO don't use default process events
-            if (StartInfo.RedirectStandardError && isErrorEventRaised)
-                BeginErrorReadLine();
-
-            if (StartInfo.RedirectStandardOutput && isOutputEventRaised)
-                BeginOutputReadLine();
-
-
             if (StartInfo.RedirectStandardInput)
                 tasks.Add(PipeInput());
 
             if (StartInfo.RedirectStandardOutput)
                 tasks.Add(PipeOutput());
 
+            if (StartInfo.RedirectStandardError)
+                tasks.Add(PipeError());
+
             return this;
         }
+
+        private void CallOutputEvent(byte[] bytes) => OutputDataReceived?.Invoke(this, bytes);
+        private void CallErrorEvent(string? messageException) => ErrorDataReceived?.Invoke(this, messageException);
     }
 }
