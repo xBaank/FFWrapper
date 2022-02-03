@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 
 using FFmpegWrapper.Builders;
@@ -11,7 +9,6 @@ namespace FFmpegWrapper.Models
     public partial class FFmpegClient
     {
         public string Path { get; }
-        //TODO change objects to ffmpegclient and ffmpegprocess types
         public event Action<object, object, byte[]>? OutputReceived;
         public event Action<object, object, string>? ErrorReceived;
 

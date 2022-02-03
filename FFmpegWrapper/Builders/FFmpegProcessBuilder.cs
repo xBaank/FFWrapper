@@ -1,14 +1,12 @@
-﻿
-using System.Diagnostics;
-using System;
-
+﻿using System;
 using System.IO;
+
 using FFmpegWrapper.Extensions;
 using FFmpegWrapper.Models;
 
 namespace FFmpegWrapper.Builders
 {
-    public class FFmpegProcessBuilder
+    public class FFmpegProcessBuilder : IFFmpegProcessBuilder<FFmpegProcessBuilder, FFmpegProcess>
     {
         public FFmpegProcessBuilder() => ffmpegProcess = new FFmpegProcess();
         public FFmpegProcess Build() => ffmpegProcess;
@@ -103,15 +101,15 @@ namespace FFmpegWrapper.Builders
 
         public FFmpegProcessBuilder To(Stream output, MediaTypes type) =>
             RedirectOutput(true)
-            .AddArguments($"-f {type.GetArgs()} pipe:")
+            .AddArguments(type.GetOutPutArgs())
             .SetOutput(output);
 
         public FFmpegProcessBuilder To(string output) =>
             RedirectOutput(false)
-            .AddArguments($" {output}");
+            .AddArguments(output);
 
         public FFmpegProcessBuilder From(Stream input, MediaTypes type) =>
-            AddArguments($"-f {type.GetArgs()} -i pipe:")
+            AddArguments(type.GetInputArgs())
             .RedirectInput(true)
             .SetInput(input);
 
