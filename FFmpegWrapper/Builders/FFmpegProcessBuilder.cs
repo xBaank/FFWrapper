@@ -63,7 +63,7 @@ namespace FFmpegWrapper.Builders
 
         public FFmpegProcessBuilder AddArguments(string args)
         {
-            ffmpegProcess.StartInfo.Arguments += $" {args}";
+            ffmpegProcess.StartInfo.ArgumentList.AddRange(args.Trim().Split(" "));
             return this;
         }
 

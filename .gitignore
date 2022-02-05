@@ -364,3 +364,4 @@ FodyWeavers.xsd
 
 #Ignore ffmpeg
 ffmpeg.exe
+ffprobe.exe
