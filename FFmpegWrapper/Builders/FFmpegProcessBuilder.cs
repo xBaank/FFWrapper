@@ -31,13 +31,13 @@ namespace FFmpegWrapper.Builders
             return this;
         }
 
-        public FFmpegProcessBuilder RaiseOutputEvents(Action<object, byte[]> action)
+        public FFmpegProcessBuilder RaiseOutputEvents(Action<FFmpegProcess, byte[]> action)
         {
             ffmpegProcess.OutputDataReceived += action;
             return this;
         }
 
-        public FFmpegProcessBuilder RaiseErrorEvents(Action<object, string> action)
+        public FFmpegProcessBuilder RaiseErrorEvents(Action<FFmpegProcess, string> action)
         {
             ffmpegProcess.ErrorDataReceived += action;
             return this;

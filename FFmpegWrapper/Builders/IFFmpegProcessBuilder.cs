@@ -10,7 +10,7 @@ namespace FFmpegWrapper.Builders
         public T SetOutput(Stream stream);
         public T SetInputBuffer(int value);
         public T SetOutputBuffer(int value);
-        public T RaiseOutputEvents(Action<object, byte[]> action);
-        public T RaiseErrorEvents(Action<object, string> action);
+        public T RaiseOutputEvents(Action<K, byte[]> action);
+        public T RaiseErrorEvents(Action<K, string> action);
     }
 }

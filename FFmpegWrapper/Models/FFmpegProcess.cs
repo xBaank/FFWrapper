@@ -16,8 +16,8 @@ namespace FFmpegWrapper.Models
     {
 
 
-        public new event Action<object, string?>? ErrorDataReceived;
-        public new event Action<object, byte[]>? OutputDataReceived;
+        public new event Action<FFmpegProcess, string?>? ErrorDataReceived;
+        public new event Action<FFmpegProcess, byte[]>? OutputDataReceived;
 
         internal Stream? Input { get; set; }
         internal Stream? Output { get; set; }
