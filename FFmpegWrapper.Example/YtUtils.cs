@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using YoutubeExplode;
 using YoutubeExplode.Playlists;
 using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.Streams;
 
-namespace WebmPOC
+namespace FFmpegWrapper.Example
 {
     public class YtUtils
     {
@@ -19,19 +20,19 @@ namespace WebmPOC
         /// <returns>streaminfo or null if not found</returns>
         public static async Task<List<Video>> GetSongsUrl(string query)
         {
-            List<Video> videos = new List<Video>();    
+            List<Video> videos = new List<Video>();
             YoutubeClient youtubeClient = new YoutubeClient();
             var playlistid = PlaylistId.TryParse(query);
             if (string.IsNullOrEmpty(playlistid))
             {
                 var queryresult = await youtubeClient.Search.GetVideosAsync(query).FirstOrDefaultAsync() ?? throw new Exception("Url or query not found");
 
-                videos.Add(new Video(queryresult.Id,queryresult.Title,queryresult.Author,default,default,queryresult.Duration,queryresult.Thumbnails,default,default));
+                videos.Add(new Video(queryresult.Id, queryresult.Title, queryresult.Author, default, default, queryresult.Duration, queryresult.Thumbnails, default, default));
             }
             else
             {
-                videos = await youtubeClient.Playlists.GetVideosAsync(PlaylistId.Parse(playlistid)).Select(i => new Video(i.Id,i.Title,i.Author,default,default,i.Duration,i.Thumbnails,default,default) ).ToListAsync();
-                
+                videos = await youtubeClient.Playlists.GetVideosAsync(PlaylistId.Parse(playlistid)).Select(i => new Video(i.Id, i.Title, i.Author, default, default, i.Duration, i.Thumbnails, default, default)).ToListAsync();
+
             }
             return videos;
         }
@@ -49,7 +50,7 @@ namespace WebmPOC
                     audio = streamManifest.GetAudioOnlyStreams().Where(i => i.Container == Container.WebM && i.AudioCodec == "opus").OrderBy(i => i.Bitrate.BitsPerSecond).FirstOrDefault();
                     retry = false;
                 }
-                catch 
+                catch
                 {
                     retry = true;
                     retries--;

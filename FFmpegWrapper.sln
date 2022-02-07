@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31515.178
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31919.166
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebmOpusUnitTest", "WebmOpusUnitTest\WebmOpusUnitTest.csproj", "{2C4D1636-D4E5-4A8B-9887-186329D76D76}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebmPoc", "WebmPoc\WebmPoc.csproj", "{D95BAB90-D9D4-4517-B8FB-4D24C1C8B707}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFmpegWrapper", "FFmpegWrapper\FFmpegWrapper.csproj", "{8334AC2F-37F6-4462-AC2F-74C7765FF07C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFmpegWrapper.Tests", "FFmpegWrapper.Tests\FFmpegWrapper.Tests.csproj", "{AAAE91BD-A7A8-453A-8E27-883171F9D7D1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFmpegWrapper.Example", "FFmpegWrapper.Example\FFmpegWrapper.Example.csproj", "{13D778EB-74DA-40CA-8A0A-3A8E48F3123C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,18 +15,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2C4D1636-D4E5-4A8B-9887-186329D76D76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2C4D1636-D4E5-4A8B-9887-186329D76D76}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2C4D1636-D4E5-4A8B-9887-186329D76D76}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2C4D1636-D4E5-4A8B-9887-186329D76D76}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D95BAB90-D9D4-4517-B8FB-4D24C1C8B707}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D95BAB90-D9D4-4517-B8FB-4D24C1C8B707}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D95BAB90-D9D4-4517-B8FB-4D24C1C8B707}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D95BAB90-D9D4-4517-B8FB-4D24C1C8B707}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8334AC2F-37F6-4462-AC2F-74C7765FF07C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8334AC2F-37F6-4462-AC2F-74C7765FF07C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8334AC2F-37F6-4462-AC2F-74C7765FF07C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8334AC2F-37F6-4462-AC2F-74C7765FF07C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAAE91BD-A7A8-453A-8E27-883171F9D7D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAAE91BD-A7A8-453A-8E27-883171F9D7D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAAE91BD-A7A8-453A-8E27-883171F9D7D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAAE91BD-A7A8-453A-8E27-883171F9D7D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13D778EB-74DA-40CA-8A0A-3A8E48F3123C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13D778EB-74DA-40CA-8A0A-3A8E48F3123C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13D778EB-74DA-40CA-8A0A-3A8E48F3123C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13D778EB-74DA-40CA-8A0A-3A8E48F3123C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

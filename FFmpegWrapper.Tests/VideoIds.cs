@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace WebmOpusUnitTest
+namespace FFmpegWrapper.Tests
 {
     internal static class VideoIds
     {
