@@ -15,11 +15,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\FFmpegWrapper\FFmpegWrapper.csproj" />
+		<Folder Include="Properties\" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Properties\" />
+	  <ProjectReference Include="..\FFmpegWrapper\FFmpegWrapper.csproj" />
 	</ItemGroup>
 
 </Project>

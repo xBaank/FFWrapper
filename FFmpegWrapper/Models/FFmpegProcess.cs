@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,6 +19,7 @@ namespace FFmpegWrapper.Models
 
         public new event Action<FFmpegProcess, string?>? ErrorDataReceived;
         public new event Action<FFmpegProcess, byte[]>? OutputDataReceived;
+        public event Action<FFmpegProcess>? ExitedWithError;
 
         internal Stream? Input { get; set; }
         internal Stream? Output { get; set; }
@@ -55,8 +57,6 @@ namespace FFmpegWrapper.Models
 
         private Task PipeOutput()
         {
-            if (Output == null)
-                throw new NullReferenceException("Output set to null");
 
             return Task.Run(async () =>
             {
@@ -65,7 +65,9 @@ namespace FFmpegWrapper.Models
 
                 while ((bytesRead = await StandardOutput.BaseStream.ReadAsync(bytes, 0, bytes.Length)) != 0)
                 {
-                    await Output.WriteAsync(bytes, 0, bytesRead);
+                    if (Output != null)
+                        await Output.WriteAsync(bytes, 0, bytesRead);
+
                     CallOutputEvent(bytes);
                 }
 
@@ -76,37 +78,53 @@ namespace FFmpegWrapper.Models
         {
             return Task.Run(async () =>
             {
-                StringBuilder stringBuilder = new StringBuilder();
-
                 while (!StandardError.EndOfStream)
-                {
-                    string? line = await StandardError.ReadLineAsync();
-                    CallErrorEvent(line);
-                    stringBuilder.AppendLine(line);
-                }
-
-                CallErrorEvent(stringBuilder.ToString());
-
+                    CallErrorEvent(await StandardError.ReadLineAsync());
             });
+        }
+
+        public async Task<byte[]> GetNextBytes()
+        {
+            if (!StartInfo.RedirectStandardOutput)
+                throw new InvalidOperationException("Output not being redirected");
+
+            if (Output is not null)
+                throw new InvalidOperationException("All output data is being written to the output stream");
+
+            byte[] bytes = new byte[OutputBuffer];
+            int bytesRead = await StandardOutput.BaseStream.ReadAsync(bytes, 0, OutputBuffer);
+
+            bytes = bytes.Take(bytesRead).ToArray();
+            CallOutputEvent(bytes);
+            return bytes;
         }
 
         private FFmpegProcess StartProcess()
         {
+            Exited += new EventHandler(CallExitEvent);
             base.Start();
 
             if (StartInfo.RedirectStandardInput)
                 tasks.Add(PipeInput());
 
-            if (StartInfo.RedirectStandardOutput)
+            if (StartInfo.RedirectStandardOutput && Output is not null)
                 tasks.Add(PipeOutput());
 
             if (StartInfo.RedirectStandardError)
                 tasks.Add(PipeError());
+
 
             return this;
         }
 
         private void CallOutputEvent(byte[] bytes) => OutputDataReceived?.Invoke(this, bytes);
         private void CallErrorEvent(string? messageException) => ErrorDataReceived?.Invoke(this, messageException);
+        private void CallExitEvent(object? sender, EventArgs e)
+        {
+            Process? process = (Process?)sender;
+
+            if (process?.ExitCode != 0)
+                ExitedWithError?.Invoke(this);
+        }
     }
 }

@@ -11,12 +11,14 @@ namespace FFmpegWrapper.Models
         public string Path { get; }
         public event Action<FFmpegClient, FFmpegProcess, byte[]>? OutputReceived;
         public event Action<FFmpegClient, FFmpegProcess, string>? ErrorReceived;
+        public event Action<FFmpegClient, FFmpegProcess>? ExitedWithError;
 
         public FFmpegClient(string ffmpegPath) => Path = System.IO.Path.GetFullPath(ffmpegPath);
 
         public void ConvertToStream(string input, Stream output, MediaTypes outputType) => CreateFFmpegBuilder()
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
+            .RaiseExitErrorEvent(ExitWithErrorRecieved)
             .From(input)
             .To(output, outputType)
             .Build()
@@ -25,6 +27,7 @@ namespace FFmpegWrapper.Models
         public Task ConvertToStreamAsync(string input, Stream output, MediaTypes outputType) => CreateFFmpegBuilder()
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
+            .RaiseExitErrorEvent(ExitWithErrorRecieved)
             .From(input)
             .To(output, outputType)
             .Build()
@@ -33,6 +36,7 @@ namespace FFmpegWrapper.Models
         public void ConvertToStream(Stream input, MediaTypes inputType, Stream output, MediaTypes outputType) => CreateFFmpegBuilder()
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
+            .RaiseExitErrorEvent(ExitWithErrorRecieved)
             .From(input, inputType)
             .To(output, outputType)
             .Build()
@@ -41,6 +45,7 @@ namespace FFmpegWrapper.Models
         public Task ConvertToStreamAsync(Stream input, MediaTypes inputType, Stream output, MediaTypes outputType) => CreateFFmpegBuilder()
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
+            .RaiseExitErrorEvent(ExitWithErrorRecieved)
             .From(input, inputType)
             .To(output, outputType)
             .Build()
@@ -49,6 +54,7 @@ namespace FFmpegWrapper.Models
         public void Convert(string input, string output) => CreateFFmpegBuilder()
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
+            .RaiseExitErrorEvent(ExitWithErrorRecieved)
             .From(input)
             .To(output)
             .Build()
@@ -57,6 +63,7 @@ namespace FFmpegWrapper.Models
         public Task ConvertAsync(string input, string output) => CreateFFmpegBuilder()
            .RedirectError(true)
            .RaiseErrorEvents(ErrorRecieved)
+           .RaiseExitErrorEvent(ExitWithErrorRecieved)
            .From(input)
            .To(output)
            .Build()
@@ -65,6 +72,7 @@ namespace FFmpegWrapper.Models
         public void Convert(Stream input, string output, MediaTypes inputType) => CreateFFmpegBuilder()
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
+            .RaiseExitErrorEvent(ExitWithErrorRecieved)
             .From(input, inputType)
             .To(output)
             .Build()
@@ -73,10 +81,48 @@ namespace FFmpegWrapper.Models
         public Task ConvertAsync(Stream input, string output, MediaTypes inputType) => CreateFFmpegBuilder()
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
+            .RaiseExitErrorEvent(ExitWithErrorRecieved)
             .From(input, inputType)
             .To(output)
             .Build()
             .StartAsync();
+
+        /// <summary>
+        /// Must read from output pipe using <see cref="FFmpegProcess.GetNextBytes"/>
+        /// </summary>
+        public FFmpegProcess ConvertToPipe(Stream input, MediaTypes inputType, MediaTypes outputType)
+        {
+            var process = CreateFFmpegBuilder()
+            .RedirectError(true)
+            .RaiseErrorEvents(ErrorRecieved)
+            .RaiseExitErrorEvent(ExitWithErrorRecieved)
+            .From(input, inputType)
+            .To(outputType)
+            .Build();
+
+            process.StartAsync();
+
+            return process;
+
+        }
+
+        /// <summary>
+        /// Must read from output pipe using <see cref="FFmpegProcess.GetNextBytes"/>
+        /// </summary>
+        public FFmpegProcess ConvertToPipe(string input, MediaTypes outputType)
+        {
+            var process = CreateFFmpegBuilder()
+            .RedirectError(true)
+            .RaiseErrorEvents(ErrorRecieved)
+            .RaiseExitErrorEvent(ExitWithErrorRecieved)
+            .From(input)
+            .To(outputType)
+            .Build();
+
+            process.StartAsync();
+
+            return process;
+        }
 
         private FFmpegProcessBuilder CreateFFmpegBuilder() => new FFmpegProcessBuilder()
             .ShellExecute(false)
@@ -90,6 +136,7 @@ namespace FFmpegWrapper.Models
         }
 
         private void OutputRecieved(FFmpegProcess sender, byte[] bytes) => OutputReceived?.Invoke(this, sender, bytes);
+        private void ExitWithErrorRecieved(FFmpegProcess sender) => ExitedWithError?.Invoke(this, sender);
     }
 
 }

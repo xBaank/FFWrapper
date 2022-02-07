@@ -8,10 +8,11 @@ namespace FFmpegWrapper.Builders
 {
     public class FFmpegProcessBuilder : IFFmpegProcessBuilder<FFmpegProcessBuilder, FFmpegProcess>
     {
-        public FFmpegProcessBuilder() => ffmpegProcess = new FFmpegProcess();
-        public FFmpegProcess Build() => ffmpegProcess;
-
         private FFmpegProcess ffmpegProcess;
+
+        public FFmpegProcessBuilder() => ffmpegProcess = new FFmpegProcess();
+
+        public FFmpegProcess Build() => ffmpegProcess;
 
         public FFmpegProcessBuilder ShellExecute(bool value)
         {
@@ -40,6 +41,11 @@ namespace FFmpegWrapper.Builders
         public FFmpegProcessBuilder RaiseErrorEvents(Action<FFmpegProcess, string> action)
         {
             ffmpegProcess.ErrorDataReceived += action;
+            return this;
+        }
+        public FFmpegProcessBuilder RaiseExitErrorEvent(Action<FFmpegProcess> action)
+        {
+            ffmpegProcess.ExitedWithError += action;
             return this;
         }
 
@@ -103,6 +109,10 @@ namespace FFmpegWrapper.Builders
             RedirectOutput(true)
             .AddArguments(type.GetOutPutArgs())
             .SetOutput(output);
+
+        public FFmpegProcessBuilder To(MediaTypes type) =>
+            RedirectOutput(true)
+            .AddArguments(type.GetOutPutArgs());
 
         public FFmpegProcessBuilder To(string output) =>
             RedirectOutput(false)
