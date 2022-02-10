@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 
 using FFmpegWrapper.Builders;
+using FFmpegWrapper.Codecs;
 
 namespace FFmpegWrapper.Models
 {
@@ -15,7 +16,7 @@ namespace FFmpegWrapper.Models
 
         public FFmpegClient(string ffmpegPath) => Path = System.IO.Path.GetFullPath(ffmpegPath);
 
-        public void ConvertToStream(string input, Stream output, MediaTypes outputType) => CreateFFmpegBuilder()
+        public void ConvertToStream(string input, Stream output, IFormat outputType) => CreateFFmpegBuilder()
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
@@ -24,7 +25,7 @@ namespace FFmpegWrapper.Models
             .Build()
             .Start();
 
-        public Task ConvertToStreamAsync(string input, Stream output, MediaTypes outputType) => CreateFFmpegBuilder()
+        public Task ConvertToStreamAsync(string input, Stream output, IFormat outputType) => CreateFFmpegBuilder()
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
@@ -33,7 +34,7 @@ namespace FFmpegWrapper.Models
             .Build()
             .StartAsync();
 
-        public void ConvertToStream(Stream input, MediaTypes inputType, Stream output, MediaTypes outputType) => CreateFFmpegBuilder()
+        public void ConvertToStream(Stream input, IFormat inputType, Stream output, IFormat outputType) => CreateFFmpegBuilder()
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
@@ -42,7 +43,7 @@ namespace FFmpegWrapper.Models
             .Build()
             .Start();
 
-        public Task ConvertToStreamAsync(Stream input, MediaTypes inputType, Stream output, MediaTypes outputType) => CreateFFmpegBuilder()
+        public Task ConvertToStreamAsync(Stream input, IFormat inputType, Stream output, IFormat outputType) => CreateFFmpegBuilder()
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
@@ -69,7 +70,7 @@ namespace FFmpegWrapper.Models
            .Build()
            .StartAsync();
 
-        public void Convert(Stream input, string output, MediaTypes inputType) => CreateFFmpegBuilder()
+        public void Convert(Stream input, string output, IFormat inputType) => CreateFFmpegBuilder()
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
@@ -78,7 +79,7 @@ namespace FFmpegWrapper.Models
             .Build()
             .Start();
 
-        public Task ConvertAsync(Stream input, string output, MediaTypes inputType) => CreateFFmpegBuilder()
+        public Task ConvertAsync(Stream input, string output, IFormat inputType) => CreateFFmpegBuilder()
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
@@ -90,7 +91,7 @@ namespace FFmpegWrapper.Models
         /// <summary>
         /// Must read from output pipe using <see cref="FFmpegProcess.GetNextBytes"/>
         /// </summary>
-        public FFmpegProcess ConvertToPipe(Stream input, MediaTypes inputType, MediaTypes outputType)
+        public FFmpegProcess ConvertToPipe(Stream input, IFormat inputType, IFormat outputType)
         {
             var process = CreateFFmpegBuilder()
             .RedirectError(true)
@@ -109,7 +110,7 @@ namespace FFmpegWrapper.Models
         /// <summary>
         /// Must read from output pipe using <see cref="FFmpegProcess.GetNextBytes"/>
         /// </summary>
-        public FFmpegProcess ConvertToPipe(string input, MediaTypes outputType)
+        public FFmpegProcess ConvertToPipe(string input, IFormat outputType)
         {
             var process = CreateFFmpegBuilder()
             .RedirectError(true)

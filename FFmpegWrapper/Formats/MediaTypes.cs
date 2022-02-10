@@ -6,7 +6,7 @@
         AMV,
         MKV,
         WEBM,
-        OPUS,
+        DATA,
         MP3
     }
 }

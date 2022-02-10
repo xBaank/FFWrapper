@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 
+using FFmpegWrapper.Codecs;
 using FFmpegWrapper.Extensions;
 using FFmpegWrapper.Models;
 
@@ -104,23 +105,31 @@ namespace FFmpegWrapper.Builders
         }
 
 
+        public FFmpegProcessBuilder AsRaw() => AddArguments("-f data");
 
-        public FFmpegProcessBuilder To(Stream output, MediaTypes type) =>
+
+        public FFmpegProcessBuilder To(IFormat type) =>
             RedirectOutput(true)
-            .AddArguments(type.GetOutPutArgs())
+            .AddArguments(type.GetFormatArg())
+            .AddArguments(type.GetCustomArgs())
+            .AddArguments("pipe:");
+
+        public FFmpegProcessBuilder To(Stream output, IFormat type) =>
+            To(type)
             .SetOutput(output);
-
-        public FFmpegProcessBuilder To(MediaTypes type) =>
-            RedirectOutput(true)
-            .AddArguments(type.GetOutPutArgs());
 
         public FFmpegProcessBuilder To(string output) =>
             RedirectOutput(false)
             .AddArguments(output);
 
-        public FFmpegProcessBuilder From(Stream input, MediaTypes type) =>
-            AddArguments(type.GetInputArgs())
-            .RedirectInput(true)
+        public FFmpegProcessBuilder From(IFormat type) =>
+            AddArguments(type.GetFormatArg())
+            .AddArguments(type.GetCustomArgs())
+            .AddArguments("-i pipe:")
+            .RedirectInput(true);
+
+        public FFmpegProcessBuilder From(Stream input, IFormat type) =>
+            From(type)
             .SetInput(input);
 
         public FFmpegProcessBuilder From(string input) =>

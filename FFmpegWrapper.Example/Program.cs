@@ -1,4 +1,6 @@
-﻿using FFmpegWrapper.Example;
+﻿using FFmpegWrapper.Builders;
+using FFmpegWrapper.Example;
+using FFmpegWrapper.Formats;
 using FFmpegWrapper.Models;
 
 using System;
@@ -16,7 +18,7 @@ namespace WebmPoc
             var streamInfo = YtUtils.GetStreamInfo(song.FirstOrDefault().Id).GetAwaiter().GetResult();
             //var filea = File.Open("asd.webm", FileMode.Open);
             FileStream file = new FileStream("eldenring.opus", FileMode.OpenOrCreate);
-            var process = fFmpegClient.ConvertToPipe(streamInfo.Url, MediaTypes.OPUS);
+            var process = fFmpegClient.ConvertToPipe(streamInfo.Url, new OpusFormat(96, TracksArgumentsBuilder.WithAllTracks()));
             fFmpegClient.ExitedWithError += ErrorExit;
             byte[] buffer;
             while ((buffer = process.GetNextBytes().Result).Length > 0)
