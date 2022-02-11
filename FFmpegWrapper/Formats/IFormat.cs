@@ -1,5 +1,5 @@
 ﻿
-namespace FFmpegWrapper.Codecs
+namespace FFmpegWrapper.Formats
 {
     public interface IFormat
     {

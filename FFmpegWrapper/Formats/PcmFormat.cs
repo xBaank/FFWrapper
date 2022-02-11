@@ -1,7 +1,5 @@
-﻿using FFmpegWrapper.Codecs;
-using FFmpegWrapper.Formats;
-
-namespace FFmpegWrapper.Models
+﻿
+namespace FFmpegWrapper.Formats
 {
     public class PcmFormat : Format, IFormat
     {

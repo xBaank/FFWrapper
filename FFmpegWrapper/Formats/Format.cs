@@ -1,6 +1,4 @@
-﻿using FFmpegWrapper.Codecs;
-using FFmpegWrapper.Models;
-
+﻿
 namespace FFmpegWrapper.Formats
 {
     public class Format : IFormat

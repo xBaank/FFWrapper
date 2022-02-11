@@ -1,4 +1,4 @@
-﻿namespace FFmpegWrapper.Models
+﻿namespace FFmpegWrapper.Formats
 {
     public enum MediaTypes
     {

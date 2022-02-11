@@ -3,11 +3,11 @@ using System.IO;
 using System.Threading.Tasks;
 
 using FFmpegWrapper.Builders;
-using FFmpegWrapper.Codecs;
+using FFmpegWrapper.Formats;
 
 namespace FFmpegWrapper.Models
 {
-    public partial class FFmpegClient
+    public class FFmpegClient
     {
         public string Path { get; }
         public event Action<FFmpegClient, FFmpegProcess, byte[]>? OutputReceived;

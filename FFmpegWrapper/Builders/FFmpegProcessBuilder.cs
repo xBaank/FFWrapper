@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
 
-using FFmpegWrapper.Codecs;
 using FFmpegWrapper.Extensions;
+using FFmpegWrapper.Formats;
 using FFmpegWrapper.Models;
 
 namespace FFmpegWrapper.Builders
@@ -70,7 +70,7 @@ namespace FFmpegWrapper.Builders
 
         public FFmpegProcessBuilder AddArguments(string args)
         {
-            if(!string.IsNullOrWhiteSpace(args))
+            if (!string.IsNullOrWhiteSpace(args))
                 ffmpegProcess.StartInfo.ArgumentList.AddRange(args.Trim().Split(" "));
             return this;
         }

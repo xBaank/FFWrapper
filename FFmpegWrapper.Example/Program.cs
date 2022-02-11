@@ -1,5 +1,5 @@
-﻿using FFmpegWrapper.Arguments;
-using FFmpegWrapper.Example;
+﻿using FFmpegWrapper.Example;
+using FFmpegWrapper.Formats;
 using FFmpegWrapper.Models;
 
 using System;
@@ -16,8 +16,8 @@ namespace WebmPoc
             var song = YtUtils.GetSongsUrl("elden ring trailer").GetAwaiter().GetResult();
             var streamInfo = YtUtils.GetStreamInfo(song.FirstOrDefault().Id).GetAwaiter().GetResult();
             //var filea = File.Open("asd.webm", FileMode.Open);
-            FileStream file = new FileStream("eldenring.aac", FileMode.OpenOrCreate);
-            var process = fFmpegClient.ConvertToPipe(streamInfo.Url, new CopyCodecFormat(type: "Data", args: TracksArguments.WithAllAudioTracks()));
+            FileStream file = new FileStream("eldenring.mp3", FileMode.OpenOrCreate);
+            var process = fFmpegClient.ConvertToPipe(streamInfo.Url, new Format(type: "mp3"));
             fFmpegClient.ExitedWithError += ErrorExit;
             byte[] buffer;
             while ((buffer = process.GetNextBytes().Result).Length > 0 && !process.HasExited)

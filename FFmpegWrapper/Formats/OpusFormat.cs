@@ -1,7 +1,6 @@
-﻿using FFmpegWrapper.Codecs;
-using FFmpegWrapper.Formats;
+﻿using FFmpegWrapper.Formats;
 
-namespace FFmpegWrapper.Models
+namespace FFmpegWrapper.Formats
 {
     public class OpusFormat : Format, IFormat
     {
