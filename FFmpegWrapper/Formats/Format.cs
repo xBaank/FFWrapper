@@ -18,7 +18,7 @@ namespace FFmpegWrapper.Formats
             Type = type;
             Args = args;
         }
-        public string GetFormatArg() => $"-f {Type}";
+        public string GetFormatArg() => $" -f {Type} ";
         public string GetCustomArgs() => Args ?? string.Empty;
     }
 }

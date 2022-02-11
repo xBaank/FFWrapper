@@ -39,7 +39,7 @@ namespace FFmpegWrapper.Example
         public static async Task<IStreamInfo> GetStreamInfo(string videoId)
         {
             YoutubeClient youtubeClient = new YoutubeClient();
-            AudioOnlyStreamInfo? audio = null;
+            IStreamInfo? audio = null;
             bool retry = true;
             int retries = 5;
             while (retries > 0 && retry == true)
@@ -47,7 +47,7 @@ namespace FFmpegWrapper.Example
                 try
                 {
                     var streamManifest = await youtubeClient.Videos.Streams.GetManifestAsync(videoId);
-                    audio = streamManifest.GetAudioOnlyStreams().Where(i => i.Container == Container.WebM && i.AudioCodec == "opus").OrderBy(i => i.Bitrate.BitsPerSecond).FirstOrDefault();
+                    audio = streamManifest.GetMuxedStreams().OrderBy(i => i.Bitrate.BitsPerSecond).FirstOrDefault();
                     retry = false;
                 }
                 catch

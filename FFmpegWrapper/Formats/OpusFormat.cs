@@ -7,7 +7,7 @@ namespace FFmpegWrapper.Models
     {
         public int Bitrate { get; set; }
 
-        public OpusFormat(int bitrate, string? args = default) : base("Opus", args) =>
+        public OpusFormat(string type = "Opus", int bitrate = 96, string? args = default) : base(type, args) =>
             Bitrate = bitrate;
 
         public new string GetCustomArgs() => $" -c:a libopus -b:a {Bitrate}K " + Args;

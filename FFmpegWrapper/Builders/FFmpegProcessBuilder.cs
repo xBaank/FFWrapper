@@ -70,7 +70,8 @@ namespace FFmpegWrapper.Builders
 
         public FFmpegProcessBuilder AddArguments(string args)
         {
-            ffmpegProcess.StartInfo.ArgumentList.AddRange(args.Trim().Split(" "));
+            if(!string.IsNullOrWhiteSpace(args))
+                ffmpegProcess.StartInfo.ArgumentList.AddRange(args.Trim().Split(" "));
             return this;
         }
 

@@ -7,6 +7,8 @@
         MKV,
         WEBM,
         DATA,
+        OPUS,
+        AAC,
         MP3
     }
 }
