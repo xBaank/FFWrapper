@@ -1,6 +1,11 @@
 {
   "profiles": {
-    "yt-dlp-POC": {
+    "WSL": {
+      "commandName": "WSL2",
+      "environmentVariables": {},
+      "distributionName": ""
+    },
+    "FFmpegWrapper.Example": {
       "commandName": "Project",
       "commandLineArgs": "\"9bZkp7q19f0\""
     }

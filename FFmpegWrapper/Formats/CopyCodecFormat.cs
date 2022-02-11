@@ -9,7 +9,7 @@ namespace FFmpegWrapper.Formats
         public CopyCodecFormat(string type, CocecFormatTypes cocecFormat, string? args = default) : base(type, args) =>
             CocecFormat = cocecFormat;
 
-        public new string GetCustomArgs() => $" -c:{CocecFormat} copy " + Args;
+        public new string GetCustomArgs() => ($" -c:{CocecFormat.ToString().ToLowerInvariant()} copy " + Args);
     }
     public enum CocecFormatTypes
     {

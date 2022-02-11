@@ -47,7 +47,7 @@ namespace FFmpegWrapper.Example
                 try
                 {
                     var streamManifest = await youtubeClient.Videos.Streams.GetManifestAsync(videoId);
-                    audio = streamManifest.GetMuxedStreams().OrderBy(i => i.Bitrate.BitsPerSecond).FirstOrDefault();
+                    audio = streamManifest.GetAudioOnlyStreams().Where(i => i.Container == Container.WebM).OrderBy(i => i.Bitrate.BitsPerSecond).FirstOrDefault();
                     retry = false;
                 }
                 catch
