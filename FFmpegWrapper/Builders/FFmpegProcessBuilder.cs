@@ -7,7 +7,7 @@ using FFmpegWrapper.Models;
 
 namespace FFmpegWrapper.Builders
 {
-    public class FFmpegProcessBuilder : IFFmpegProcessBuilder<FFmpegProcessBuilder, FFmpegProcess>
+    public class FFmpegProcessBuilder : IFFmpegProcessBuilder
     {
         private FFmpegProcess ffmpegProcess;
 
@@ -104,9 +104,6 @@ namespace FFmpegWrapper.Builders
             ffmpegProcess.OutputBuffer = value;
             return this;
         }
-
-
-        public FFmpegProcessBuilder AsRaw() => AddArguments("-f data");
 
 
         public FFmpegProcessBuilder To(IFormat type) =>

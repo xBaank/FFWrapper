@@ -23,7 +23,17 @@
 
 
 	<ItemGroup>
+		<Compile Update="Models\FFmpegProcess.cs">
+			<SubType>Component</SubType>
+		</Compile>
+	</ItemGroup>
+
+
+	<ItemGroup>
 		<None Update="FFMPEG\ffmpeg.exe">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="FFMPEG\ffprobe.exe">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>

@@ -11,9 +11,9 @@ namespace FFmpegWrapper.Formats
             MediaFormat = format.ToString();
             Args = args;
         }
-        public Format(string type, string? args = default)
+        public Format(string format, string? args = default)
         {
-            MediaFormat = type;
+            MediaFormat = format;
             Args = args;
         }
         public string GetFormatArg() => $" -f {MediaFormat} ";

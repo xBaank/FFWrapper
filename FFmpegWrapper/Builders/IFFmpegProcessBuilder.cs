@@ -1,16 +1,18 @@
 ﻿using System;
 using System.IO;
 
+using FFmpegWrapper.Models;
+
 namespace FFmpegWrapper.Builders
 {
     /// <inheritdoc/>
-    public interface IFFmpegProcessBuilder<T, K> : IProcessBuilder<T, K>
+    public interface IFFmpegProcessBuilder : IProcessBuilder<FFmpegProcessBuilder, FFmpegProcess>
     {
-        public T SetInput(Stream stream);
-        public T SetOutput(Stream stream);
-        public T SetInputBuffer(int value);
-        public T SetOutputBuffer(int value);
-        public T RaiseOutputEvents(Action<K, byte[]> action);
-        public T RaiseErrorEvents(Action<K, string> action);
+        public FFmpegProcessBuilder SetInput(Stream stream);
+        public FFmpegProcessBuilder SetOutput(Stream stream);
+        public FFmpegProcessBuilder SetInputBuffer(int value);
+        public FFmpegProcessBuilder SetOutputBuffer(int value);
+        public FFmpegProcessBuilder RaiseOutputEvents(Action<FFmpegProcess, byte[]> action);
+        public FFmpegProcessBuilder RaiseErrorEvents(Action<FFmpegProcess, string> action);
     }
 }

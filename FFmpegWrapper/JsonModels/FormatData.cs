@@ -2,13 +2,14 @@
 
 namespace FFmpegWrapper.JsonModels
 {
+    // Root myDeserializedClass = JsonSerializer.Deserialize<Root>(myJsonResponse);
     public class Tags
     {
         [JsonPropertyName("encoder")]
         public string? Encoder { get; set; }
     }
 
-    public class Format
+    public class FormatMetadata
     {
         [JsonPropertyName("filename")]
         public string? Filename { get; set; }
@@ -26,16 +27,20 @@ namespace FFmpegWrapper.JsonModels
         public string? FormatLongName { get; set; }
 
         [JsonPropertyName("start_time")]
-        public string? StartTime { get; set; }
+        [JsonConverter(typeof(DoubleConverter))]
+        public double? StartTime { get; set; }
 
         [JsonPropertyName("duration")]
-        public string? Duration { get; set; }
+        [JsonConverter(typeof(DoubleConverter))]
+        public double? Duration { get; set; }
 
         [JsonPropertyName("size")]
-        public string? Size { get; set; }
+        [JsonConverter(typeof(LongConverter))]
+        public long? Size { get; set; }
 
         [JsonPropertyName("bit_rate")]
-        public string? BitRate { get; set; }
+        [JsonConverter(typeof(LongConverter))]
+        public long? BitRate { get; set; }
 
         [JsonPropertyName("probe_score")]
         public int? ProbeScore { get; set; }
@@ -43,6 +48,14 @@ namespace FFmpegWrapper.JsonModels
         [JsonPropertyName("tags")]
         public Tags? Tags { get; set; }
     }
+
+    public class Root
+    {
+        [JsonPropertyName("format")]
+        public FormatMetadata? Format { get; set; }
+    }
+
+
 }
 
 
