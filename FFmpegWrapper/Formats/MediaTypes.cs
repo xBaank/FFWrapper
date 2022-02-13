@@ -9,6 +9,7 @@
         DATA,
         OPUS,
         AAC,
-        MP3
+        MP3,
+        OGG
     }
 }

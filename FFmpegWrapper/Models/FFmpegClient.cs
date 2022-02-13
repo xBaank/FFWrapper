@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 
 using FFmpegWrapper.Builders;
@@ -7,12 +6,8 @@ using FFmpegWrapper.Formats;
 
 namespace FFmpegWrapper.Models
 {
-    public class FFmpegClient
+    public class FFmpegClient : Client
     {
-        public string Path { get; }
-        public event Action<FFmpegClient, FFmpegProcess, byte[]>? OutputReceived;
-        public event Action<FFmpegClient, FFmpegProcess, string>? ErrorReceived;
-        public event Action<FFmpegClient, FFmpegProcess>? ExitedWithError;
 
         public FFmpegClient(string ffmpegPath) => Path = System.IO.Path.GetFullPath(ffmpegPath);
 
@@ -129,15 +124,6 @@ namespace FFmpegWrapper.Models
             .ShellExecute(false)
             .CreateNoWindow(true)
             .Path(Path);
-
-        private void ErrorRecieved(FFmpegProcess sender, string message)
-        {
-            ErrorReceived?.Invoke(this, sender, message);
-            Console.WriteLine(message);
-        }
-
-        private void OutputRecieved(FFmpegProcess sender, byte[] bytes) => OutputReceived?.Invoke(this, sender, bytes);
-        private void ExitWithErrorRecieved(FFmpegProcess sender) => ExitedWithError?.Invoke(this, sender);
     }
 
 }

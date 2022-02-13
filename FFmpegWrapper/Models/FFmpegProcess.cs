@@ -23,7 +23,6 @@ namespace FFmpegWrapper.Models
 
         internal Stream? Input { get; set; }
         internal Stream? Output { get; set; }
-        internal string? Error { get; set; }
         internal int InputBuffer { get; set; } = 4096;
         internal int OutputBuffer { get; set; } = 4096;
 

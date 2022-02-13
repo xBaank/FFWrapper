@@ -3,20 +3,20 @@ namespace FFmpegWrapper.Formats
 {
     public class Format : IFormat
     {
-        public string? Type { get; set; }
+        public string? MediaFormat { get; set; }
         public string? Args { get; set; }
         public Format() { }
-        public Format(MediaTypes type, string? args = default)
+        public Format(MediaTypes format, string? args = default)
         {
-            Type = type.ToString();
+            MediaFormat = format.ToString();
             Args = args;
         }
         public Format(string type, string? args = default)
         {
-            Type = type;
+            MediaFormat = type;
             Args = args;
         }
-        public string GetFormatArg() => $" -f {Type} ";
+        public string GetFormatArg() => $" -f {MediaFormat} ";
         public string GetCustomArgs() => Args ?? string.Empty;
     }
 }
