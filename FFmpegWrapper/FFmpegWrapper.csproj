@@ -23,7 +23,7 @@
 
 
 	<ItemGroup>
-		<Compile Update="Models\FFmpegProcess.cs">
+		<Compile Update="Models\FFProcess.cs">
 			<SubType>Component</SubType>
 		</Compile>
 	</ItemGroup>

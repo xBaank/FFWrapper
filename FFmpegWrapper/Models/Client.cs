@@ -7,6 +7,8 @@ namespace FFmpegWrapper.Models
     {
         public string Path { get; protected set; }
 
+        public Client(string path) => Path = System.IO.Path.GetFullPath(path);
+
         public event Action<Client, Process, byte[]>? OutputReceived;
         public event Action<Client, Process, string>? ErrorReceived;
         public event Action<Client, Process>? ExitedWithError;

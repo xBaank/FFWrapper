@@ -12,13 +12,13 @@ namespace FFmpegWrapper.Models
     /// <summary>
     /// FFmpeg process, use FFmpegProcessBuilder to create a FFmpegProcess or FFmpegClient to convert mediaFiles
     /// </summary>
-    public class FFmpegProcess : Process
+    public class FFProcess : Process
     {
 
 
-        public new event Action<FFmpegProcess, string?>? ErrorDataReceived;
-        public new event Action<FFmpegProcess, byte[]>? OutputDataReceived;
-        public event Action<FFmpegProcess>? ExitedWithError;
+        public new event Action<FFProcess, string?>? ErrorDataReceived;
+        public new event Action<FFProcess, byte[]>? OutputDataReceived;
+        public event Action<FFProcess>? ExitedWithError;
 
         internal Stream? Input { get; set; }
         internal Stream? Output { get; set; }
@@ -28,13 +28,31 @@ namespace FFmpegWrapper.Models
         private List<Task> tasks = new List<Task>();
 
 
-        internal FFmpegProcess()
+        internal FFProcess()
         {
             //Don't allow end user to create process directly
         }
 
         public new void Start() => StartProcess().tasks.WaitAll();
         public Task StartAsync() => StartProcess().tasks.WhenAll();
+        public string ReadAsString()
+        {
+            if (Output is null)
+                throw new Exception("Output is null");
+            if (Output.CanSeek)
+                Output.Seek(0, SeekOrigin.Begin);
+
+            return new StreamReader(Output).ReadToEnd();
+        }
+
+        public async Task<string> ReadAsStringAsync()
+        {
+            if (Output is null)
+                throw new Exception("Output is null");
+            if (Output.CanSeek)
+                Output.Seek(0, SeekOrigin.Begin);
+            return await new StreamReader(Output).ReadToEndAsync();
+        }
 
         private Task PipeInput()
         {
@@ -97,7 +115,7 @@ namespace FFmpegWrapper.Models
             return bytes;
         }
 
-        private FFmpegProcess StartProcess()
+        private FFProcess StartProcess()
         {
             Exited += new EventHandler(CallExitEvent);
             base.Start();

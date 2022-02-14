@@ -8,8 +8,7 @@ namespace FFmpegWrapper.Models
 {
     public class FFmpegClient : Client
     {
-
-        public FFmpegClient(string ffmpegPath) => Path = System.IO.Path.GetFullPath(ffmpegPath);
+        public FFmpegClient(string path) : base(path) { }
 
         public void ConvertToStream(string input, Stream output, IFormat outputType) => CreateFFmpegBuilder()
             .RedirectError(true)
@@ -84,9 +83,9 @@ namespace FFmpegWrapper.Models
             .StartAsync();
 
         /// <summary>
-        /// Must read from output pipe using <see cref="FFmpegProcess.GetNextBytes"/>
+        /// Must read from output pipe using <see cref="FFProcess.GetNextBytes"/>
         /// </summary>
-        public FFmpegProcess ConvertToPipe(Stream input, IFormat inputType, IFormat outputType)
+        public FFProcess ConvertToPipe(Stream input, IFormat inputType, IFormat outputType)
         {
             var process = CreateFFmpegBuilder()
             .RedirectError(true)
@@ -103,9 +102,9 @@ namespace FFmpegWrapper.Models
         }
 
         /// <summary>
-        /// Must read from output pipe using <see cref="FFmpegProcess.GetNextBytes"/>
+        /// Must read from output pipe using <see cref="FFProcess.GetNextBytes"/>
         /// </summary>
-        public FFmpegProcess ConvertToPipe(string input, IFormat outputType)
+        public FFProcess ConvertToPipe(string input, IFormat outputType)
         {
             var process = CreateFFmpegBuilder()
             .RedirectError(true)

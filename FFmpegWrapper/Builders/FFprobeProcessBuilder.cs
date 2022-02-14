@@ -1,91 +1,13 @@
 ﻿using System.IO;
-using System;
 
-using FFmpegWrapper.Models;
-using FFmpegWrapper.Extensions;
 using FFmpegWrapper.Formats;
 
 namespace FFmpegWrapper.Builders
 {
-    public class FFprobeProcessBuilder : IFFprobeProcessBuilder
+    public class FFprobeProcessBuilder : FFProcessBuilder<FFprobeProcessBuilder>
     {
-        private FFProbeProcess ffProbeProcess;
 
-        public FFprobeProcessBuilder() => ffProbeProcess = new FFProbeProcess();
-
-        public FFProbeProcess Build() => ffProbeProcess;
-
-        public FFprobeProcessBuilder ShellExecute(bool value)
-        {
-            ffProbeProcess.StartInfo.UseShellExecute = value;
-            return this;
-        }
-
-        public FFprobeProcessBuilder CreateNoWindow(bool value)
-        {
-            ffProbeProcess.StartInfo.CreateNoWindow = value;
-            return this;
-        }
-
-        public FFprobeProcessBuilder Path(string value)
-        {
-            ffProbeProcess.StartInfo.FileName = value;
-            return this;
-        }
-
-        public FFprobeProcessBuilder RaiseErrorEvents(Action<FFProbeProcess, string> action)
-        {
-            ffProbeProcess.ErrorDataReceived += action;
-            return this;
-        }
-        public FFprobeProcessBuilder RaiseExitErrorEvent(Action<FFProbeProcess> action)
-        {
-            ffProbeProcess.ExitedWithError += action;
-            return this;
-        }
-
-        public FFprobeProcessBuilder RedirectOutput(bool value)
-        {
-            ffProbeProcess.StartInfo.RedirectStandardOutput = value;
-            return this;
-        }
-
-        public FFprobeProcessBuilder RedirectInput(bool value)
-        {
-            ffProbeProcess.StartInfo.RedirectStandardInput = value;
-            return this;
-        }
-
-        public FFprobeProcessBuilder RedirectError(bool value)
-        {
-            ffProbeProcess.StartInfo.RedirectStandardError = value;
-            return this;
-        }
-
-        public FFprobeProcessBuilder AddArguments(string args)
-        {
-            if (!string.IsNullOrWhiteSpace(args))
-                ffProbeProcess.StartInfo.ArgumentList.AddRange(args.Trim().Split(" "));
-            return this;
-        }
-
-        public FFprobeProcessBuilder SetArguments(string args)
-        {
-            ffProbeProcess.StartInfo.Arguments = args;
-            return this;
-        }
-
-        public FFprobeProcessBuilder SetInput(Stream stream)
-        {
-            ffProbeProcess.Input = stream;
-            return this;
-        }
-
-        public FFprobeProcessBuilder SetInputBuffer(int value)
-        {
-            ffProbeProcess.InputBuffer = value;
-            return this;
-        }
+        private Stream output = new MemoryStream();
 
         public FFprobeProcessBuilder From(string input) =>
             AddArguments(input);
@@ -93,6 +15,7 @@ namespace FFmpegWrapper.Builders
         public FFprobeProcessBuilder From(Stream input) =>
             AddArguments("pipe:")
             .RedirectInput(true)
+            .SetOutput(output)
             .SetInput(input);
 
         public FFprobeProcessBuilder SelectStreams(StreamType streamType, int streamNumber = 0) =>

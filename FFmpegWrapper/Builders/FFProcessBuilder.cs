@@ -1,0 +1,107 @@
+﻿using FFmpegWrapper.Models;
+using System.IO;
+using System;
+using FFmpegWrapper.Extensions;
+
+namespace FFmpegWrapper.Builders
+{
+    public abstract class FFProcessBuilder<T> : IProcessBuilder<T, FFProcess> where T : FFProcessBuilder<T>
+    {
+        private FFProcess ffProcess;
+
+        public FFProcessBuilder() => ffProcess = new FFProcess();
+
+
+        public FFProcess Build() => ffProcess;
+
+        public T ShellExecute(bool value)
+        {
+            ffProcess.StartInfo.UseShellExecute = value;
+
+            return (T)(T)this;
+        }
+
+        public T CreateNoWindow(bool value)
+        {
+            ffProcess.StartInfo.CreateNoWindow = value;
+            return (T)this;
+        }
+        public T Path(string value)
+        {
+            ffProcess.StartInfo.FileName = value;
+            return (T)this;
+        }
+
+        public T RaiseOutputEvents(Action<FFProcess, byte[]> action)
+        {
+            ffProcess.OutputDataReceived += action;
+            return (T)this;
+        }
+
+        public T RaiseErrorEvents(Action<FFProcess, string> action)
+        {
+            ffProcess.ErrorDataReceived += action;
+            return (T)this;
+        }
+        public T RaiseExitErrorEvent(Action<FFProcess> action)
+        {
+            ffProcess.ExitedWithError += action;
+            return (T)this;
+        }
+
+        public T RedirectOutput(bool value)
+        {
+            ffProcess.StartInfo.RedirectStandardOutput = value;
+            return (T)this;
+        }
+
+        public T RedirectInput(bool value)
+        {
+            ffProcess.StartInfo.RedirectStandardInput = value;
+            return (T)this;
+        }
+
+        public T RedirectError(bool value)
+        {
+            ffProcess.StartInfo.RedirectStandardError = value;
+            return (T)this;
+        }
+
+        public T AddArguments(string args)
+        {
+            if (!string.IsNullOrWhiteSpace(args))
+                ffProcess.StartInfo.ArgumentList.AddRange(args.Trim().Split(" "));
+            return (T)this;
+        }
+
+        public T SetArguments(string args)
+        {
+            ffProcess.StartInfo.Arguments = args;
+            return (T)this;
+        }
+
+        public T SetInput(Stream stream)
+        {
+            ffProcess.Input = stream;
+            return (T)this;
+        }
+
+        public T SetOutput(Stream stream)
+        {
+            ffProcess.Output = stream;
+            return (T)this;
+        }
+
+        public T SetInputBuffer(int value)
+        {
+            ffProcess.InputBuffer = value;
+            return (T)this;
+        }
+
+        public T SetOutputBuffer(int value)
+        {
+            ffProcess.OutputBuffer = value;
+            return (T)this;
+        }
+    }
+}
