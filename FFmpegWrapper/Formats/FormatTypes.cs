@@ -1,6 +1,6 @@
 ﻿namespace FFmpegWrapper.Formats
 {
-    public enum MediaTypes
+    public enum FormatTypes
     {
         MP4,
         AMV,

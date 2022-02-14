@@ -6,7 +6,7 @@ namespace FFmpegWrapper.Formats
         public string? MediaFormat { get; set; }
         public string? Args { get; set; }
         public Format() { }
-        public Format(MediaTypes format, string? args = default)
+        public Format(FormatTypes format, string? args = default)
         {
             MediaFormat = format.ToString();
             Args = args;

@@ -42,7 +42,7 @@ namespace FFmpegWrapper.Tests
 
             //Act
             file = new FileStream(saveFile, FileMode.OpenOrCreate);
-            await fFmpegClient.ConvertToStreamAsync(uri, file, new Format(MediaTypes.OPUS));
+            await fFmpegClient.ConvertToStreamAsync(uri, file, new Format(FormatTypes.OPUS));
 
             //Assert
             Assert.True(file.Length > 0);

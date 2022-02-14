@@ -7,17 +7,23 @@ namespace FFmpegWrapper.Builders
     public class FFprobeProcessBuilder : FFProcessBuilder<FFprobeProcessBuilder>
     {
 
-        private Stream output = new MemoryStream();
-
         public FFprobeProcessBuilder From(string input) =>
             AddArguments(input);
 
         public FFprobeProcessBuilder From(Stream input) =>
             AddArguments("pipe:")
             .RedirectInput(true)
-            .SetOutput(output)
             .SetInput(input);
+        public FFprobeProcessBuilder ReadIntervals() =>
+           AddArguments("-read_intervals");
 
+        public FFprobeProcessBuilder WithInterval(int timeStart, int timeAdded = 0)
+        {
+            if (timeAdded == 0)
+                timeAdded = int.MaxValue;
+
+            return AddArguments($"{timeStart}%+{timeAdded}");
+        }
         public FFprobeProcessBuilder SelectStreams(StreamType streamType, int streamNumber = 0) =>
           AddArguments($"-select_streams {streamType}:{streamNumber}");
 
