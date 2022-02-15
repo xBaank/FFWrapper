@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Globalization;
+using System.IO;
 
 using FFmpegWrapper.Formats;
 
@@ -17,12 +18,12 @@ namespace FFmpegWrapper.Builders
         public FFprobeProcessBuilder ReadIntervals() =>
            AddArguments("-read_intervals");
 
-        public FFprobeProcessBuilder WithInterval(int timeStart, int timeAdded = 0)
+        public FFprobeProcessBuilder WithInterval(double timeStart, double timeAdded = 0)
         {
             if (timeAdded == 0)
-                timeAdded = int.MaxValue;
+                timeAdded = double.MaxValue;
 
-            return AddArguments($"{timeStart}%+{timeAdded}");
+            return AddArguments($"{timeStart.ToString(CultureInfo.InvariantCulture)}%+{timeAdded.ToString(CultureInfo.InvariantCulture)}");
         }
         public FFprobeProcessBuilder SelectStreams(StreamType streamType, int streamNumber = 0) =>
           AddArguments($"-select_streams {streamType}:{streamNumber}");

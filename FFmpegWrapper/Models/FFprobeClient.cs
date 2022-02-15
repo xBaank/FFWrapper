@@ -25,26 +25,26 @@ namespace FFmpegWrapper.Models
             .GetAwaiter()
             .GetResult();
 
-        public async Task<List<Packet>?> GetPacketsAsync(string input, StreamType streamType, int timeStart = 0, int timeAdded = 0, int streamNumber = 0)
+        public async Task<List<Packet>?> GetPacketsAsync(string input, StreamType streamType, double timeStart = 0, double timeAdded = 0, int streamNumber = 0)
         {
             var process = PacketsProcess(input, streamType, timeStart, timeAdded, streamNumber);
             await process.StartAsync();
             return JsonSerializer.Deserialize<PacketRoot>(await process.ReadAsStringAsync())?.PacketsData;
         }
 
-        public List<Packet>? GetPackets(string input, StreamType streamType, int timeStart = 0, int timeAdded = 0, int streamNumber = 0) =>
+        public List<Packet>? GetPackets(string input, StreamType streamType, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
             GetPacketsAsync(input, streamType, timeStart, timeAdded, streamNumber)
             .GetAwaiter()
             .GetResult();
 
-        public async Task<List<Frame>?> GetFramesAsync(string input, StreamType streamType, int timeStart = 0, int timeAdded = 0, int streamNumber = 0)
+        public async Task<List<Frame>?> GetFramesAsync(string input, StreamType streamType, double timeStart = 0, double timeAdded = 0, int streamNumber = 0)
         {
             var process = FramesProcess(input, streamType, timeStart, timeAdded, streamNumber);
             await process.StartAsync();
             return JsonSerializer.Deserialize<FrameRoot>(await process.ReadAsStringAsync())?.Frames;
         }
 
-        public List<Frame>? GetFrames(string input, StreamType streamType, int timeStart = 0, int timeAdded = 0, int streamNumber = 0) =>
+        public List<Frame>? GetFrames(string input, StreamType streamType, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
             GetFramesAsync(input, streamType, timeStart, timeAdded, streamNumber)
             .GetAwaiter()
             .GetResult();
@@ -63,7 +63,7 @@ namespace FFmpegWrapper.Models
             .AsJson()
             .Build();
 
-        private FFProcess PacketsProcess(string input, StreamType streamType, int timeStart = 0, int timeAdded = 0, int streamNumber = 0) => CreateFFProbeBuilder()
+        private FFProcess PacketsProcess(string input, StreamType streamType, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) => CreateFFProbeBuilder()
             .RedirectOutput(true)
             .SetOutput(new MemoryStream())
             .From(input)
@@ -75,7 +75,7 @@ namespace FFmpegWrapper.Models
             .AsJson()
             .Build();
 
-        private FFProcess FramesProcess(string input, StreamType streamType, int timeStart = 0, int timeAdded = 0, int streamNumber = 0) => CreateFFProbeBuilder()
+        private FFProcess FramesProcess(string input, StreamType streamType, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) => CreateFFProbeBuilder()
             .RedirectOutput(true)
             .SetOutput(new MemoryStream())
             .From(input)
