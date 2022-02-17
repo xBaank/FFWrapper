@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net6.0</TargetFramework>
+		<RootNamespace>FFmpegWrapper.Example</RootNamespace>
+		<StartupObject></StartupObject>
+		<PackageId>FFmpegWrapper.Example</PackageId>
+		<AssemblyName>FFmpegWrapper.Example</AssemblyName>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="System.Linq.Async" Version="5.1.0" />
+		<PackageReference Include="YoutubeExplode" Version="6.0.7" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Properties\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\FFmpegWrapper\FFmpegWrapper.csproj" />
+	</ItemGroup>
+
+</Project>

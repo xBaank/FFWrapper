@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "yt-dlp-POC": {
-      "commandName": "Project",
-      "commandLineArgs": "\"9bZkp7q19f0\""
-    }
-  }
-}
