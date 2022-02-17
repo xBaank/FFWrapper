@@ -12,7 +12,8 @@ namespace FFmpegWrapper.Models
 
         public FFmpegClient(string path) : base(path) => _builder.CreateFFBuilder(path);
 
-        public void ConvertToStream(string input, Stream output, IFormat outputType) => CreateFFmpegBuilder()
+        public void ConvertToStream(string input, Stream output, IFormat outputType) => _builder
+            .CreateFFBuilder(Path)
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
@@ -21,7 +22,8 @@ namespace FFmpegWrapper.Models
             .Build()
             .Start();
 
-        public Task ConvertToStreamAsync(string input, Stream output, IFormat outputType) => CreateFFmpegBuilder()
+        public Task ConvertToStreamAsync(string input, Stream output, IFormat outputType) => _builder
+            .CreateFFBuilder(Path)
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
@@ -30,7 +32,8 @@ namespace FFmpegWrapper.Models
             .Build()
             .StartAsync();
 
-        public void ConvertToStream(Stream input, IFormat inputType, Stream output, IFormat outputType) => CreateFFmpegBuilder()
+        public void ConvertToStream(Stream input, IFormat inputType, Stream output, IFormat outputType) => _builder
+            .CreateFFBuilder(Path)
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
@@ -39,7 +42,8 @@ namespace FFmpegWrapper.Models
             .Build()
             .Start();
 
-        public Task ConvertToStreamAsync(Stream input, IFormat inputType, Stream output, IFormat outputType) => CreateFFmpegBuilder()
+        public Task ConvertToStreamAsync(Stream input, IFormat inputType, Stream output, IFormat outputType) => _builder
+            .CreateFFBuilder(Path)
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
@@ -48,7 +52,8 @@ namespace FFmpegWrapper.Models
             .Build()
             .StartAsync();
 
-        public void Convert(string input, string output) => CreateFFmpegBuilder()
+        public void Convert(string input, string output) => _builder
+            .CreateFFBuilder(Path)
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
@@ -57,7 +62,8 @@ namespace FFmpegWrapper.Models
             .Build()
             .Start();
 
-        public Task ConvertAsync(string input, string output) => CreateFFmpegBuilder()
+        public Task ConvertAsync(string input, string output) => _builder
+            .CreateFFBuilder(Path)
            .RedirectError(true)
            .RaiseErrorEvents(ErrorRecieved)
            .RaiseExitErrorEvent(ExitWithErrorRecieved)
@@ -66,7 +72,8 @@ namespace FFmpegWrapper.Models
            .Build()
            .StartAsync();
 
-        public void Convert(Stream input, string output, IFormat inputType) => CreateFFmpegBuilder()
+        public void Convert(Stream input, string output, IFormat inputType) => _builder
+            .CreateFFBuilder(Path)
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
@@ -75,7 +82,8 @@ namespace FFmpegWrapper.Models
             .Build()
             .Start();
 
-        public Task ConvertAsync(Stream input, string output, IFormat inputType) => CreateFFmpegBuilder()
+        public Task ConvertAsync(Stream input, string output, IFormat inputType) => _builder
+            .CreateFFBuilder(Path)
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
@@ -89,7 +97,7 @@ namespace FFmpegWrapper.Models
         /// </summary>
         public FFProcess ConvertToPipe(Stream input, IFormat inputType, IFormat outputType)
         {
-            var process = CreateFFmpegBuilder()
+            var process = _builder.CreateFFBuilder(Path)
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
@@ -108,7 +116,7 @@ namespace FFmpegWrapper.Models
         /// </summary>
         public FFProcess ConvertToPipe(string input, IFormat outputType)
         {
-            var process = CreateFFmpegBuilder()
+            var process = _builder.CreateFFBuilder(Path)
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
@@ -120,11 +128,6 @@ namespace FFmpegWrapper.Models
 
             return process;
         }
-
-        private FFmpegProcessBuilder CreateFFmpegBuilder() => new FFmpegProcessBuilder()
-            .ShellExecute(false)
-            .CreateNoWindow(true)
-            .Path(Path);
     }
 
 }
