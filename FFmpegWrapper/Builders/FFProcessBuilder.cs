@@ -5,7 +5,11 @@ using FFmpegWrapper.Extensions;
 
 namespace FFmpegWrapper.Builders
 {
-    public abstract class FFProcessBuilder<T> : IProcessBuilder<T, FFProcess> where T : FFProcessBuilder<T>
+    /// <summary>
+    /// Abstract class for FFmpeg and FFprobe processes.
+    /// </summary>
+    /// <typeparam name="T">Class implementation</typeparam>
+    public abstract class FFProcessBuilder<T> where T : FFProcessBuilder<T>
     {
         private FFProcess ffProcess;
 
@@ -18,7 +22,7 @@ namespace FFmpegWrapper.Builders
         {
             ffProcess.StartInfo.UseShellExecute = value;
 
-            return (T)(T)this;
+            return (T)this;
         }
 
         public T CreateNoWindow(bool value)
@@ -102,6 +106,19 @@ namespace FFmpegWrapper.Builders
         {
             ffProcess.OutputBuffer = value;
             return (T)this;
+        }
+
+        public abstract T From(string input);
+        public abstract T To(string output);
+
+        /// <summary>
+        /// Set the process path, with no window and no shell execute
+        /// </summary>
+        public T CreateFFBuilder(string path)
+        {
+            ffProcess.Dispose();
+            ffProcess = new FFProcess();
+            return ShellExecute(false).CreateNoWindow(true).Path(path);
         }
     }
 }

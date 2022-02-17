@@ -16,16 +16,18 @@ namespace WebmPoc
             FFprobeClient fFprobeClient = new FFprobeClient(Directory.GetCurrentDirectory() + "/FFMPEG/ffprobe.exe");
             var song = YtUtils.GetSongsUrl("eldenring trailer").GetAwaiter().GetResult();
             var streamInfo = YtUtils.GetStreamInfo(song.FirstOrDefault().Id).GetAwaiter().GetResult();
-            var format = fFprobeClient.GetMetadata(streamInfo.Url);
+
+            var format = fFprobeClient.GetMetadataAsync(streamInfo.Url).Result;
             double lastPostTime = 0;
-            while (lastPostTime < format.Duration)
+            var duration = format.Duration + format.StartTime;
+            while (lastPostTime < duration)
             {
-                var packets = fFprobeClient.GetPackets(streamInfo.Url, StreamType.a, lastPostTime, 20);
+                var packets = fFprobeClient.GetPacketsAsync(streamInfo.Url, StreamType.a, lastPostTime, 10).Result;
                 lastPostTime = (double)(packets.LastOrDefault().DtsTime + packets.LastOrDefault().DurationTime);
             }
 
 
-            //var frames = fFprobeClient.GetFrames(streamInfo.Url, StreamType.a);
+            var frames = fFprobeClient.GetFramesAsync(streamInfo.Url, StreamType.a, new MemoryStream()).Result;
 
             FileStream file = new FileStream("eldenring.mp3", FileMode.OpenOrCreate);
 

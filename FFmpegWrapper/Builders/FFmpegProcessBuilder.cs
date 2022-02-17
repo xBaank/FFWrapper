@@ -17,7 +17,7 @@ namespace FFmpegWrapper.Builders
             To(format)
             .SetOutput(output);
 
-        public FFmpegProcessBuilder To(string output) =>
+        public override FFmpegProcessBuilder To(string output) =>
             RedirectOutput(false)
             .AddArguments(output);
 
@@ -31,7 +31,7 @@ namespace FFmpegWrapper.Builders
             From(format)
             .SetInput(input);
 
-        public FFmpegProcessBuilder From(string input) =>
+        public override FFmpegProcessBuilder From(string input) =>
             AddArguments($"-i {input}")
             .RedirectInput(false);
     }

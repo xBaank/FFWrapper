@@ -8,7 +8,9 @@ namespace FFmpegWrapper.Models
 {
     public class FFmpegClient : Client
     {
-        public FFmpegClient(string path) : base(path) { }
+        private readonly FFmpegProcessBuilder _builder = new FFmpegProcessBuilder();
+
+        public FFmpegClient(string path) : base(path) => _builder.CreateFFBuilder(path);
 
         public void ConvertToStream(string input, Stream output, IFormat outputType) => CreateFFmpegBuilder()
             .RedirectError(true)

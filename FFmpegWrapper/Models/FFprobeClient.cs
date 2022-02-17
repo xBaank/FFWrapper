@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 using FFmpegWrapper.Builders;
@@ -11,81 +10,126 @@ namespace FFmpegWrapper.Models
 {
     public class FFprobeClient : Client
     {
+        private readonly FFprobeProcessBuilder _builder = new FFprobeProcessBuilder();
+
         public FFprobeClient(string path) : base(path) { }
 
-        public async Task<FormatMetadata?> GetMetadataAsync(string input)
+        public async Task<FormatMetadata?> GetMetadataAsync(string input, Stream output) =>
+            await GetMetadataDeserializeAsync(input, output);
+        public async Task<FormatMetadata?> GetMetadataAsync(Stream input, Stream output) =>
+           await GetMetadataDeserializeAsync(input, output);
+        public async Task<FormatMetadata?> GetMetadataAsync(string input) =>
+            await GetMetadataDeserializeAsync(input, new MemoryStream());
+        public async Task<FormatMetadata?> GetMetadataAsync(Stream input) =>
+           await GetMetadataDeserializeAsync(input, new MemoryStream());
+        public async Task GetMetadataAsync(Stream input, string output) =>
+           await GetMetadataDeserializeAsync(input, output);
+        public async Task GetMetadataAsync(string input, string output) =>
+           await GetMetadataDeserializeAsync(input, output);
+
+        public async Task<List<Packet>?> GetPacketsAsync(string input, StreamType streamType, Stream output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
+            await GetPacketsDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
+
+        public async Task<List<Packet>?> GetPacketsAsync(Stream input, StreamType streamType, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
+            await GetPacketsDeserializeAsync(input, streamType, new MemoryStream(), timeStart, timeAdded, streamNumber);
+
+        public async Task<List<Packet>?> GetPacketsAsync(string input, StreamType streamType, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
+            await GetPacketsDeserializeAsync(input, streamType, new MemoryStream(), timeStart, timeAdded, streamNumber);
+
+        public async Task<List<Packet>?> GetPacketsAsync(Stream input, StreamType streamType, Stream output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
+            await GetPacketsDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
+
+        public async Task GetPacketsAsync(Stream input, StreamType streamType, string output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
+            await GetPacketsDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
+
+        public async Task GetPacketsAsync(string input, StreamType streamType, string output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
+            await GetPacketsDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
+
+        public async Task<List<Frame>?> GetFramesAsync(string input, StreamType streamType, Stream output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
+            await GetFramesDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
+
+        public async Task<List<Frame>?> GetFramesAsync(Stream input, StreamType streamType, Stream output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
+            await GetFramesDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
+
+        public async Task<List<Frame>?> GetFramesAsync(string input, StreamType streamType, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
+            await GetFramesDeserializeAsync(input, streamType, new MemoryStream(), timeStart, timeAdded, streamNumber);
+
+        public async Task<List<Frame>?> GetFramesAsync(Stream input, StreamType streamType, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
+            await GetFramesDeserializeAsync(input, streamType, new MemoryStream(), timeStart, timeAdded, streamNumber);
+
+        public async Task GetFramesAsync(Stream input, StreamType streamType, string output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
+            await GetFramesDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
+
+        public async Task GetFramesAsync(string input, StreamType streamType, string output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
+            await GetFramesDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
+
+        private async Task<List<Frame>?> GetFramesDeserializeAsync(dynamic input, StreamType streamType, dynamic output, double timeStart, double timeAdded, int streamNumber)
         {
-            var process = MetadataProcess(input);
+            FFProcess process = FramesProcessBuild(input, streamType, output, timeStart, timeAdded, streamNumber);
             await process.StartAsync();
-            return JsonSerializer.Deserialize<FormatRoot>(await process.ReadAsStringAsync())?.Format;
+
+            var result = await process.DeserializeResultAsync<FrameRoot>();
+            return result?.Frames;
         }
 
-        public FormatMetadata? GetMetadata(string input) =>
-            GetMetadataAsync(input)
-            .GetAwaiter()
-            .GetResult();
-
-        public async Task<List<Packet>?> GetPacketsAsync(string input, StreamType streamType, double timeStart = 0, double timeAdded = 0, int streamNumber = 0)
+        private async Task<List<Packet>?> GetPacketsDeserializeAsync(dynamic input, StreamType streamType, dynamic output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0)
         {
-            var process = PacketsProcess(input, streamType, timeStart, timeAdded, streamNumber);
+            FFProcess process = PacketsProcessBuild(input, streamType, output, timeStart, timeAdded, streamNumber);
             await process.StartAsync();
-            return JsonSerializer.Deserialize<PacketRoot>(await process.ReadAsStringAsync())?.PacketsData;
+
+            var result = await process.DeserializeResultAsync<PacketRoot>();
+            return result?.PacketsData;
         }
 
-        public List<Packet>? GetPackets(string input, StreamType streamType, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
-            GetPacketsAsync(input, streamType, timeStart, timeAdded, streamNumber)
-            .GetAwaiter()
-            .GetResult();
-
-        public async Task<List<Frame>?> GetFramesAsync(string input, StreamType streamType, double timeStart = 0, double timeAdded = 0, int streamNumber = 0)
+        private async Task<FormatMetadata?> GetMetadataDeserializeAsync(dynamic input, dynamic output)
         {
-            var process = FramesProcess(input, streamType, timeStart, timeAdded, streamNumber);
+            FFProcess process = MetadataProcessBuild(input, output);
             await process.StartAsync();
-            return JsonSerializer.Deserialize<FrameRoot>(await process.ReadAsStringAsync())?.Frames;
+
+            var result = await process.DeserializeResultAsync<FormatRoot>();
+            return result?.Format;
         }
 
-        public List<Frame>? GetFrames(string input, StreamType streamType, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
-            GetFramesAsync(input, streamType, timeStart, timeAdded, streamNumber)
-            .GetAwaiter()
-            .GetResult();
-
-        private FFprobeProcessBuilder CreateFFProbeBuilder() => new FFprobeProcessBuilder()
-            .ShellExecute(false)
-            .CreateNoWindow(true)
-            .Path(Path);
-
-        private FFProcess MetadataProcess(string input) => CreateFFProbeBuilder()
-            .RedirectOutput(true)
-            .SetOutput(new MemoryStream())
-            .ShowFormat()
-            .Reconnect()
+        private FFProcess MetadataProcessBuild(dynamic input, dynamic output) => MetadataProcessBuilder()
             .From(input)
-            .AsJson()
+            .To(output)
             .Build();
 
-        private FFProcess PacketsProcess(string input, StreamType streamType, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) => CreateFFProbeBuilder()
-            .RedirectOutput(true)
-            .SetOutput(new MemoryStream())
+        private FFprobeProcessBuilder MetadataProcessBuilder() => _builder
+           .CreateFFBuilder(Path)
+           .ShowFormat()
+           .Reconnect()
+           .AsJson();
+
+        private FFProcess PacketsProcessBuild(dynamic input, StreamType streamType, dynamic output, double timeStart, double timeAdded, int streamNumber) =>
+            PacketsProcessBuilder(streamType, timeStart, timeAdded, streamNumber)
             .From(input)
+            .To(output)
+            .Build();
+
+        private FFprobeProcessBuilder PacketsProcessBuilder(StreamType streamType, double timeStart, double timeAdded, int streamNumber) => _builder
+            .CreateFFBuilder(Path)
+            .RedirectError(true)
             .SelectStreams(streamType, streamNumber)
             .ShowPackets()
             .ReadIntervals()
             .WithInterval(timeStart, timeAdded)
             .Reconnect()
-            .AsJson()
+            .AsJson();
+
+        private FFProcess FramesProcessBuild(dynamic input, StreamType streamType, dynamic output, double timeStart, double timeAdded, int streamNumber) =>
+            FramesProcessBuilder(streamType, timeStart, timeAdded, streamNumber)
+            .From(input)
+            .To(output)
             .Build();
 
-        private FFProcess FramesProcess(string input, StreamType streamType, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) => CreateFFProbeBuilder()
-            .RedirectOutput(true)
-            .SetOutput(new MemoryStream())
-            .From(input)
+        private FFprobeProcessBuilder FramesProcessBuilder(StreamType streamType, double timeStart, double timeAdded, int streamNumber) => _builder
+            .CreateFFBuilder(Path)
             .SelectStreams(streamType, streamNumber)
             .ShowFrames()
             .ReadIntervals()
             .WithInterval(timeStart, timeAdded)
             .Reconnect()
-            .AsJson()
-            .Build();
-
+            .AsJson();
     }
 }

@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 using FFmpegWrapper.Extensions;
+using FFmpegWrapper.JsonModels;
 
 namespace FFmpegWrapper.Models
 {
@@ -22,6 +24,7 @@ namespace FFmpegWrapper.Models
 
         internal Stream? Input { get; set; }
         internal Stream? Output { get; set; }
+        internal string? Error { get; set; }
         internal int InputBuffer { get; set; } = 4096;
         internal int OutputBuffer { get; set; } = 4096;
 
@@ -35,23 +38,16 @@ namespace FFmpegWrapper.Models
 
         public new void Start() => StartProcess().tasks.WaitAll();
         public Task StartAsync() => StartProcess().tasks.WhenAll();
-        public string ReadAsString()
-        {
-            if (Output is null)
-                throw new Exception("Output is null");
-            if (Output.CanSeek)
-                Output.Seek(0, SeekOrigin.Begin);
 
-            return new StreamReader(Output).ReadToEnd();
-        }
-
-        public async Task<string> ReadAsStringAsync()
+        public async Task<T?> DeserializeResultAsync<T>()
         {
-            if (Output is null)
-                throw new Exception("Output is null");
-            if (Output.CanSeek)
-                Output.Seek(0, SeekOrigin.Begin);
-            return await new StreamReader(Output).ReadToEndAsync();
+            if (Output is null || ExitCode != 0)
+                return default(T);
+
+            Output.Seek(0, SeekOrigin.Begin);
+
+            var result = await JsonSerializer.DeserializeAsync<T?>(Output);
+            return result;
         }
 
         private Task PipeInput()
@@ -95,7 +91,12 @@ namespace FFmpegWrapper.Models
             return Task.Run(async () =>
             {
                 while (!StandardError.EndOfStream)
-                    CallErrorEvent(await StandardError.ReadLineAsync());
+                {
+                    var line = await StandardError.ReadLineAsync();
+                    CallErrorEvent(line);
+                    Error += line;
+
+                }
             });
         }
 

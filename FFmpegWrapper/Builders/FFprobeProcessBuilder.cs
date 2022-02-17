@@ -8,23 +8,32 @@ namespace FFmpegWrapper.Builders
     public class FFprobeProcessBuilder : FFProcessBuilder<FFprobeProcessBuilder>
     {
 
-        public FFprobeProcessBuilder From(string input) =>
+        public override FFprobeProcessBuilder From(string input) =>
             AddArguments(input);
 
         public FFprobeProcessBuilder From(Stream input) =>
             AddArguments("pipe:")
             .RedirectInput(true)
             .SetInput(input);
+
+        public override FFprobeProcessBuilder To(string output) =>
+            To(new FileStream(output, FileMode.OpenOrCreate));
+
+        public FFprobeProcessBuilder To(Stream output) =>
+           RedirectOutput(true)
+            .SetOutput(output);
+
         public FFprobeProcessBuilder ReadIntervals() =>
            AddArguments("-read_intervals");
 
         public FFprobeProcessBuilder WithInterval(double timeStart, double timeAdded = 0)
         {
             if (timeAdded == 0)
-                timeAdded = double.MaxValue;
+                timeAdded = int.MaxValue;
 
             return AddArguments($"{timeStart.ToString(CultureInfo.InvariantCulture)}%+{timeAdded.ToString(CultureInfo.InvariantCulture)}");
         }
+
         public FFprobeProcessBuilder SelectStreams(StreamType streamType, int streamNumber = 0) =>
           AddArguments($"-select_streams {streamType}:{streamNumber}");
 
