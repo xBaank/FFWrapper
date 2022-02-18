@@ -2,7 +2,6 @@
 using FFmpegWrapper.Formats;
 using FFmpegWrapper.Models;
 
-using System;
 using System.IO;
 using System.Linq;
 

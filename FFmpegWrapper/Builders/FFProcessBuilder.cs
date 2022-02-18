@@ -96,6 +96,12 @@ namespace FFmpegWrapper.Builders
             return (T)this;
         }
 
+        public T SetError(ref string error)
+        {
+            ffProcess.Error = error;
+            return (T)this;
+        }
+
         public T SetInputBuffer(int value)
         {
             ffProcess.InputBuffer = value;

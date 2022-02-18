@@ -35,11 +35,12 @@ namespace FFmpegWrapper.Models
             //Don't allow end user to create process directly
         }
 
-        public new void Start() => StartProcess().tasks.WaitAll();
         public Task StartAsync() => StartProcess().tasks.WhenAll();
 
         public async Task<T?> DeserializeResultAsync<T>()
         {
+            await WaitForExitAsync();
+
             if (Output is null || ExitCode != 0)
                 return default(T);
 

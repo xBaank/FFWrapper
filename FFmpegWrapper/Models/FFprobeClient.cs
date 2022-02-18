@@ -100,6 +100,7 @@ namespace FFmpegWrapper.Models
 
         private FFprobeProcessBuilder MetadataProcessBuilder() => _builder
            .CreateFFBuilder(Path)
+           .RedirectError(true)
            .ShowFormat()
            .Reconnect()
            .AsJson();
@@ -128,6 +129,7 @@ namespace FFmpegWrapper.Models
 
         private FFprobeProcessBuilder FramesProcessBuilder(StreamType streamType, double timeStart, double timeAdded, int streamNumber) => _builder
             .CreateFFBuilder(Path)
+            .RedirectError(true)
             .SelectStreams(streamType, streamNumber)
             .ShowFrames()
             .ReadIntervals()
