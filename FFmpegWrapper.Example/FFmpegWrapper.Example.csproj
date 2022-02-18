@@ -19,7 +19,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\FFmpegWrapper\FFmpegWrapper.csproj" />
+		<ProjectReference Include="..\FFmpegWrapper\FFmpegWrapper.csproj" />
 	</ItemGroup>
 
 </Project>

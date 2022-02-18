@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
@@ -26,8 +26,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="FFMPEG\ffmpeg.exe">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		<None Update="ffmpeg.exe">
+			<CopyToOutputDirectory Condition="Exists('$(MSBuildProjectDirectory)\ffmpeg.exe')">Always</CopyToOutputDirectory>
+		</None>
+		<None Update="ffprobe.exe">
+			<CopyToOutputDirectory Condition="Exists('$(MSBuildProjectDirectory)\ffprobe.exe')">Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 

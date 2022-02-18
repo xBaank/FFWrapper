@@ -39,7 +39,7 @@ namespace FFmpegWrapper.Example
         public static async Task<IStreamInfo> GetStreamInfo(string videoId)
         {
             YoutubeClient youtubeClient = new YoutubeClient();
-            IStreamInfo? audio = null;
+            IStreamInfo audio = null;
             bool retry = true;
             int retries = 5;
             while (retries > 0 && retry == true)

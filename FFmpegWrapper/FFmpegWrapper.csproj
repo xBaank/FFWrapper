@@ -16,11 +16,6 @@
 
 
 	<ItemGroup>
-		<Folder Include="FFMPEG\" />
-	</ItemGroup>
-
-
-	<ItemGroup>
 		<Compile Update="Models\FFProcess.cs">
 			<SubType>Component</SubType>
 		</Compile>
@@ -29,10 +24,10 @@
 
 	<ItemGroup>
 		<None Update="ffmpeg.exe">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory Condition="Exists('$(MSBuildProjectDirectory)\ffmpeg.exe')">Always</CopyToOutputDirectory>
 		</None>
 		<None Update="ffprobe.exe">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory Condition="Exists('$(MSBuildProjectDirectory)\ffprobe.exe')">Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 

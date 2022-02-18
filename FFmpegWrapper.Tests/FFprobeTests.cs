@@ -21,7 +21,7 @@ namespace FFmpegWrapper.Tests
         [InlineData(AudioFilesUri.WAV)]
         [InlineData(AudioFilesUri.MP3)]
         [InlineData(AudioFilesUri.OGG)]
-        public async void FileShouldGetFormat(string uri)
+        public void FileShouldGetFormat(string uri)
         {
 
         }
