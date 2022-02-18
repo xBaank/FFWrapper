@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 
 using FFmpegWrapper.Builders;
 using FFmpegWrapper.Formats;
+using FFmpegWrapper.Helpers;
 
 namespace FFmpegWrapper.Models
 {
@@ -11,6 +12,8 @@ namespace FFmpegWrapper.Models
         private readonly FFmpegProcessBuilder _builder = new FFmpegProcessBuilder();
 
         public FFmpegClient(string path) : base(path) => _builder.CreateFFBuilder(path);
+        public FFmpegClient() : base(PathUtils.TryGetFFmpegPath()) { }
+
 
         public void ConvertToStream(string input, Stream output, IFormat outputType) => ConvertToStreamAsync(input, output, outputType)
             .GetAwaiter()

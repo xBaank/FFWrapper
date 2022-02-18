@@ -12,8 +12,8 @@ namespace WebmPoc
     {
         public static void Main(string[] args)
         {
-            FFmpegClient fFmpegClient = new FFmpegClient(Directory.GetCurrentDirectory() + "/FFMPEG/ffmpeg.exe");
-            FFprobeClient fFprobeClient = new FFprobeClient(Directory.GetCurrentDirectory() + "/FFMPEG/ffprobe.exe");
+            FFmpegClient fFmpegClient = new FFmpegClient();
+            FFprobeClient fFprobeClient = new FFprobeClient();
             var song = YtUtils.GetSongsUrl("eldenring trailer").GetAwaiter().GetResult();
             var streamInfo = YtUtils.GetStreamInfo(song.FirstOrDefault().Id).GetAwaiter().GetResult();
 

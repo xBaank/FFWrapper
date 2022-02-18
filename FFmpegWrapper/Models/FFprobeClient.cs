@@ -6,6 +6,8 @@ using FFmpegWrapper.Builders;
 using FFmpegWrapper.Formats;
 using FFmpegWrapper.JsonModels;
 
+using FFmpegWrapper.Helpers;
+
 namespace FFmpegWrapper.Models
 {
     public class FFprobeClient : Client
@@ -13,6 +15,7 @@ namespace FFmpegWrapper.Models
         private readonly FFprobeProcessBuilder _builder = new FFprobeProcessBuilder();
 
         public FFprobeClient(string path) : base(path) { }
+        public FFprobeClient() : base(PathUtils.TryGetFFprobePath()) { }
 
         public async Task<FormatMetadata?> GetMetadataAsync(string input, Stream output) =>
             await GetMetadataDeserializeAsync(input, output);

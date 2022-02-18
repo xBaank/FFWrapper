@@ -28,10 +28,10 @@
 
 
 	<ItemGroup>
-		<None Update="FFMPEG\ffmpeg.exe">
+		<None Update="ffmpeg.exe">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
-		<None Update="FFMPEG\ffprobe.exe">
+		<None Update="ffprobe.exe">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
