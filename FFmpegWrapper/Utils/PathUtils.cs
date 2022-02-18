@@ -9,14 +9,11 @@ namespace FFmpegWrapper.Helpers
         internal static string TryGetFFprobePath() => TryGetFFPath("ffprobe");
         private static string TryGetFFPath(string name)
         {
-            string path;
 
             if (OperatingSystem.IsLinux())
-                path = @"/usr/bin/";
-            else
-                path = Directory.GetCurrentDirectory();
+                return name;
 
-            var files = Directory.EnumerateFiles(path);
+            var files = Directory.EnumerateFiles(Directory.GetCurrentDirectory());
             foreach (var item in files)
             {
                 if (Path.GetFileName(item).StartsWith(name))
