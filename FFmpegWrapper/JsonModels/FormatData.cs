@@ -2,7 +2,6 @@
 
 namespace FFmpegWrapper.JsonModels
 {
-    // Root myDeserializedClass = JsonSerializer.Deserialize<Root>(myJsonResponse);
     public class Tags
     {
         [JsonPropertyName("encoder")]

@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 
 using FFmpegWrapper.Extensions;
-using FFmpegWrapper.JsonModels;
 
 namespace FFmpegWrapper.Models
 {

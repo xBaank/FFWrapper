@@ -18,7 +18,7 @@ namespace FFmpegWrapper.Tests
         [InlineData(AudioFilesUri.WAV)]
         [InlineData(AudioFilesUri.MP3)]
         [InlineData(AudioFilesUri.OGG)]
-        public async void VideoShouldConvertToOpus(string uri)
+        public async void VideoShouldConvertToFile(string uri)
         {
             //Arrange
             string saveFile = Guid.NewGuid().ToString() + ".Opus";
@@ -43,6 +43,28 @@ namespace FFmpegWrapper.Tests
             //Act
             file = new FileStream(saveFile, FileMode.OpenOrCreate);
             await fFmpegClient.ConvertToStreamAsync(uri, file, new Format(FormatTypes.OPUS));
+
+            //Assert
+            Assert.True(file.Length > 0);
+
+            Dispose();
+        }
+
+        [Theory]
+        [InlineData(AudioFilesUri.WAV)]
+        [InlineData(AudioFilesUri.MP3)]
+        [InlineData(AudioFilesUri.OGG)]
+        public async void VideoShouldConvertToPipe(string uri)
+        {
+            //Arrange
+            string saveFile = Guid.NewGuid().ToString() + ".opus";
+
+            //Act
+            file = new FileStream(saveFile, FileMode.OpenOrCreate);
+            var process = fFmpegClient.ConvertToPipe(uri, new Format(FormatTypes.OPUS));
+
+            while (!process.HasExited)
+                file.Write(await process.GetNextBytes());
 
             //Assert
             Assert.True(file.Length > 0);

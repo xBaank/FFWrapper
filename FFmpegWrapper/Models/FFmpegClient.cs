@@ -12,15 +12,9 @@ namespace FFmpegWrapper.Models
 
         public FFmpegClient(string path) : base(path) => _builder.CreateFFBuilder(path);
 
-        public void ConvertToStream(string input, Stream output, IFormat outputType) => _builder
-            .CreateFFBuilder(Path)
-            .RedirectError(true)
-            .RaiseErrorEvents(ErrorRecieved)
-            .RaiseExitErrorEvent(ExitWithErrorRecieved)
-            .From(input)
-            .To(output, outputType)
-            .Build()
-            .Start();
+        public void ConvertToStream(string input, Stream output, IFormat outputType) => ConvertToStreamAsync(input, output, outputType)
+            .GetAwaiter()
+            .GetResult();
 
         public Task ConvertToStreamAsync(string input, Stream output, IFormat outputType) => _builder
             .CreateFFBuilder(Path)
@@ -32,15 +26,9 @@ namespace FFmpegWrapper.Models
             .Build()
             .StartAsync();
 
-        public void ConvertToStream(Stream input, IFormat inputType, Stream output, IFormat outputType) => _builder
-            .CreateFFBuilder(Path)
-            .RedirectError(true)
-            .RaiseErrorEvents(ErrorRecieved)
-            .RaiseExitErrorEvent(ExitWithErrorRecieved)
-            .From(input, inputType)
-            .To(output, outputType)
-            .Build()
-            .Start();
+        public void ConvertToStream(Stream input, IFormat inputType, Stream output, IFormat outputType) => ConvertToStreamAsync(input, inputType, output, outputType)
+            .GetAwaiter()
+            .GetResult();
 
         public Task ConvertToStreamAsync(Stream input, IFormat inputType, Stream output, IFormat outputType) => _builder
             .CreateFFBuilder(Path)
@@ -52,36 +40,22 @@ namespace FFmpegWrapper.Models
             .Build()
             .StartAsync();
 
-        public void Convert(string input, string output) => _builder
-            .CreateFFBuilder(Path)
+        public void Convert(string input, string output) => ConvertAsync(input, output)
+            .GetAwaiter()
+            .GetResult();
+
+        public Task ConvertAsync(string input, string output) => _builder.CreateFFBuilder(Path)
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
             .From(input)
             .To(output)
             .Build()
-            .Start();
+            .StartAsync();
 
-        public Task ConvertAsync(string input, string output) => _builder
-            .CreateFFBuilder(Path)
-           .RedirectError(true)
-           .RaiseErrorEvents(ErrorRecieved)
-           .RaiseExitErrorEvent(ExitWithErrorRecieved)
-           .From(input)
-           .To(output)
-           .Build()
-           .StartAsync();
-
-        public void Convert(Stream input, string output, IFormat inputType) => _builder
-            .CreateFFBuilder(Path)
-            .RedirectError(true)
-            .RaiseErrorEvents(ErrorRecieved)
-            .RaiseExitErrorEvent(ExitWithErrorRecieved)
-            .From(input, inputType)
-            .To(output)
-            .Build()
-            .Start();
-
+        public void Convert(Stream input, string output, IFormat inputType) => ConvertAsync(input, output, inputType)
+            .GetAwaiter()
+            .GetResult();
         public Task ConvertAsync(Stream input, string output, IFormat inputType) => _builder
             .CreateFFBuilder(Path)
             .RedirectError(true)
