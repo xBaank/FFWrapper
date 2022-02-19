@@ -9,7 +9,7 @@ namespace FFmpegWrapper.Tests
 {
     public class FFprobeTests
     {
-        private FFprobeClient ffProbeClient = new FFprobeClient(Directory.GetCurrentDirectory() + "/FFMPEG/ffprobe.exe");
+        private FFprobeClient ffProbeClient = new FFprobeClient();
 
         [Theory]
         [InlineData(VideoFilesUri.WMV)]

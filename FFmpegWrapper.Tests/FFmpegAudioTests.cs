@@ -11,7 +11,7 @@ namespace FFmpegWrapper.Tests
 {
     public class FFmpegAudioTests : IDisposable
     {
-        private FFmpegClient fFmpegClient = new FFmpegClient(Directory.GetCurrentDirectory() + "/FFMPEG/ffmpeg.exe");
+        private FFmpegClient fFmpegClient = new FFmpegClient();
         private Stream file;
 
         [Theory]

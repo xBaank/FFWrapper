@@ -12,7 +12,7 @@ namespace FFmpegWrapper.Tests
     public class FFmpegVideoTests : IDisposable
     {
 
-        private FFmpegClient fFmpegClient = new FFmpegClient(Directory.GetCurrentDirectory() + "/FFMPEG/ffmpeg.exe");
+        private FFmpegClient fFmpegClient = new FFmpegClient();
         private Stream file;
 
         [Theory]
