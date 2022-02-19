@@ -21,14 +21,4 @@
 		</Compile>
 	</ItemGroup>
 
-
-	<ItemGroup>
-		<None Update="ffmpeg.exe">
-			<CopyToOutputDirectory Condition="Exists('$(MSBuildProjectDirectory)\ffmpeg.exe')">Always</CopyToOutputDirectory>
-		</None>
-		<None Update="ffprobe.exe">
-			<CopyToOutputDirectory Condition="Exists('$(MSBuildProjectDirectory)\ffprobe.exe')">Always</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
-
 </Project>

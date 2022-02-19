@@ -25,13 +25,17 @@
 		<ProjectReference Include="..\FFmpegWrapper\FFmpegWrapper.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
+	<ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\ffmpeg.exe')">
 		<None Update="ffmpeg.exe">
-			<CopyToOutputDirectory Condition="Exists('$(MSBuildProjectDirectory)\ffmpeg.exe')">Always</CopyToOutputDirectory>
-		</None>
-		<None Update="ffprobe.exe">
-			<CopyToOutputDirectory Condition="Exists('$(MSBuildProjectDirectory)\ffprobe.exe')">Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory >Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
+
+	<ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\ffprobe.exe')">
+		<None Update="ffprobe.exe">
+			<CopyToOutputDirectory >Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
 
 </Project>
