@@ -14,11 +14,6 @@ namespace FFmpegWrapper.Models
         public FFmpegClient(string path) : base(path) => _builder.CreateFFBuilder(path);
         public FFmpegClient() : base(PathUtils.TryGetFFmpegPath()) { }
 
-
-        public void ConvertToStream(string input, Stream output, IFormat outputType) => ConvertToStreamAsync(input, output, outputType)
-            .GetAwaiter()
-            .GetResult();
-
         public Task ConvertToStreamAsync(string input, Stream output, IFormat outputType) => _builder
             .CreateFFBuilder(Path)
             .RedirectError(true)
@@ -28,10 +23,6 @@ namespace FFmpegWrapper.Models
             .To(output, outputType)
             .Build()
             .StartAsync();
-
-        public void ConvertToStream(Stream input, IFormat inputType, Stream output, IFormat outputType) => ConvertToStreamAsync(input, inputType, output, outputType)
-            .GetAwaiter()
-            .GetResult();
 
         public Task ConvertToStreamAsync(Stream input, IFormat inputType, Stream output, IFormat outputType) => _builder
             .CreateFFBuilder(Path)
@@ -43,10 +34,6 @@ namespace FFmpegWrapper.Models
             .Build()
             .StartAsync();
 
-        public void Convert(string input, string output) => ConvertAsync(input, output)
-            .GetAwaiter()
-            .GetResult();
-
         public Task ConvertAsync(string input, string output) => _builder.CreateFFBuilder(Path)
             .RedirectError(true)
             .RaiseErrorEvents(ErrorRecieved)
@@ -55,10 +42,6 @@ namespace FFmpegWrapper.Models
             .To(output)
             .Build()
             .StartAsync();
-
-        public void Convert(Stream input, string output, IFormat inputType) => ConvertAsync(input, output, inputType)
-            .GetAwaiter()
-            .GetResult();
         public Task ConvertAsync(Stream input, string output, IFormat inputType) => _builder
             .CreateFFBuilder(Path)
             .RedirectError(true)

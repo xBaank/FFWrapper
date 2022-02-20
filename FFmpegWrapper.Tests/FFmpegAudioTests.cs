@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net.Http;
 
 using FFmpegWrapper.Formats;
 using FFmpegWrapper.Models;
@@ -12,6 +13,7 @@ namespace FFmpegWrapper.Tests
     public class FFmpegAudioTests : IDisposable
     {
         private FFmpegClient fFmpegClient = new FFmpegClient();
+        HttpClient httpClient = new HttpClient();
         private Stream file;
 
         [Theory]
@@ -62,6 +64,29 @@ namespace FFmpegWrapper.Tests
             //Act
             file = new FileStream(saveFile, FileMode.OpenOrCreate);
             var process = fFmpegClient.ConvertToPipe(uri, new Format(FormatTypes.OPUS));
+
+            while (!process.HasExited)
+                file.Write(await process.GetNextBytes());
+
+            //Assert
+            Assert.True(file.Length > 0);
+
+            Dispose();
+        }
+
+        [Theory]
+        [InlineData(AudioFilesUri.WAV, FormatTypes.WAV)]
+        [InlineData(AudioFilesUri.MP3, FormatTypes.MP3)]
+        [InlineData(AudioFilesUri.OGG, FormatTypes.OGG)]
+        public async void VideoShouldConvertToPipeFromStream(string uri, FormatTypes formatType)
+        {
+            var bytes = await httpClient.GetByteArrayAsync(uri);
+            //Arrange
+            string saveFile = Guid.NewGuid().ToString() + ".opus";
+
+            //Act
+            file = new FileStream(saveFile, FileMode.OpenOrCreate);
+            var process = fFmpegClient.ConvertToPipe(new MemoryStream(bytes), new Format(formatType), new Format(FormatTypes.OPUS));
 
             while (!process.HasExited)
                 file.Write(await process.GetNextBytes());

@@ -25,10 +25,6 @@ namespace FFmpegWrapper.Models
             await GetMetadataDeserializeAsync(input, new MemoryStream());
         public async Task<FormatMetadata?> GetMetadataAsync(Stream input) =>
            await GetMetadataDeserializeAsync(input, new MemoryStream());
-        public async Task GetMetadataAsync(Stream input, string output) =>
-           await GetMetadataDeserializeAsync(input, output);
-        public async Task GetMetadataAsync(string input, string output) =>
-           await GetMetadataDeserializeAsync(input, output);
 
         public async Task<List<Packet>?> GetPacketsAsync(string input, StreamType streamType, Stream output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
             await GetPacketsDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
@@ -42,12 +38,6 @@ namespace FFmpegWrapper.Models
         public async Task<List<Packet>?> GetPacketsAsync(Stream input, StreamType streamType, Stream output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
             await GetPacketsDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
 
-        public async Task GetPacketsAsync(Stream input, StreamType streamType, string output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
-            await GetPacketsDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
-
-        public async Task GetPacketsAsync(string input, StreamType streamType, string output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
-            await GetPacketsDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
-
         public async Task<List<Frame>?> GetFramesAsync(string input, StreamType streamType, Stream output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
             await GetFramesDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
 
@@ -59,12 +49,6 @@ namespace FFmpegWrapper.Models
 
         public async Task<List<Frame>?> GetFramesAsync(Stream input, StreamType streamType, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
             await GetFramesDeserializeAsync(input, streamType, new MemoryStream(), timeStart, timeAdded, streamNumber);
-
-        public async Task GetFramesAsync(Stream input, StreamType streamType, string output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
-            await GetFramesDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
-
-        public async Task GetFramesAsync(string input, StreamType streamType, string output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
-            await GetFramesDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
 
         private async Task<List<Frame>?> GetFramesDeserializeAsync(dynamic input, StreamType streamType, dynamic output, double timeStart, double timeAdded, int streamNumber)
         {

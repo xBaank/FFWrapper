@@ -11,10 +11,7 @@ namespace FFmpegWrapper.Builders
     /// <typeparam name="T">Class implementation</typeparam>
     public abstract class FFProcessBuilder<T> where T : FFProcessBuilder<T>
     {
-        private FFProcess ffProcess;
-
-        public FFProcessBuilder() => ffProcess = new FFProcess();
-
+        private FFProcess ffProcess = new FFProcess();
 
         public FFProcess Build() => ffProcess;
 
@@ -33,12 +30,6 @@ namespace FFmpegWrapper.Builders
         public T Path(string value)
         {
             ffProcess.StartInfo.FileName = value;
-            return (T)this;
-        }
-
-        public T RaiseOutputEvents(Action<FFProcess, byte[]> action)
-        {
-            ffProcess.OutputDataReceived += action;
             return (T)this;
         }
 
@@ -78,12 +69,6 @@ namespace FFmpegWrapper.Builders
             return (T)this;
         }
 
-        public T SetArguments(string args)
-        {
-            ffProcess.StartInfo.Arguments = args;
-            return (T)this;
-        }
-
         public T SetInput(Stream stream)
         {
             ffProcess.Input = stream;
@@ -93,24 +78,6 @@ namespace FFmpegWrapper.Builders
         public T SetOutput(Stream stream)
         {
             ffProcess.Output = stream;
-            return (T)this;
-        }
-
-        public T SetError(ref string error)
-        {
-            ffProcess.Error = error;
-            return (T)this;
-        }
-
-        public T SetInputBuffer(int value)
-        {
-            ffProcess.InputBuffer = value;
-            return (T)this;
-        }
-
-        public T SetOutputBuffer(int value)
-        {
-            ffProcess.OutputBuffer = value;
             return (T)this;
         }
 

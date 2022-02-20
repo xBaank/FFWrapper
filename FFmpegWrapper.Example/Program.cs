@@ -30,7 +30,7 @@ namespace WebmPoc
 
             FileStream file = new FileStream("eldenring.mp3", FileMode.OpenOrCreate);
 
-            fFmpegClient.ConvertToStream(streamInfo.Url, file, new Format(FormatTypes.MP3));
+            fFmpegClient.ConvertToStreamAsync(streamInfo.Url, file, new Format(FormatTypes.MP3)).Wait();
 
         }
     }

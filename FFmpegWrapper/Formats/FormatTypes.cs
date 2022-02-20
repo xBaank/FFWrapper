@@ -10,6 +10,7 @@
         OPUS,
         AAC,
         MP3,
+        WAV,
         OGG
     }
 }
