@@ -60,8 +60,11 @@ namespace FFmpegWrapper.Models
                 byte[] bytes = new byte[InputBuffer];
                 int bytesRead;
 
-                while ((bytesRead = await Input.ReadAsync(bytes, 0, bytes.Length)) != 0)
+                while ((bytesRead = await Input.ReadAsync(bytes, 0, bytes.Length)) != 0 && StandardInput.BaseStream.CanWrite)
+                {
                     await StandardInput.BaseStream.WriteAsync(bytes, 0, bytesRead);
+                    await StandardInput.BaseStream.FlushAsync();
+                }
 
                 StandardInput.Close();
             });

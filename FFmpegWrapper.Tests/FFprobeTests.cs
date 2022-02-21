@@ -12,7 +12,7 @@ namespace FFmpegWrapper.Tests
     public class FFprobeTests
     {
         private FFprobeClient ffProbeClient = new FFprobeClient();
-        HttpClient httpClient = new HttpClient() { Timeout = System.TimeSpan.FromSeconds(120) };
+        HttpClient httpClient = new HttpClient();
 
 
         [Theory]
