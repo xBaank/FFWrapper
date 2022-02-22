@@ -69,9 +69,9 @@ namespace FFmpegWrapper.Models
             byte[] bytes = new byte[OutputBuffer];
             int bytesRead;
 
-            while (!HasExited && (bytesRead = await StandardOutput.BaseStream.ReadAsync(bytes, 0, bytes.Length)) != 0)
+            while ((bytesRead = await StandardOutput.BaseStream.ReadAsync(bytes, 0, bytes.Length)) != 0)
             {
-                if (Output != null)
+                if (Output is not null)
                     await Output.WriteAsync(bytes, 0, bytesRead);
 
                 CallOutputEvent(bytes);
@@ -110,11 +110,11 @@ namespace FFmpegWrapper.Models
             Exited += new EventHandler(CallExitEvent);
             base.Start();
 
+            if (StartInfo.RedirectStandardOutput)
+                tasks.Add(PipeOutput());
+
             if (StartInfo.RedirectStandardInput)
                 tasks.Add(PipeInput());
-
-            if (StartInfo.RedirectStandardOutput && Output is not null)
-                tasks.Add(PipeOutput());
 
             if (StartInfo.RedirectStandardError)
                 tasks.Add(PipeError());
