@@ -17,13 +17,6 @@ namespace FFmpegWrapper.Tests
 
         [Theory]
         [InlineData(VideoFilesUri.WMV)]
-        [InlineData(VideoFilesUri.MOV)]
-        [InlineData(VideoFilesUri.OGG)]
-        [InlineData(VideoFilesUri.MP4)]
-        [InlineData(VideoFilesUri.AVI)]
-        [InlineData(VideoFilesUri.WEBM)]
-        [InlineData(AudioFilesUri.WAV)]
-        [InlineData(AudioFilesUri.MP3)]
         [InlineData(AudioFilesUri.OGG)]
         public async void FileShouldGetFormatFromUri(string uri)
         {
@@ -34,13 +27,6 @@ namespace FFmpegWrapper.Tests
 
         [Theory]
         [InlineData(VideoFilesUri.WMV)]
-        [InlineData(VideoFilesUri.MOV)]
-        [InlineData(VideoFilesUri.OGG)]
-        [InlineData(VideoFilesUri.MP4)]
-        [InlineData(VideoFilesUri.AVI)]
-        [InlineData(VideoFilesUri.WEBM)]
-        [InlineData(AudioFilesUri.WAV)]
-        [InlineData(AudioFilesUri.MP3)]
         [InlineData(AudioFilesUri.OGG)]
         public async void FileShouldGetFormatFromUriToStream(string uri)
         {
@@ -52,13 +38,6 @@ namespace FFmpegWrapper.Tests
 
         [Theory]
         [InlineData(VideoFilesUri.WMV)]
-        [InlineData(VideoFilesUri.MOV)]
-        [InlineData(VideoFilesUri.OGG)]
-        [InlineData(VideoFilesUri.MP4)]
-        [InlineData(VideoFilesUri.AVI)]
-        [InlineData(VideoFilesUri.WEBM)]
-        [InlineData(AudioFilesUri.WAV)]
-        [InlineData(AudioFilesUri.MP3)]
         [InlineData(AudioFilesUri.OGG)]
         public async void FileShouldGetFormatFromStream(string uri)
         {
@@ -69,14 +48,7 @@ namespace FFmpegWrapper.Tests
         }
 
         [Theory]
-        [InlineData(VideoFilesUri.WMV)]
-        [InlineData(VideoFilesUri.MOV)]
-        [InlineData(VideoFilesUri.OGG)]
-        [InlineData(VideoFilesUri.MP4)]
         [InlineData(VideoFilesUri.AVI)]
-        [InlineData(VideoFilesUri.WEBM)]
-        [InlineData(AudioFilesUri.WAV)]
-        [InlineData(AudioFilesUri.MP3)]
         [InlineData(AudioFilesUri.OGG)]
         public async void FileShouldGetFormatFromStreamToStream(string uri)
         {
@@ -89,13 +61,6 @@ namespace FFmpegWrapper.Tests
 
         [Theory]
         [InlineData(VideoFilesUri.WMV, StreamType.v)]
-        [InlineData(VideoFilesUri.MOV, StreamType.v)]
-        [InlineData(VideoFilesUri.OGG, StreamType.v)]
-        [InlineData(VideoFilesUri.MP4, StreamType.v)]
-        [InlineData(VideoFilesUri.AVI, StreamType.v)]
-        [InlineData(VideoFilesUri.WEBM, StreamType.v)]
-        [InlineData(AudioFilesUri.WAV, StreamType.a)]
-        [InlineData(AudioFilesUri.MP3, StreamType.a)]
         [InlineData(AudioFilesUri.OGG, StreamType.a)]
         public async void FileShouldGetPacketsAndFramesFromUri(string uri, StreamType streamType)
         {
@@ -107,14 +72,7 @@ namespace FFmpegWrapper.Tests
         }
 
         [Theory]
-        [InlineData(VideoFilesUri.WMV, StreamType.v)]
         [InlineData(VideoFilesUri.MOV, StreamType.v)]
-        [InlineData(VideoFilesUri.OGG, StreamType.v)]
-        [InlineData(VideoFilesUri.MP4, StreamType.v)]
-        [InlineData(VideoFilesUri.AVI, StreamType.v)]
-        [InlineData(VideoFilesUri.WEBM, StreamType.v)]
-        [InlineData(AudioFilesUri.WAV, StreamType.a)]
-        [InlineData(AudioFilesUri.MP3, StreamType.a)]
         [InlineData(AudioFilesUri.OGG, StreamType.a)]
         public async void FileShouldGetPacketsAndFramesFromUriToStream(string uri, StreamType streamType)
         {
