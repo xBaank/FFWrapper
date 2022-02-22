@@ -50,57 +50,43 @@ namespace FFmpegWrapper.Models
             return result;
         }
 
-        private Task PipeInput()
+        private async Task PipeInput()
         {
             if (Input == null)
                 throw new NullReferenceException("Input set to null");
 
-            return Task.Run(async () =>
-            {
-                byte[] bytes = new byte[InputBuffer];
-                int bytesRead;
+            byte[] bytes = new byte[InputBuffer];
+            int bytesRead;
 
-                while ((bytesRead = await Input.ReadAsync(bytes, 0, bytes.Length)) != 0 && StandardInput.BaseStream.CanWrite)
-                {
-                    await StandardInput.BaseStream.WriteAsync(bytes, 0, bytesRead);
-                    await StandardInput.BaseStream.FlushAsync();
-                }
+            while ((bytesRead = await Input.ReadAsync(bytes, 0, bytes.Length)) != 0)
+                await StandardInput.BaseStream.WriteAsync(bytes, 0, bytesRead);
 
-                StandardInput.Close();
-            });
+            StandardInput.Close();
         }
 
-        private Task PipeOutput()
+        private async Task PipeOutput()
         {
+            byte[] bytes = new byte[OutputBuffer];
+            int bytesRead;
 
-            return Task.Run(async () =>
+            while (!HasExited && (bytesRead = await StandardOutput.BaseStream.ReadAsync(bytes, 0, bytes.Length)) != 0)
             {
-                byte[] bytes = new byte[OutputBuffer];
-                int bytesRead;
+                if (Output != null)
+                    await Output.WriteAsync(bytes, 0, bytesRead);
 
-                while ((bytesRead = await StandardOutput.BaseStream.ReadAsync(bytes, 0, bytes.Length)) != 0)
-                {
-                    if (Output != null)
-                        await Output.WriteAsync(bytes, 0, bytesRead);
-
-                    CallOutputEvent(bytes);
-                }
-
-            });
+                CallOutputEvent(bytes);
+            }
         }
 
-        private Task PipeError()
+        private async Task PipeError()
         {
-            return Task.Run(async () =>
+            while (!StandardError.EndOfStream)
             {
-                while (!StandardError.EndOfStream)
-                {
-                    var line = await StandardError.ReadLineAsync();
-                    CallErrorEvent(line);
-                    Error += line;
+                var line = await StandardError.ReadLineAsync();
+                CallErrorEvent(line);
+                Error += line;
 
-                }
-            });
+            }
         }
 
         public async Task<byte[]> GetNextBytes()

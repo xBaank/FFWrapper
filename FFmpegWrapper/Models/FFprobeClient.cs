@@ -90,7 +90,7 @@ namespace FFmpegWrapper.Models
            .AsJson();
 
         private FFProcess PacketsProcessBuild(dynamic input, StreamType streamType, dynamic output, double timeStart, double timeAdded, int streamNumber) =>
-            PacketsProcessBuilder(streamType, timeStart, timeAdded, streamNumber)
+            PacketsProcessBuilder(streamType, timeStart, timeAdded, streamNumber).AddArguments("-err_detect explode")
             .From(input)
             .To(output)
             .Build();

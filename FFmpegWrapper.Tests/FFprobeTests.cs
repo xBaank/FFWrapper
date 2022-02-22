@@ -134,10 +134,12 @@ namespace FFmpegWrapper.Tests
         [InlineData(VideoFilesUri.WEBM, StreamType.v)]
         public async void FileShouldGetPacketsAndFramesFromStream(string uri, StreamType streamType)
         {
-            var bytes = await httpClient.GetByteArrayAsync(uri);
+            var bytes = await httpClient.GetStreamAsync(uri);
 
-            var packets = await ffProbeClient.GetPacketsAsync(new MemoryStream(bytes), streamType);
-            var frames = await ffProbeClient.GetFramesAsync(new MemoryStream(bytes), streamType);
+            var packets = await ffProbeClient.GetPacketsAsync(bytes, streamType);
+
+            bytes = await httpClient.GetStreamAsync(uri);
+            var frames = await ffProbeClient.GetFramesAsync(bytes, streamType);
 
             Assert.True(packets?.Count > 0);
             Assert.True(frames?.Count > 0);
@@ -148,14 +150,16 @@ namespace FFmpegWrapper.Tests
         [InlineData(VideoFilesUri.WEBM, StreamType.v)]
         public async void FileShouldGetPacketsAndFramesFromStreamToStream(string uri, StreamType streamType)
         {
-            var bytes = await httpClient.GetByteArrayAsync(uri);
+            var bytes = await httpClient.GetStreamAsync(uri);
             var ms = new MemoryStream();
 
-            var packets = await ffProbeClient.GetPacketsAsync(new MemoryStream(bytes), streamType, ms);
+            var packets = await ffProbeClient.GetPacketsAsync(bytes, streamType, ms);
             Assert.True(ms.Length > 0 && packets?.Count > 0);
 
+            bytes = await httpClient.GetStreamAsync(uri);
+
             ms = new MemoryStream();
-            var frames = await ffProbeClient.GetFramesAsync(new MemoryStream(bytes), streamType, ms);
+            var frames = await ffProbeClient.GetFramesAsync(bytes, streamType, ms);
 
             Assert.True(ms.Length > 0 && frames?.Count > 0);
         }
