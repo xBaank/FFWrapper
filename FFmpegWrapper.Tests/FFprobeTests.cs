@@ -48,18 +48,6 @@ namespace FFmpegWrapper.Tests
         }
 
         [Theory]
-        [InlineData(VideoFilesUri.AVI)]
-        [InlineData(AudioFilesUri.OGG)]
-        public async void FileShouldGetFormatFromStreamToStream(string uri)
-        {
-            MemoryStream ms = new MemoryStream();
-            var stream = await httpClient.GetStreamAsync(uri);
-
-            var metadata = await ffProbeClient.GetMetadataAsync(stream, ms);
-            Assert.True(ms.Length > 0 && metadata is not null);
-        }
-
-        [Theory]
         [InlineData(VideoFilesUri.WMV, StreamType.v)]
         [InlineData(AudioFilesUri.OGG, StreamType.a)]
         public async void FileShouldGetPacketsAndFramesFromUri(string uri, StreamType streamType)
@@ -101,25 +89,6 @@ namespace FFmpegWrapper.Tests
 
             Assert.True(packets?.Count > 0);
             Assert.True(frames?.Count > 0);
-        }
-
-        [Theory]
-        [InlineData(VideoFilesUri.WMV, StreamType.v)]
-        [InlineData(VideoFilesUri.WEBM, StreamType.v)]
-        public async void FileShouldGetPacketsAndFramesFromStreamToStream(string uri, StreamType streamType)
-        {
-            var bytes = await httpClient.GetStreamAsync(uri);
-            var ms = new MemoryStream();
-
-            var packets = await ffProbeClient.GetPacketsAsync(bytes, streamType, ms);
-            Assert.True(ms.Length > 0 && packets?.Count > 0);
-
-            bytes = await httpClient.GetStreamAsync(uri);
-
-            ms = new MemoryStream();
-            var frames = await ffProbeClient.GetFramesAsync(bytes, streamType, ms);
-
-            Assert.True(ms.Length > 0 && frames?.Count > 0);
         }
     }
 }
