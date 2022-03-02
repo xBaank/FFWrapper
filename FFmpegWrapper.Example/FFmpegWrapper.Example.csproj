@@ -7,9 +7,11 @@
 		<StartupObject></StartupObject>
 		<PackageId>FFmpegWrapper.Example</PackageId>
 		<AssemblyName>FFmpegWrapper.Example</AssemblyName>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
 		<PackageReference Include="System.Linq.Async" Version="5.1.0" />
 		<PackageReference Include="YoutubeExplode" Version="6.0.8" />
 	</ItemGroup>
@@ -20,13 +22,13 @@
 
 	<ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\ffmpeg.exe')">
 		<None Update="ffmpeg.exe">
-			<CopyToOutputDirectory >Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 
 	<ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\ffprobe.exe')">
 		<None Update="ffprobe.exe">
-			<CopyToOutputDirectory >Always</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 
