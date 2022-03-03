@@ -80,13 +80,12 @@ namespace FFmpegWrapper.Tests
         [InlineData(AudioFilesUri.OGG, FormatTypes.OGG)]
         public async void VideoShouldConvertToPipeFromStream(string uri, FormatTypes formatType)
         {
-            var bytes = await httpClient.GetByteArrayAsync(uri);
             //Arrange
             string saveFile = Guid.NewGuid().ToString() + ".opus";
 
             //Act
             file = new FileStream(saveFile, FileMode.OpenOrCreate);
-            var process = fFmpegClient.ConvertToPipe(new MemoryStream(bytes), new Format(formatType), new Format(FormatTypes.OPUS));
+            var process = fFmpegClient.ConvertToPipe(await httpClient.GetStreamAsync(uri), new Format(formatType), new Format(FormatTypes.OPUS));
 
             while (!process.HasExited)
                 file.Write(await process.GetNextBytes());
