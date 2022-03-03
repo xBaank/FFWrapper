@@ -13,9 +13,8 @@ namespace FFmpegWrapper.Tests
     public class FFmpegAudioTests
     {
         private FFmpegClient fFmpegClient = new FFmpegClient();
-        Stream file;
+        Stream stream;
 
-        HttpClient httpClient = new HttpClient();
 
 
         [Theory]
@@ -29,12 +28,12 @@ namespace FFmpegWrapper.Tests
 
             //Act
             await fFmpegClient.ConvertAsync(uri, saveFile);
-            file = File.Open(Path.Combine(Directory.GetCurrentDirectory(), saveFile), FileMode.Open);
+            stream = File.Open(Path.Combine(Directory.GetCurrentDirectory(), saveFile), FileMode.Open);
 
             //Assert
-            Assert.True(file.Length > 0);
+            Assert.True(stream.Length > 0);
 
-            file.Dispose();
+            stream.Dispose();
         }
 
         [Theory]
@@ -45,57 +44,13 @@ namespace FFmpegWrapper.Tests
         {
 
             //Act
-            file = new MemoryStream();
-            await fFmpegClient.ConvertToStreamAsync(uri, file, new Format(FormatTypes.OPUS));
+            stream = new MemoryStream();
+            await fFmpegClient.ConvertToStreamAsync(uri, stream, new Format(FormatTypes.OPUS));
 
             //Assert
-            Assert.True(file.Length > 0);
+            Assert.True(stream.Length > 0);
 
-            file.Dispose();
-        }
-
-        [Theory]
-        [InlineData(AudioFilesUri.WAV)]
-        [InlineData(AudioFilesUri.MP3)]
-        [InlineData(AudioFilesUri.OGG)]
-        public async void VideoShouldConvertToPipe(string uri)
-        {
-            //Arrange
-
-            //Act
-            file = new MemoryStream();
-            var process = fFmpegClient.ConvertToPipe(uri, new Format(FormatTypes.OPUS));
-
-            byte[] bytesread = new byte[0];
-            while (!process.HasExited || bytesread.Length > 0)
-                await file.WriteAsync(bytesread = await process.GetNextBytes());
-
-            //Assert
-            Assert.True(file.Length > 0);
-
-            file.Dispose();
-        }
-
-        [Theory]
-        [InlineData(AudioFilesUri.WAV, FormatTypes.WAV)]
-        [InlineData(AudioFilesUri.MP3, FormatTypes.MP3)]
-        [InlineData(AudioFilesUri.OGG, FormatTypes.OGG)]
-        public async void VideoShouldConvertToPipeFromStream(string uri, FormatTypes formatType)
-        {
-            //Arrange
-
-            //Act
-            file = new MemoryStream();
-            var process = fFmpegClient.ConvertToPipe(await httpClient.GetStreamAsync(uri), new Format(formatType), new Format(FormatTypes.OPUS));
-
-            byte[] bytesread = new byte[0];
-            while (!process.HasExited || bytesread.Length > 0)
-                await file.WriteAsync(bytesread = await process.GetNextBytes());
-
-            //Assert
-            Assert.True(file.Length > 0);
-
-            file.Dispose();
+            stream.Dispose();
         }
     }
 }

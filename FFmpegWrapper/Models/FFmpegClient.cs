@@ -51,43 +51,6 @@ namespace FFmpegWrapper.Models
             .To(output)
             .Build()
             .StartAsync();
-
-        /// <summary>
-        /// Must read from output pipe using <see cref="FFProcess.GetNextBytes"/>
-        /// </summary>
-        public FFProcess ConvertToPipe(Stream input, IFormat inputType, IFormat outputType)
-        {
-            var process = _builder.CreateFFBuilder(Path)
-            .RedirectError(true)
-            .RaiseErrorEvents(ErrorRecieved)
-            .RaiseExitErrorEvent(ExitWithErrorRecieved)
-            .From(input, inputType)
-            .To(outputType)
-            .Build();
-
-            process.StartAsync();
-
-            return process;
-
-        }
-
-        /// <summary>
-        /// Must read from output pipe using <see cref="FFProcess.GetNextBytes"/>
-        /// </summary>
-        public FFProcess ConvertToPipe(string input, IFormat outputType)
-        {
-            var process = _builder.CreateFFBuilder(Path)
-            .RedirectError(true)
-            .RaiseErrorEvents(ErrorRecieved)
-            .RaiseExitErrorEvent(ExitWithErrorRecieved)
-            .From(input)
-            .To(outputType)
-            .Build();
-
-            process.StartAsync();
-
-            return process;
-        }
     }
 
 }

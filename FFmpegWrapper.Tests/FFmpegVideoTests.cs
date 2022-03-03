@@ -13,7 +13,7 @@ namespace FFmpegWrapper.Tests
     {
 
         private FFmpegClient fFmpegClient = new FFmpegClient();
-        Stream file;
+        Stream stream;
 
         [Theory]
         [InlineData(VideoFilesUri.WMV)]
@@ -29,12 +29,12 @@ namespace FFmpegWrapper.Tests
 
             //Act
             await fFmpegClient.ConvertAsync(uri, saveFile);
-            file = new MemoryStream();
+            stream = new MemoryStream();
 
             //Assert
-            Assert.True(file.Length > 0);
+            Assert.True(stream.Length > 0);
 
-            file.Dispose();
+            stream.Dispose();
         }
 
         [Theory]
@@ -49,37 +49,14 @@ namespace FFmpegWrapper.Tests
             //Arrange
 
             //Act
-            file = new MemoryStream();
-            await fFmpegClient.ConvertToStreamAsync(uri, file, new Format(FormatTypes.MATROSKA));
+            stream = new MemoryStream();
+            await fFmpegClient.ConvertToStreamAsync(uri, stream, new Format(FormatTypes.MATROSKA));
 
             //Assert
-            Assert.True(file.Length > 0);
+            Assert.True(stream.Length > 0);
 
-            file.Dispose();
+            stream.Dispose();
         }
 
-        [Theory]
-        [InlineData(VideoFilesUri.WMV)]
-        [InlineData(VideoFilesUri.MOV)]
-        [InlineData(VideoFilesUri.OGG)]
-        [InlineData(VideoFilesUri.MP4)]
-        [InlineData(VideoFilesUri.AVI)]
-        [InlineData(VideoFilesUri.WEBM)]
-        public async void VideoShouldConvertToPipe(string uri)
-        {
-            //Arrange
-
-            //Act
-            var process = fFmpegClient.ConvertToPipe(uri, new Format(FormatTypes.MATROSKA));
-
-            byte[] bytesread = new byte[0];
-            while (!process.HasExited || bytesread.Length > 0)
-                await file.WriteAsync(bytesread = await process.GetNextBytes());
-
-            //Assert
-            Assert.True(file.Length > 0);
-
-            file.Dispose();
-        }
     }
 }
