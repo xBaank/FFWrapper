@@ -58,7 +58,7 @@ namespace FFmpegWrapper.Models
             byte[] bytes = new byte[InputBuffer];
             int bytesRead;
 
-            while ((bytesRead = await Input.ReadAsync(bytes, 0, bytes.Length)) != 0)
+            while (!HasExited && (bytesRead = await Input.ReadAsync(bytes, 0, bytes.Length)) != 0)
                 await StandardInput.BaseStream.WriteAsync(bytes, 0, bytesRead);
 
             StandardInput.Close();
@@ -69,7 +69,7 @@ namespace FFmpegWrapper.Models
             byte[] bytes = new byte[OutputBuffer];
             int bytesRead;
 
-            while ((bytesRead = await StandardOutput.BaseStream.ReadAsync(bytes, 0, bytes.Length)) != 0)
+            while (!HasExited && (bytesRead = await StandardOutput.BaseStream.ReadAsync(bytes, 0, bytes.Length)) != 0)
             {
                 if (Output is not null)
                     await Output.WriteAsync(bytes, 0, bytesRead);
