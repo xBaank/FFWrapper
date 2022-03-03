@@ -10,6 +10,7 @@ using Xunit;
 
 namespace FFmpegWrapper.Tests
 {
+    [CollectionDefinition(nameof(FFmpegAudioTests), DisableParallelization = true)]
     public class FFmpegAudioTests
     {
         private FFmpegClient fFmpegClient = new FFmpegClient();

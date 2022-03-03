@@ -9,6 +9,7 @@ using Xunit;
 
 namespace FFmpegWrapper.Tests
 {
+    [CollectionDefinition(nameof(FFmpegVideoTests), DisableParallelization = true)]
     public class FFmpegVideoTests
     {
 

@@ -6,6 +6,7 @@ using Xunit;
 
 namespace FFmpegWrapper.Tests
 {
+    [CollectionDefinition(nameof(FFprobeTests), DisableParallelization = true)]
     public class FFprobeTests
     {
         private FFprobeClient ffProbeClient = new FFprobeClient();
