@@ -9,11 +9,10 @@ using Xunit;
 
 namespace FFmpegWrapper.Tests
 {
-    public class FFmpegVideoTests : IDisposable
+    public class FFmpegVideoTests
     {
 
         private FFmpegClient fFmpegClient = new FFmpegClient();
-        private Stream file;
 
         [Theory]
         [InlineData(VideoFilesUri.WMV)]
@@ -25,6 +24,7 @@ namespace FFmpegWrapper.Tests
         public async void VideoShouldConvertToFile(string uri)
         {
             //Arrange
+            Stream file;
             string saveFile = Guid.NewGuid().ToString() + ".mkv";
 
             //Act
@@ -34,7 +34,7 @@ namespace FFmpegWrapper.Tests
             //Assert
             Assert.True(file.Length > 0);
 
-            Dispose();
+            file.Dispose();
         }
 
         [Theory]
@@ -47,6 +47,7 @@ namespace FFmpegWrapper.Tests
         public async void VideoShouldConvertToStream(string uri)
         {
             //Arrange
+            Stream file;
             string saveFile = Guid.NewGuid().ToString() + ".mkv";
 
             //Act
@@ -56,7 +57,7 @@ namespace FFmpegWrapper.Tests
             //Assert
             Assert.True(file.Length > 0);
 
-            Dispose();
+            file.Dispose();
         }
 
         [Theory]
@@ -69,6 +70,7 @@ namespace FFmpegWrapper.Tests
         public async void VideoShouldConvertToPipe(string uri)
         {
             //Arrange
+            Stream file;
             string saveFile = Guid.NewGuid().ToString() + ".mkv";
 
             //Act
@@ -81,17 +83,7 @@ namespace FFmpegWrapper.Tests
             //Assert
             Assert.True(file.Length > 0);
 
-            Dispose();
-        }
-
-        public void Dispose()
-        {
-
-            file.Close();
-
-            if (file.GetType() == typeof(FileStream))
-                File.Delete(((FileStream)file).Name);
-
+            file.Dispose();
         }
     }
 }
