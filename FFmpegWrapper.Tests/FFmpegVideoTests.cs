@@ -29,7 +29,7 @@ namespace FFmpegWrapper.Tests
 
             //Act
             await fFmpegClient.ConvertAsync(uri, saveFile);
-            stream = new MemoryStream();
+            stream = File.Open(saveFile, FileMode.Open);
 
             //Assert
             Assert.True(stream.Length > 0);
