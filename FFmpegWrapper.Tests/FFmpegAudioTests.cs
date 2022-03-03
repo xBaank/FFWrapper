@@ -10,11 +10,11 @@ using Xunit;
 
 namespace FFmpegWrapper.Tests
 {
-    public class FFmpegAudioTests : IDisposable
+    public class FFmpegAudioTests
     {
         private FFmpegClient fFmpegClient = new FFmpegClient();
         HttpClient httpClient = new HttpClient();
-        private Stream file;
+
 
         [Theory]
         [InlineData(AudioFilesUri.WAV)]
@@ -24,13 +24,15 @@ namespace FFmpegWrapper.Tests
         {
             //Arrange
             string saveFile = Guid.NewGuid().ToString() + ".Opus";
-
+            Stream file;
             //Act
             await fFmpegClient.ConvertAsync(uri, saveFile);
             file = File.Open(Path.Combine(Directory.GetCurrentDirectory(), saveFile), FileMode.Open);
 
             //Assert
             Assert.True(file.Length > 0);
+
+            file.Dispose();
         }
 
         [Theory]
@@ -41,7 +43,7 @@ namespace FFmpegWrapper.Tests
         {
             //Arrange
             string saveFile = Guid.NewGuid().ToString() + ".opus";
-
+            Stream file;
             //Act
             file = new FileStream(saveFile, FileMode.OpenOrCreate);
             await fFmpegClient.ConvertToStreamAsync(uri, file, new Format(FormatTypes.OPUS));
@@ -49,7 +51,7 @@ namespace FFmpegWrapper.Tests
             //Assert
             Assert.True(file.Length > 0);
 
-            Dispose();
+            file.Dispose();
         }
 
         [Theory]
@@ -60,6 +62,7 @@ namespace FFmpegWrapper.Tests
         {
             //Arrange
             string saveFile = Guid.NewGuid().ToString() + ".opus";
+            Stream file;
 
             //Act
             file = new FileStream(saveFile, FileMode.OpenOrCreate);
@@ -71,7 +74,7 @@ namespace FFmpegWrapper.Tests
             //Assert
             Assert.True(file.Length > 0);
 
-            Dispose();
+            file.Dispose();
         }
 
         [Theory]
@@ -82,6 +85,7 @@ namespace FFmpegWrapper.Tests
         {
             //Arrange
             string saveFile = Guid.NewGuid().ToString() + ".opus";
+            Stream file;
 
             //Act
             file = new FileStream(saveFile, FileMode.OpenOrCreate);
@@ -93,19 +97,7 @@ namespace FFmpegWrapper.Tests
             //Assert
             Assert.True(file.Length > 0);
 
-            Dispose();
-        }
-
-        public void Dispose()
-        {
-            if (file is null)
-                return;
-
-            file.Close();
-
-            if (file.GetType() == typeof(FileStream))
-                File.Delete(((FileStream)file).Name);
-
+            file.Dispose();
         }
     }
 }
