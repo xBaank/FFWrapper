@@ -48,9 +48,10 @@ namespace FFmpegWrapper.Tests
         {
             //Arrange
             Stream file;
+            string saveFile = Guid.NewGuid().ToString() + ".mkv";
 
             //Act
-            file = new MemoryStream();
+            file = new FileStream(saveFile, FileMode.OpenOrCreate);
             await fFmpegClient.ConvertToStreamAsync(uri, file, new Format(FormatTypes.MATROSKA));
 
             //Assert
@@ -70,13 +71,14 @@ namespace FFmpegWrapper.Tests
         {
             //Arrange
             Stream file;
+            string saveFile = Guid.NewGuid().ToString() + ".mkv";
 
             //Act
-            file = new MemoryStream();
+            file = new FileStream(saveFile, FileMode.OpenOrCreate);
             var process = fFmpegClient.ConvertToPipe(uri, new Format(FormatTypes.MATROSKA));
 
             while (!process.HasExited)
-                file.Write(await process.GetNextBytes());
+                await file.WriteAsync(await process.GetNextBytes());
 
             //Assert
             Assert.True(file.Length > 0);
