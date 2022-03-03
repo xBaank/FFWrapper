@@ -13,6 +13,7 @@ namespace FFmpegWrapper.Tests
     {
 
         private FFmpegClient fFmpegClient = new FFmpegClient();
+        Stream file;
 
         [Theory]
         [InlineData(VideoFilesUri.WMV)]
@@ -24,12 +25,11 @@ namespace FFmpegWrapper.Tests
         public async void VideoShouldConvertToFile(string uri)
         {
             //Arrange
-            Stream file;
             string saveFile = Guid.NewGuid().ToString() + ".mkv";
 
             //Act
             await fFmpegClient.ConvertAsync(uri, saveFile);
-            file = File.Open(Path.Combine(Directory.GetCurrentDirectory(), saveFile), FileMode.Open);
+            file = new MemoryStream();
 
             //Assert
             Assert.True(file.Length > 0);
@@ -47,11 +47,9 @@ namespace FFmpegWrapper.Tests
         public async void VideoShouldConvertToStream(string uri)
         {
             //Arrange
-            Stream file;
-            string saveFile = Guid.NewGuid().ToString() + ".mkv";
 
             //Act
-            file = new FileStream(saveFile, FileMode.OpenOrCreate);
+            file = new MemoryStream();
             await fFmpegClient.ConvertToStreamAsync(uri, file, new Format(FormatTypes.MATROSKA));
 
             //Assert
@@ -70,11 +68,8 @@ namespace FFmpegWrapper.Tests
         public async void VideoShouldConvertToPipe(string uri)
         {
             //Arrange
-            Stream file;
-            string saveFile = Guid.NewGuid().ToString() + ".mkv";
 
             //Act
-            file = new FileStream(saveFile, FileMode.OpenOrCreate);
             var process = fFmpegClient.ConvertToPipe(uri, new Format(FormatTypes.MATROSKA));
 
             byte[] bytesread = new byte[0];

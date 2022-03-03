@@ -13,6 +13,8 @@ namespace FFmpegWrapper.Tests
     public class FFmpegAudioTests
     {
         private FFmpegClient fFmpegClient = new FFmpegClient();
+        Stream file;
+
         HttpClient httpClient = new HttpClient();
 
 
@@ -24,7 +26,7 @@ namespace FFmpegWrapper.Tests
         {
             //Arrange
             string saveFile = Guid.NewGuid().ToString() + ".Opus";
-            Stream file;
+
             //Act
             await fFmpegClient.ConvertAsync(uri, saveFile);
             file = File.Open(Path.Combine(Directory.GetCurrentDirectory(), saveFile), FileMode.Open);
@@ -41,8 +43,7 @@ namespace FFmpegWrapper.Tests
         [InlineData(AudioFilesUri.OGG)]
         public async void VideoShouldConvertToStream(string uri)
         {
-            //Arrange
-            Stream file;
+
             //Act
             file = new MemoryStream();
             await fFmpegClient.ConvertToStreamAsync(uri, file, new Format(FormatTypes.OPUS));
@@ -60,7 +61,6 @@ namespace FFmpegWrapper.Tests
         public async void VideoShouldConvertToPipe(string uri)
         {
             //Arrange
-            Stream file;
 
             //Act
             file = new MemoryStream();
@@ -83,7 +83,6 @@ namespace FFmpegWrapper.Tests
         public async void VideoShouldConvertToPipeFromStream(string uri, FormatTypes formatType)
         {
             //Arrange
-            Stream file;
 
             //Act
             file = new MemoryStream();
