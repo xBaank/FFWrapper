@@ -36,16 +36,16 @@ namespace FFmpegWrapper.Tests
             Assert.True(ms.Length > 0 && metadata is not null);
         }
 
-        [Theory]
-        [InlineData(VideoFilesUri.WMV)]
-        [InlineData(AudioFilesUri.OGG)]
-        public async void FileShouldGetFormatFromStream(string uri)
-        {
-            var stream = await httpClient.GetStreamAsync(uri);
-            var metadata = await ffProbeClient.GetMetadataAsync(stream);
+        //[Theory]
+        //[InlineData(VideoFilesUri.WMV)]
+        //[InlineData(AudioFilesUri.OGG)]
+        //public async void FileShouldGetFormatFromStream(string uri)
+        //{
+        //    var stream = await httpClient.GetStreamAsync(uri);
+        //    var metadata = await ffProbeClient.GetMetadataAsync(stream);
 
-            Assert.NotNull(metadata);
-        }
+        //    Assert.NotNull(metadata);
+        //}
 
         [Theory]
         [InlineData(VideoFilesUri.WMV, StreamType.v)]
@@ -75,20 +75,20 @@ namespace FFmpegWrapper.Tests
             Assert.True(ms.Length > 0 && frames?.Count > 0);
         }
 
-        [Theory]
-        [InlineData(VideoFilesUri.WMV, StreamType.v)]
-        [InlineData(VideoFilesUri.WEBM, StreamType.v)]
-        public async void FileShouldGetPacketsAndFramesFromStream(string uri, StreamType streamType)
-        {
-            var bytes = await httpClient.GetStreamAsync(uri);
+        //[Theory]
+        //[InlineData(VideoFilesUri.WMV, StreamType.v)]
+        //[InlineData(VideoFilesUri.WEBM, StreamType.v)]
+        //public async void FileShouldGetPacketsAndFramesFromStream(string uri, StreamType streamType)
+        //{
+        //    var bytes = await httpClient.GetStreamAsync(uri);
 
-            var packets = await ffProbeClient.GetPacketsAsync(bytes, streamType);
+        //    var packets = await ffProbeClient.GetPacketsAsync(bytes, streamType);
 
-            bytes = await httpClient.GetStreamAsync(uri);
-            var frames = await ffProbeClient.GetFramesAsync(bytes, streamType);
+        //    bytes = await httpClient.GetStreamAsync(uri);
+        //    var frames = await ffProbeClient.GetFramesAsync(bytes, streamType);
 
-            Assert.True(packets?.Count > 0);
-            Assert.True(frames?.Count > 0);
-        }
+        //    Assert.True(packets?.Count > 0);
+        //    Assert.True(frames?.Count > 0);
+        //}
     }
 }
