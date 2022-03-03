@@ -9,7 +9,6 @@ using Xunit;
 
 namespace FFmpegWrapper.Tests
 {
-    [CollectionDefinition(nameof(FFmpegVideoTests), DisableParallelization = true)]
     public class FFmpegVideoTests
     {
 
@@ -78,8 +77,9 @@ namespace FFmpegWrapper.Tests
             file = new FileStream(saveFile, FileMode.OpenOrCreate);
             var process = fFmpegClient.ConvertToPipe(uri, new Format(FormatTypes.MATROSKA));
 
-            while (!process.HasExited)
-                await file.WriteAsync(await process.GetNextBytes());
+            byte[] bytesread = new byte[0];
+            while (!process.HasExited || bytesread.Length > 0)
+                await file.WriteAsync(bytesread = await process.GetNextBytes());
 
             //Assert
             Assert.True(file.Length > 0);
