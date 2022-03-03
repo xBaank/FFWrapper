@@ -48,10 +48,9 @@ namespace FFmpegWrapper.Tests
         {
             //Arrange
             Stream file;
-            string saveFile = Guid.NewGuid().ToString() + ".mkv";
 
             //Act
-            file = new FileStream(saveFile, FileMode.OpenOrCreate);
+            file = new MemoryStream();
             await fFmpegClient.ConvertToStreamAsync(uri, file, new Format(FormatTypes.MATROSKA));
 
             //Assert
@@ -71,10 +70,9 @@ namespace FFmpegWrapper.Tests
         {
             //Arrange
             Stream file;
-            string saveFile = Guid.NewGuid().ToString() + ".mkv";
 
             //Act
-            file = new FileStream(saveFile, FileMode.OpenOrCreate);
+            file = new MemoryStream();
             var process = fFmpegClient.ConvertToPipe(uri, new Format(FormatTypes.MATROSKA));
 
             while (!process.HasExited)

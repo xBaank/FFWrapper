@@ -42,10 +42,9 @@ namespace FFmpegWrapper.Tests
         public async void VideoShouldConvertToStream(string uri)
         {
             //Arrange
-            string saveFile = Guid.NewGuid().ToString() + ".opus";
             Stream file;
             //Act
-            file = new FileStream(saveFile, FileMode.OpenOrCreate);
+            file = new MemoryStream();
             await fFmpegClient.ConvertToStreamAsync(uri, file, new Format(FormatTypes.OPUS));
 
             //Assert
@@ -61,15 +60,14 @@ namespace FFmpegWrapper.Tests
         public async void VideoShouldConvertToPipe(string uri)
         {
             //Arrange
-            string saveFile = Guid.NewGuid().ToString() + ".opus";
             Stream file;
 
             //Act
-            file = new FileStream(saveFile, FileMode.OpenOrCreate);
+            file = new MemoryStream();
             var process = fFmpegClient.ConvertToPipe(uri, new Format(FormatTypes.OPUS));
 
             while (!process.HasExited)
-                file.Write(await process.GetNextBytes());
+                await file.WriteAsync(await process.GetNextBytes());
 
             //Assert
             Assert.True(file.Length > 0);
@@ -84,15 +82,14 @@ namespace FFmpegWrapper.Tests
         public async void VideoShouldConvertToPipeFromStream(string uri, FormatTypes formatType)
         {
             //Arrange
-            string saveFile = Guid.NewGuid().ToString() + ".opus";
             Stream file;
 
             //Act
-            file = new FileStream(saveFile, FileMode.OpenOrCreate);
+            file = new MemoryStream();
             var process = fFmpegClient.ConvertToPipe(await httpClient.GetStreamAsync(uri), new Format(formatType), new Format(FormatTypes.OPUS));
 
             while (!process.HasExited)
-                file.Write(await process.GetNextBytes());
+                await file.WriteAsync(await process.GetNextBytes());
 
             //Assert
             Assert.True(file.Length > 0);
