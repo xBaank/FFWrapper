@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Net.Http;
 
 using FFmpegWrapper.Formats;
 using FFmpegWrapper.Models;
@@ -49,6 +48,16 @@ namespace FFmpegWrapper.Tests
 
             //Assert
             Assert.True(stream.Length > 0);
+
+            stream.Dispose();
+        }
+
+        [Fact]
+        public async void VideoConvertShouldThrow()
+        {
+            stream = new MemoryStream();
+
+            await Assert.ThrowsAsync<NullReferenceException>(async () => { await fFmpegClient.ConvertToStreamAsync(null, new Format(FormatTypes.MP4), stream, new Format(FormatTypes.MATROSKA)); });
 
             stream.Dispose();
         }

@@ -71,12 +71,18 @@ namespace FFmpegWrapper.Builders
 
         public T SetInput(Stream stream)
         {
+            if (stream == null)
+                throw new NullReferenceException("Input cannot be set to null");
+
             ffProcess.Input = stream;
             return (T)this;
         }
 
         public T SetOutput(Stream stream)
         {
+            if (stream == null)
+                throw new NullReferenceException("Output cannot be set to null");
+
             ffProcess.Output = stream;
             return (T)this;
         }

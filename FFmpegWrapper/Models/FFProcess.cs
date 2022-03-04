@@ -52,9 +52,6 @@ namespace FFmpegWrapper.Models
 
         private async Task PipeInput()
         {
-            if (Input == null)
-                throw new NullReferenceException("Input set to null");
-
             byte[] bytes = new byte[InputBuffer];
             int bytesRead;
 
