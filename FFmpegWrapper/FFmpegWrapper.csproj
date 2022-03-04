@@ -3,17 +3,10 @@
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<Nullable>enable</Nullable>
-		<Description>A ffmpeg wrapper that uses a fluent api to work with</Description>
-		<Version>0.0.2.8</Version>
+		<Description>A ffmpeg wrapper</Description>
+		<Version>0.1.0.0</Version>
 		<AssemblyName>FFmpegWrapper</AssemblyName>
 		<RootNamespace>FFmpegWrapper</RootNamespace>
 	</PropertyGroup>
-
-
-	<ItemGroup>
-		<Compile Update="Models\FFProcess.cs">
-			<SubType>Component</SubType>
-		</Compile>
-	</ItemGroup>
 
 </Project>
