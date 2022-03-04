@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace FFmpegWrapper.Helpers
 {
@@ -9,8 +10,7 @@ namespace FFmpegWrapper.Helpers
         internal static string TryGetFFprobePath() => TryGetFFPath("ffprobe");
         private static string TryGetFFPath(string name)
         {
-
-            if (OperatingSystem.IsLinux())
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 return name;
 
             var files = Directory.EnumerateFiles(Directory.GetCurrentDirectory());

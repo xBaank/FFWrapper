@@ -25,9 +25,6 @@ namespace WebmPoc
                 lastPostTime = (double)(packets.LastOrDefault().DtsTime + packets.LastOrDefault().DurationTime);
             }
 
-
-            var frames = fFprobeClient.GetFramesAsync(streamInfo.Url, StreamType.a, new MemoryStream()).Result;
-
             FileStream file = new FileStream("eldenring.mp3", FileMode.OpenOrCreate);
 
             fFmpegClient.ConvertToStreamAsync(streamInfo.Url, file, new Format(FormatTypes.MP3)).Wait();

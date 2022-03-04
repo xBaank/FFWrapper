@@ -39,7 +39,7 @@ namespace FFmpegWrapper.Models
 
         public async Task<T?> DeserializeResultAsync<T>()
         {
-            await WaitForExitAsync();
+            WaitForExit();
 
             if (Output is null || ExitCode != 0)
                 return default;
@@ -52,6 +52,11 @@ namespace FFmpegWrapper.Models
 
         private async Task PipeInput()
         {
+            if (Input is null)
+            {
+                Kill();
+                throw new NullReferenceException("Input cannot be null");
+            }
             byte[] bytes = new byte[InputBuffer];
             int bytesRead;
 
@@ -89,7 +94,7 @@ namespace FFmpegWrapper.Models
         private FFProcess StartProcess()
         {
             Exited += new EventHandler(CallExitEvent);
-            base.Start();
+            Start();
 
             if (StartInfo.RedirectStandardOutput)
                 tasks.Add(PipeOutput());
