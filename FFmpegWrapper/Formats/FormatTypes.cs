@@ -4,12 +4,13 @@
     {
         MP4,
         AMV,
-        MKV,
+        MATROSKA,
         WEBM,
         DATA,
         OPUS,
         AAC,
         MP3,
+        WAV,
         OGG
     }
 }

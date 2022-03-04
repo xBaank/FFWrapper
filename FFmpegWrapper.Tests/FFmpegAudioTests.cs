@@ -9,26 +9,30 @@ using Xunit;
 
 namespace FFmpegWrapper.Tests
 {
-    public class FFmpegAudioTests : IDisposable
+    public class FFmpegAudioTests
     {
-        private FFmpegClient fFmpegClient = new FFmpegClient(Directory.GetCurrentDirectory() + "/FFMPEG/ffmpeg.exe");
-        private Stream file;
+        private FFmpegClient fFmpegClient = new FFmpegClient();
+        Stream stream;
+
+
 
         [Theory]
         [InlineData(AudioFilesUri.WAV)]
         [InlineData(AudioFilesUri.MP3)]
         [InlineData(AudioFilesUri.OGG)]
-        public async void VideoShouldConvertToOpus(string uri)
+        public async void VideoShouldConvertToFile(string uri)
         {
             //Arrange
             string saveFile = Guid.NewGuid().ToString() + ".Opus";
 
             //Act
             await fFmpegClient.ConvertAsync(uri, saveFile);
-            file = File.Open(Path.Combine(Directory.GetCurrentDirectory(), saveFile), FileMode.Open);
+            stream = File.Open(Path.Combine(Directory.GetCurrentDirectory(), saveFile), FileMode.Open);
 
             //Assert
-            Assert.True(file.Length > 0);
+            Assert.True(stream.Length > 0);
+
+            stream.Dispose();
         }
 
         [Theory]
@@ -37,29 +41,25 @@ namespace FFmpegWrapper.Tests
         [InlineData(AudioFilesUri.OGG)]
         public async void VideoShouldConvertToStream(string uri)
         {
-            //Arrange
-            string saveFile = Guid.NewGuid().ToString() + ".opus";
 
             //Act
-            file = new FileStream(saveFile, FileMode.OpenOrCreate);
-            await fFmpegClient.ConvertToStreamAsync(uri, file, new Format(FormatTypes.OPUS));
+            stream = new MemoryStream();
+            await fFmpegClient.ConvertToStreamAsync(uri, stream, new Format(FormatTypes.OPUS));
 
             //Assert
-            Assert.True(file.Length > 0);
+            Assert.True(stream.Length > 0);
 
-            Dispose();
+            stream.Dispose();
         }
 
-        public void Dispose()
+        [Fact]
+        public async void VideoConvertShouldThrow()
         {
-            if (file is null)
-                return;
+            stream = new MemoryStream();
 
-            file.Close();
+            await Assert.ThrowsAsync<NullReferenceException>(async () => { await fFmpegClient.ConvertToStreamAsync(null, new Format(FormatTypes.MP4), stream, new Format(FormatTypes.MATROSKA)); });
 
-            if (file.GetType() == typeof(FileStream))
-                File.Delete(((FileStream)file).Name);
-
+            stream.Dispose();
         }
     }
 }

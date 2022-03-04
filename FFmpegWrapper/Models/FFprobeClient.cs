@@ -6,6 +6,8 @@ using FFmpegWrapper.Builders;
 using FFmpegWrapper.Formats;
 using FFmpegWrapper.JsonModels;
 
+using FFmpegWrapper.Helpers;
+
 namespace FFmpegWrapper.Models
 {
     public class FFprobeClient : Client
@@ -13,6 +15,7 @@ namespace FFmpegWrapper.Models
         private readonly FFprobeProcessBuilder _builder = new FFprobeProcessBuilder();
 
         public FFprobeClient(string path) : base(path) { }
+        public FFprobeClient() : base(PathUtils.TryGetFFprobePath()) { }
 
         public async Task<FormatMetadata?> GetMetadataAsync(string input, Stream output) =>
             await GetMetadataDeserializeAsync(input, output);
@@ -22,10 +25,6 @@ namespace FFmpegWrapper.Models
             await GetMetadataDeserializeAsync(input, new MemoryStream());
         public async Task<FormatMetadata?> GetMetadataAsync(Stream input) =>
            await GetMetadataDeserializeAsync(input, new MemoryStream());
-        public async Task GetMetadataAsync(Stream input, string output) =>
-           await GetMetadataDeserializeAsync(input, output);
-        public async Task GetMetadataAsync(string input, string output) =>
-           await GetMetadataDeserializeAsync(input, output);
 
         public async Task<List<Packet>?> GetPacketsAsync(string input, StreamType streamType, Stream output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
             await GetPacketsDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
@@ -39,12 +38,6 @@ namespace FFmpegWrapper.Models
         public async Task<List<Packet>?> GetPacketsAsync(Stream input, StreamType streamType, Stream output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
             await GetPacketsDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
 
-        public async Task GetPacketsAsync(Stream input, StreamType streamType, string output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
-            await GetPacketsDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
-
-        public async Task GetPacketsAsync(string input, StreamType streamType, string output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
-            await GetPacketsDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
-
         public async Task<List<Frame>?> GetFramesAsync(string input, StreamType streamType, Stream output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
             await GetFramesDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
 
@@ -56,12 +49,6 @@ namespace FFmpegWrapper.Models
 
         public async Task<List<Frame>?> GetFramesAsync(Stream input, StreamType streamType, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
             await GetFramesDeserializeAsync(input, streamType, new MemoryStream(), timeStart, timeAdded, streamNumber);
-
-        public async Task GetFramesAsync(Stream input, StreamType streamType, string output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
-            await GetFramesDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
-
-        public async Task GetFramesAsync(string input, StreamType streamType, string output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0) =>
-            await GetFramesDeserializeAsync(input, streamType, output, timeStart, timeAdded, streamNumber);
 
         private async Task<List<Frame>?> GetFramesDeserializeAsync(dynamic input, StreamType streamType, dynamic output, double timeStart, double timeAdded, int streamNumber)
         {
@@ -97,12 +84,13 @@ namespace FFmpegWrapper.Models
 
         private FFprobeProcessBuilder MetadataProcessBuilder() => _builder
            .CreateFFBuilder(Path)
+           .RedirectError(true)
            .ShowFormat()
            .Reconnect()
            .AsJson();
 
         private FFProcess PacketsProcessBuild(dynamic input, StreamType streamType, dynamic output, double timeStart, double timeAdded, int streamNumber) =>
-            PacketsProcessBuilder(streamType, timeStart, timeAdded, streamNumber)
+            PacketsProcessBuilder(streamType, timeStart, timeAdded, streamNumber).AddArguments("-err_detect explode")
             .From(input)
             .To(output)
             .Build();
@@ -125,6 +113,7 @@ namespace FFmpegWrapper.Models
 
         private FFprobeProcessBuilder FramesProcessBuilder(StreamType streamType, double timeStart, double timeAdded, int streamNumber) => _builder
             .CreateFFBuilder(Path)
+            .RedirectError(true)
             .SelectStreams(streamType, streamNumber)
             .ShowFrames()
             .ReadIntervals()

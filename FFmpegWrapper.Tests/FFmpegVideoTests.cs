@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 
+using FFmpegWrapper.Formats;
 using FFmpegWrapper.Models;
 using FFmpegWrapper.Tests.Data;
 
@@ -8,11 +9,11 @@ using Xunit;
 
 namespace FFmpegWrapper.Tests
 {
-    public class FFmpegVideoTests : IDisposable
+    public class FFmpegVideoTests
     {
 
-        private FFmpegClient fFmpegClient = new FFmpegClient(Directory.GetCurrentDirectory() + "/FFMPEG/ffmpeg.exe");
-        private Stream file;
+        private FFmpegClient fFmpegClient = new FFmpegClient();
+        Stream stream;
 
         [Theory]
         [InlineData(VideoFilesUri.WMV)]
@@ -21,30 +22,41 @@ namespace FFmpegWrapper.Tests
         [InlineData(VideoFilesUri.MP4)]
         [InlineData(VideoFilesUri.AVI)]
         [InlineData(VideoFilesUri.WEBM)]
-        public async void VideoShouldConvertToMKV(string uri)
+        public async void VideoShouldConvertToFile(string uri)
         {
             //Arrange
             string saveFile = Guid.NewGuid().ToString() + ".mkv";
 
             //Act
             await fFmpegClient.ConvertAsync(uri, saveFile);
-            file = File.Open(Path.Combine(Directory.GetCurrentDirectory(), saveFile), FileMode.Open);
+            stream = File.Open(saveFile, FileMode.Open);
 
             //Assert
-            Assert.True(file.Length > 0);
+            Assert.True(stream.Length > 0);
 
-            Dispose();
+            stream.Dispose();
         }
 
-
-        public void Dispose()
+        [Theory]
+        [InlineData(VideoFilesUri.WMV)]
+        [InlineData(VideoFilesUri.MOV)]
+        [InlineData(VideoFilesUri.OGG)]
+        [InlineData(VideoFilesUri.MP4)]
+        [InlineData(VideoFilesUri.AVI)]
+        [InlineData(VideoFilesUri.WEBM)]
+        public async void VideoShouldConvertToStream(string uri)
         {
+            //Arrange
 
-            file.Close();
+            //Act
+            stream = new MemoryStream();
+            await fFmpegClient.ConvertToStreamAsync(uri, stream, new Format(FormatTypes.MATROSKA));
 
-            if (file.GetType() == typeof(FileStream))
-                File.Delete(((FileStream)file).Name);
+            //Assert
+            Assert.True(stream.Length > 0);
 
+            stream.Dispose();
         }
+
     }
 }

@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 
 using FFmpegWrapper.Extensions;
-using FFmpegWrapper.JsonModels;
 
 namespace FFmpegWrapper.Models
 {
@@ -36,13 +35,14 @@ namespace FFmpegWrapper.Models
             //Don't allow end user to create process directly
         }
 
-        public new void Start() => StartProcess().tasks.WaitAll();
         public Task StartAsync() => StartProcess().tasks.WhenAll();
 
         public async Task<T?> DeserializeResultAsync<T>()
         {
+            await WaitForExitAsync();
+
             if (Output is null || ExitCode != 0)
-                return default(T);
+                return default;
 
             Output.Seek(0, SeekOrigin.Begin);
 
@@ -50,70 +50,40 @@ namespace FFmpegWrapper.Models
             return result;
         }
 
-        private Task PipeInput()
+        private async Task PipeInput()
         {
-            if (Input == null)
-                throw new NullReferenceException("Input set to null");
+            byte[] bytes = new byte[InputBuffer];
+            int bytesRead;
 
-            return Task.Run(async () =>
-            {
-                byte[] bytes = new byte[InputBuffer];
-                int bytesRead;
+            while (!HasExited && (bytesRead = await Input.ReadAsync(bytes)) != 0)
+                await StandardInput.BaseStream.WriteAsync(bytes.AsMemory(0, bytesRead));
 
-                while ((bytesRead = await Input.ReadAsync(bytes, 0, bytes.Length)) != 0)
-                    await StandardInput.BaseStream.WriteAsync(bytes, 0, bytesRead);
-
-                StandardInput.Close();
-            });
+            StandardInput.Close();
         }
 
-        private Task PipeOutput()
+        private async Task PipeOutput()
         {
-
-            return Task.Run(async () =>
-            {
-                byte[] bytes = new byte[OutputBuffer];
-                int bytesRead;
-
-                while ((bytesRead = await StandardOutput.BaseStream.ReadAsync(bytes, 0, bytes.Length)) != 0)
-                {
-                    if (Output != null)
-                        await Output.WriteAsync(bytes, 0, bytesRead);
-
-                    CallOutputEvent(bytes);
-                }
-
-            });
-        }
-
-        private Task PipeError()
-        {
-            return Task.Run(async () =>
-            {
-                while (!StandardError.EndOfStream)
-                {
-                    var line = await StandardError.ReadLineAsync();
-                    CallErrorEvent(line);
-                    Error += line;
-
-                }
-            });
-        }
-
-        public async Task<byte[]> GetNextBytes()
-        {
-            if (!StartInfo.RedirectStandardOutput)
-                throw new InvalidOperationException("Output not being redirected");
-
-            if (Output is not null)
-                throw new InvalidOperationException("All output data is being written to the output stream");
-
             byte[] bytes = new byte[OutputBuffer];
-            int bytesRead = await StandardOutput.BaseStream.ReadAsync(bytes, 0, OutputBuffer);
+            int bytesRead;
 
-            bytes = bytes.Take(bytesRead).ToArray();
-            CallOutputEvent(bytes);
-            return bytes;
+            while (!HasExited && (bytesRead = await StandardOutput.BaseStream.ReadAsync(bytes)) != 0)
+            {
+                if (Output is not null)
+                    await Output.WriteAsync(bytes, 0, bytesRead);
+
+                CallOutputEvent(bytes.Take(bytesRead).ToArray());
+            }
+        }
+
+        private async Task PipeError()
+        {
+            while (!StandardError.EndOfStream)
+            {
+                var line = await StandardError.ReadLineAsync();
+                CallErrorEvent(line);
+                Error += line;
+
+            }
         }
 
         private FFProcess StartProcess()
@@ -121,11 +91,11 @@ namespace FFmpegWrapper.Models
             Exited += new EventHandler(CallExitEvent);
             base.Start();
 
+            if (StartInfo.RedirectStandardOutput)
+                tasks.Add(PipeOutput());
+
             if (StartInfo.RedirectStandardInput)
                 tasks.Add(PipeInput());
-
-            if (StartInfo.RedirectStandardOutput && Output is not null)
-                tasks.Add(PipeOutput());
 
             if (StartInfo.RedirectStandardError)
                 tasks.Add(PipeError());
