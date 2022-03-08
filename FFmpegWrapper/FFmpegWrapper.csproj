@@ -9,8 +9,9 @@
 		<RootNamespace>FFmpegWrapper</RootNamespace>
 		<LangVersion>10.0</LangVersion>
 		<RepositoryUrl>https://github.com/xBaank/FFWrapper</RepositoryUrl>
-		<PackageLicenseUrl>https://github.com/xBaank/FFWrapper/blob/master/LICENSE.md</PackageLicenseUrl>
+		<PackageLicenseUrl>https://raw.githubusercontent.com/xBaank/FFWrapper/master/LICENSE.md</PackageLicenseUrl>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<Authors>Bank</Authors>
 	</PropertyGroup>
 
 </Project>
