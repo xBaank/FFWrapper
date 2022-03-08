@@ -99,6 +99,9 @@ namespace FFmpegWrapper.Models
             if (StartInfo.RedirectStandardOutput)
                 tasks.Add(PipeOutput());
 
+            if (StartInfo.RedirectStandardOutput)
+                tasks.Add(PipeOutput());
+
             if (StartInfo.RedirectStandardInput)
                 tasks.Add(PipeInput());
 
