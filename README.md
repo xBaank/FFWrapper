@@ -1,41 +1,37 @@
-# Youpus
-Simple Webm opus demuxer for youtube videos
+# FFWrapper
+This is a horrible ffmpeg and ffprobe wrapper that I've made for fun.
 
-## Whats this for?
-This is basically a demuxer and decoder for the webm youtube videos.
 ## What can be done with this?
-It can demuxe webm files.
+You can convert or fetch metadata from video/audio files using stream class or just the path.
 
-### Example
+### Convert to Stream
 ```cs
-YtStream stream = new YtStream(await YtStream.GetSongUrl("https://www.youtube.com/watch?v=E3Huy2cdih0"));
-WebmToOpus opus = new WebmToOpus(stream);
-List<OpusPacket> opusPackets = new List<OpusPacket>();
-//Download clusters positions
-await opus.DownloadClusterPositions();
-//Donwload all clusters
-foreach(var clusterPos in opus.ClusterPositions)
-{
-    var cluster = await opus.DownloadCluster(clusterPos);
-    opusPackets.AddRange(cluster.Packets);
-}
-//Decodes to pcm
-byte[] pcmBufferBytes = WebmToOpus.GetPcm(opusPackets, opus.OpusFormat);
-//Writes pcm to wav file
-MemoryStream memoryStream = new MemoryStream(pcmBufferBytes);
-var rawSourceWaveStream = new RawSourceWaveStream(pcmBufferBytes, 0, pcmBufferBytes.Length, new WaveFormat((int)opus.OpusFormat.sampleFrequency, opus.OpusFormat.channels));
-WaveFileWriter.CreateWaveFile("output.wav", rawSourceWaveStream);
+FFmpegClient fFmpegClient = new FFmpegClient();
+Stream output = new MemoryStream();
+await fFmpegClient.ConvertToStreamAsync(inputPath , output, new Format(FormatTypes.MP3));
 ```
-# TODO
-- [X] Audio track
-- [ ] Video track
-- [ ] Blocks and Block Groups
-- [X] Simpleblocks
-- [ ] Multiple tracks
-- [ ] Local files
-
-
-### Libraries used
-- [EbmlReader](https://github.com/matthewn4444/EBMLReader)
-- [Concentus](https://github.com/lostromb/concentus)
-- [YoutubeExplode](https://github.com/Tyrrrz/YoutubeExplode)
+### Convert to File
+```cs
+FFmpegClient fFmpegClient = new FFmpegClient();
+await fFmpegClient.ConvertAsync(inputPath, outputPath);
+```
+### Get metadata
+```cs
+FFprobeClient fFprobeClient = new FFprobeClient();
+var format = await fFprobeClient.GetMetadataAsync(inputPath);
+```
+### Get packets
+```cs
+FFprobeClient fFprobeClient = new FFprobeClient();
+//You can say where the output will be stored, whether it is in the file system,memory...
+//Returned value is already deserialized but you can still do whatever you want with the raw output data
+var frames = await fFprobeClient.GetFramesAsync(inputPath, StreamType.a, new MemoryStream());
+```
+## About Windows and Unix
+### Windows
+The library itself tries to find the binaries on the same folder, but you can still use this constructor.
+```cs
+FFmpegClient fFmpegClient = new FFmpegClient("/bin/ffmpeg.exe");
+```
+### Unix
+When using it on unix systems, it will directly use the ffmpeg/ffprobe command, or use the other constructor to specify the path.
