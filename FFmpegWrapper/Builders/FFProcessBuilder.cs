@@ -2,6 +2,7 @@
 using System.IO;
 using System;
 using FFmpegWrapper.Extensions;
+using System.Text;
 
 namespace FFmpegWrapper.Builders
 {
@@ -84,6 +85,15 @@ namespace FFmpegWrapper.Builders
                 throw new NullReferenceException("Output cannot be set to null");
 
             ffProcess.Output = stream;
+            return (T)this;
+        }
+
+        public T SetError(StringBuilder builder)
+        {
+            if (builder == null)
+                throw new NullReferenceException("Error builder cannot be set to null");
+
+            ffProcess.Error = builder;
             return (T)this;
         }
 

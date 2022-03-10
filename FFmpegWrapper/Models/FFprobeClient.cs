@@ -10,10 +10,8 @@ using FFmpegWrapper.Helpers;
 
 namespace FFmpegWrapper.Models
 {
-    public class FFprobeClient : Client
+    public class FFprobeClient : Client<FFprobeClient, FFprobeProcessBuilder>
     {
-        private readonly FFprobeProcessBuilder _builder = new FFprobeProcessBuilder();
-
         public FFprobeClient(string path) : base(path) { }
         public FFprobeClient() : base(PathUtils.TryGetFFprobePath()) { }
 
@@ -120,5 +118,6 @@ namespace FFmpegWrapper.Models
             .WithInterval(timeStart, timeAdded)
             .Reconnect()
             .AsJson();
+
     }
 }

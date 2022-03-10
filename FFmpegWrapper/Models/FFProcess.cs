@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -23,7 +24,7 @@ namespace FFmpegWrapper.Models
 
         internal Stream? Input { get; set; }
         internal Stream? Output { get; set; }
-        internal string? Error { get; set; }
+        internal StringBuilder? Error { get; set; }
         internal int InputBuffer { get; set; } = 4096;
         internal int OutputBuffer { get; set; } = 4096;
 
@@ -86,7 +87,7 @@ namespace FFmpegWrapper.Models
             {
                 var line = await StandardError.ReadLineAsync();
                 CallErrorEvent(line);
-                Error += line;
+                Error?.Append(line);
 
             }
         }
@@ -95,9 +96,6 @@ namespace FFmpegWrapper.Models
         {
             Exited += new EventHandler(CallExitEvent);
             Start();
-
-            if (StartInfo.RedirectStandardOutput)
-                tasks.Add(PipeOutput());
 
             if (StartInfo.RedirectStandardOutput)
                 tasks.Add(PipeOutput());

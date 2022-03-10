@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 using FFmpegWrapper.Builders;
@@ -7,11 +8,10 @@ using FFmpegWrapper.Helpers;
 
 namespace FFmpegWrapper.Models
 {
-    public class FFmpegClient : Client
+    public class FFmpegClient : Client<FFmpegClient, FFmpegProcessBuilder>
     {
-        private readonly FFmpegProcessBuilder _builder = new FFmpegProcessBuilder();
 
-        public FFmpegClient(string path) : base(path) => _builder.CreateFFBuilder(path);
+        public FFmpegClient(string path) : base(path) { }
         public FFmpegClient() : base(PathUtils.TryGetFFmpegPath()) { }
 
         public Task ConvertToStreamAsync(string input, Stream output, IFormat outputType) => _builder
@@ -51,6 +51,7 @@ namespace FFmpegWrapper.Models
             .To(output)
             .Build()
             .StartAsync();
+
     }
 
 }
