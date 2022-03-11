@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
+using FFmpegWrapper.JsonModels;
+
 public class Packet
 {
     [JsonPropertyName("codec_type")]
