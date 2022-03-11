@@ -16,8 +16,6 @@ namespace FFmpegWrapper.Models
     /// </summary>
     public class FFProcess : Process
     {
-
-
         public new event Action<FFProcess, string?>? ErrorDataReceived;
         public new event Action<FFProcess, byte[]>? OutputDataReceived;
         public event Action<FFProcess>? ExitedWithError;
@@ -29,7 +27,6 @@ namespace FFmpegWrapper.Models
         internal int OutputBuffer { get; set; } = 4096;
 
         private readonly List<Task> tasks = new List<Task>();
-
 
         internal FFProcess()
         {
