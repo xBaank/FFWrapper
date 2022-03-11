@@ -19,16 +19,19 @@ namespace WebmPoc
             StringBuilder stringBuilder = new StringBuilder();
             var format = fFprobeClient.PipeError(stringBuilder).GetMetadataAsync(streamInfo.Url).Result;
             double lastPostTime = 0;
-            var duration = format.Duration + format.StartTime;
+            var duration = format.Result?.Duration + format.Result?.StartTime;
             while (lastPostTime < duration)
             {
                 var packets = fFprobeClient.GetPacketsAsync(streamInfo.Url, StreamType.a, lastPostTime, 10).Result;
-                lastPostTime = (double)(packets.LastOrDefault().DtsTime + packets.LastOrDefault().DurationTime);
+                lastPostTime = (double)(packets.Result?.LastOrDefault().DtsTime + packets.Result?.LastOrDefault().DurationTime);
             }
 
-            FileStream file = new FileStream("eldenring.mp3", FileMode.OpenOrCreate);
 
-            fFmpegClient.ConvertToStreamAsync(streamInfo.Url, file, new Format(FormatTypes.MP3)).Wait();
+            FileStream file = new FileStream("eldenring.mp3", FileMode.OpenOrCreate);
+            var result = fFmpegClient.PipeError(stringBuilder).ConvertToStreamAsync(streamInfo.Url + "a", file, new Format(FormatTypes.MP3)).Result;
+            var a = stringBuilder.ToString();
+
+
 
         }
     }

@@ -33,11 +33,15 @@ namespace FFmpegWrapper.Models
             //Don't allow end user to create process directly
         }
 
-        public Task StartAsync() => StartProcess().tasks.WhenAll();
+        public Task<FFProcess> StartAsync() => Task.Run(async () =>
+        {
+            await StartProcess().tasks.WhenAll();
+            return this;
+        });
 
         public async Task<T?> DeserializeResultAsync<T>()
         {
-            WaitForExit();
+            await tasks.WhenAll();
 
             if (Output is null || ExitCode != 0)
                 return default;
@@ -84,7 +88,7 @@ namespace FFmpegWrapper.Models
             {
                 var line = await StandardError.ReadLineAsync();
                 CallErrorEvent(line);
-                Error?.Append(line);
+                Error?.AppendLine(line);
 
             }
         }
@@ -103,6 +107,7 @@ namespace FFmpegWrapper.Models
             if (StartInfo.RedirectStandardError)
                 tasks.Add(PipeError());
 
+            tasks.Add(Task.Run(() => WaitForExit()));
 
             return this;
         }
