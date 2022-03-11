@@ -8,6 +8,7 @@
 		<PackageId>FFmpegWrapper.Example</PackageId>
 		<AssemblyName>FFmpegWrapper.Example</AssemblyName>
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<ItemGroup>

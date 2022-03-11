@@ -3,42 +3,45 @@ using System.Text.Json;
 using System;
 using System.Globalization;
 
-public class LongConverter : JsonConverter<long>
+namespace FFmpegWrapper.JsonModels
 {
-    public override long Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public class LongConverter : JsonConverter<long>
     {
-        if (long.TryParse(reader.GetString(), out long intVal))
+        public override long Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return intVal;
+            if (long.TryParse(reader.GetString(), out long intVal))
+            {
+                return intVal;
+            }
+            // customize this part as necessary to satisfactorily deserialize
+            // the float value as int, or throw exception, etc.
+            float floatValue = reader.GetSingle();
+            return (int)floatValue;
         }
-        // customize this part as necessary to satisfactorily deserialize
-        // the float value as int, or throw exception, etc.
-        float floatValue = reader.GetSingle();
-        return (int)floatValue;
-    }
 
-    public override void Write(Utf8JsonWriter writer, long value, JsonSerializerOptions options)
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public class DoubleConverter : JsonConverter<double>
-{
-    public override double Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        if (double.TryParse(reader.GetString(), NumberStyles.Float, new CultureInfo("en-US"), out double intVal))
+        public override void Write(Utf8JsonWriter writer, long value, JsonSerializerOptions options)
         {
-            return intVal;
+            throw new NotImplementedException();
         }
-        // customize this part as necessary to satisfactorily deserialize
-        // the float value as int, or throw exception, etc.
-        float floatValue = reader.GetSingle();
-        return (int)floatValue;
     }
 
-    public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options)
+    public class DoubleConverter : JsonConverter<double>
     {
-        throw new NotImplementedException();
+        public override double Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            if (double.TryParse(reader.GetString(), NumberStyles.Float, new CultureInfo("en-US"), out double intVal))
+            {
+                return intVal;
+            }
+            // customize this part as necessary to satisfactorily deserialize
+            // the float value as int, or throw exception, etc.
+            float floatValue = reader.GetSingle();
+            return (int)floatValue;
+        }
+
+        public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

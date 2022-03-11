@@ -82,20 +82,18 @@ namespace FFmpegWrapper.Models
 
         private FFprobeProcessBuilder MetadataProcessBuilder() => _builder
            .CreateFFBuilder(Path)
-           .RedirectError(true)
            .ShowFormat()
            .Reconnect()
            .AsJson();
 
         private FFProcess PacketsProcessBuild(dynamic input, StreamType streamType, dynamic output, double timeStart, double timeAdded, int streamNumber) =>
-            PacketsProcessBuilder(streamType, timeStart, timeAdded, streamNumber).AddArguments("-err_detect explode")
+            PacketsProcessBuilder(streamType, timeStart, timeAdded, streamNumber)
             .From(input)
             .To(output)
             .Build();
 
         private FFprobeProcessBuilder PacketsProcessBuilder(StreamType streamType, double timeStart, double timeAdded, int streamNumber) => _builder
             .CreateFFBuilder(Path)
-            .RedirectError(true)
             .SelectStreams(streamType, streamNumber)
             .ShowPackets()
             .ReadIntervals()
@@ -111,7 +109,6 @@ namespace FFmpegWrapper.Models
 
         private FFprobeProcessBuilder FramesProcessBuilder(StreamType streamType, double timeStart, double timeAdded, int streamNumber) => _builder
             .CreateFFBuilder(Path)
-            .RedirectError(true)
             .SelectStreams(streamType, streamNumber)
             .ShowFrames()
             .ReadIntervals()

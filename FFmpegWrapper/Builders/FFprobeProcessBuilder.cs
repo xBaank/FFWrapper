@@ -13,15 +13,13 @@ namespace FFmpegWrapper.Builders
 
         public FFprobeProcessBuilder From(Stream input) =>
             AddArguments("pipe:")
-            .RedirectInput(true)
             .SetInput(input);
 
         public override FFprobeProcessBuilder To(string output) =>
             To(new FileStream(output, FileMode.OpenOrCreate));
 
         public FFprobeProcessBuilder To(Stream output) =>
-           RedirectOutput(true)
-            .SetOutput(output);
+            SetOutput(output);
 
         public FFprobeProcessBuilder ReadIntervals() =>
            AddArguments("-read_intervals");

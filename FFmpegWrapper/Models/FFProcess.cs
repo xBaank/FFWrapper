@@ -28,7 +28,7 @@ namespace FFmpegWrapper.Models
         internal int InputBuffer { get; set; } = 4096;
         internal int OutputBuffer { get; set; } = 4096;
 
-        private List<Task> tasks = new List<Task>();
+        private readonly List<Task> tasks = new List<Task>();
 
 
         internal FFProcess()
@@ -61,8 +61,8 @@ namespace FFmpegWrapper.Models
             byte[] bytes = new byte[InputBuffer];
             int bytesRead;
 
-            while (!HasExited && (bytesRead = await Input.ReadAsync(bytes)) != 0)
-                await StandardInput.BaseStream.WriteAsync(bytes.AsMemory(0, bytesRead));
+            while (!HasExited && (bytesRead = await Input.ReadAsync(bytes)) is not 0)
+                await StandardInput.BaseStream.WriteAsync(bytes, 0, bytesRead);
 
             StandardInput.Close();
         }
@@ -72,7 +72,7 @@ namespace FFmpegWrapper.Models
             byte[] bytes = new byte[OutputBuffer];
             int bytesRead;
 
-            while (!HasExited && (bytesRead = await StandardOutput.BaseStream.ReadAsync(bytes)) != 0)
+            while ((bytesRead = await StandardOutput.BaseStream.ReadAsync(bytes)) is not 0)
             {
                 if (Output is not null)
                     await Output.WriteAsync(bytes, 0, bytesRead);
