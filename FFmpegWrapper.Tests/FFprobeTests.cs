@@ -21,7 +21,7 @@ namespace FFmpegWrapper.Tests
         {
             var metadata = await ffProbeClient.GetMetadataAsync(uri);
 
-            Assert.NotNull(metadata);
+            Assert.NotNull(metadata.Result);
         }
 
         [Theory]
@@ -44,8 +44,8 @@ namespace FFmpegWrapper.Tests
             var packets = await ffProbeClient.GetPacketsAsync(uri, streamType);
             var frames = await ffProbeClient.GetFramesAsync(uri, streamType);
 
-            Assert.True(packets?.Count > 0);
-            Assert.True(frames?.Count > 0);
+            Assert.True(packets?.Result.Count > 0);
+            Assert.True(frames?.Result.Count > 0);
         }
 
         [Theory]
@@ -58,8 +58,8 @@ namespace FFmpegWrapper.Tests
             var packets = await ffProbeClient.GetPacketsAsync(new MemoryStream(stream), streamType);
             var frames = await ffProbeClient.GetFramesAsync(new MemoryStream(stream), streamType);
 
-            Assert.True(packets?.Count > 0);
-            Assert.True(frames?.Count > 0);
+            Assert.True(packets?.Result.Count > 0);
+            Assert.True(frames?.Result.Count > 0);
         }
     }
 }
