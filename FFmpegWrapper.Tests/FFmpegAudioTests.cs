@@ -44,7 +44,7 @@ namespace FFmpegWrapper.Tests
 
             //Act
             stream = new MemoryStream();
-            await fFmpegClient.ConvertToStreamAsync(uri, stream, new Format(FormatTypes.OPUS));
+            await fFmpegClient.ConvertToStreamAsync(uri, stream, o => o.WithFormat(FormatTypes.OPUS));
 
             //Assert
             Assert.True(stream.Length > 0);
@@ -57,7 +57,14 @@ namespace FFmpegWrapper.Tests
         {
             stream = new MemoryStream();
 
-            await Assert.ThrowsAsync<NullReferenceException>(async () => { await fFmpegClient.ConvertToStreamAsync(null, new Format(FormatTypes.MP4), stream, new Format(FormatTypes.MATROSKA)); });
+            await Assert.ThrowsAsync<NullReferenceException>(async () =>
+            {
+                await fFmpegClient.ConvertToStreamAsync(
+                    null,
+                    o => o.WithFormat(FormatTypes.MP4),
+                    stream,
+                    o => o.WithFormat(FormatTypes.MATROSKA));
+            });
 
             stream.Dispose();
         }

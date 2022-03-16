@@ -17,18 +17,22 @@ namespace WebmPoc
             var song = YtUtils.GetSongsUrl("eldenring trailer").GetAwaiter().GetResult();
             var streamInfo = YtUtils.GetStreamInfo(song.FirstOrDefault().Id).GetAwaiter().GetResult();
             StringBuilder stringBuilder = new StringBuilder();
-            var format = fFprobeClient.PipeError(stringBuilder).GetMetadataAsync(streamInfo.Url).Result;
-            double lastPostTime = 0;
-            var duration = format.Result?.Duration + format.Result?.StartTime;
-            while (lastPostTime < duration)
-            {
-                var packets = fFprobeClient.GetPacketsAsync(streamInfo.Url, StreamType.a, lastPostTime, 10).Result;
-                lastPostTime = (double)(packets.Result?.LastOrDefault().DtsTime + packets.Result?.LastOrDefault().DurationTime);
-            }
+            //var format = fFprobeClient.SetOutputBuffer(1024).PipeError(stringBuilder).GetMetadataAsync(streamInfo.Url).Result;
+            //double lastPostTime = 0;
+            //var duration = format.Result?.Duration + format.Result?.StartTime;
+            //while (lastPostTime < duration)
+            //{
+            //    var packets = fFprobeClient.GetPacketsAsync(streamInfo.Url, StreamType.a, lastPostTime, 10).Result;
+            //    lastPostTime = (double)(packets.Result?.LastOrDefault().DtsTime + packets.Result?.LastOrDefault().DurationTime);
+            //}
 
 
             FileStream file = new FileStream("eldenring.mp3", FileMode.OpenOrCreate);
-            var result = fFmpegClient.PipeError(stringBuilder).ConvertToStreamAsync(streamInfo.Url + "a", file, new Format(FormatTypes.MP3)).Result;
+            var result = fFmpegClient.PipeError(stringBuilder).ConvertToStreamAsync(
+                streamInfo.Url,
+                file,
+                o => o.WithFormat(FormatTypes.MP3)
+            ).Result;
             var a = stringBuilder.ToString();
 
 

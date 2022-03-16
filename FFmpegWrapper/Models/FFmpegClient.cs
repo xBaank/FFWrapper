@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 
 using FFmpegWrapper.Builders;
@@ -14,22 +15,22 @@ namespace FFmpegWrapper.Models
         public FFmpegClient(string path) : base(path) { }
         public FFmpegClient() : base(PathUtils.TryGetFFmpegPath()) { }
 
-        public Task<ProcessResult> ConvertToStreamAsync(string input, Stream output, IFormat outputType) => _builder
+        public Task<ProcessResult> ConvertToStreamAsync(string input, Stream output, Action<IFormat> options) => _builder
             .CreateFFBuilder(Path)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
             .From(input)
-            .To(output, outputType)
+            .To(output, options)
             .Build()
             .StartAsync()
             .GetResultAsync();
 
-        public Task<ProcessResult> ConvertToStreamAsync(Stream input, IFormat inputType, Stream output, IFormat outputType) => _builder
+        public Task<ProcessResult> ConvertToStreamAsync(Stream input, Action<IFormat> inputOptions, Stream output, Action<IFormat> outputOptions) => _builder
             .CreateFFBuilder(Path)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
-            .From(input, inputType)
-            .To(output, outputType)
+            .From(input, inputOptions)
+            .To(output, outputOptions)
             .Build()
             .StartAsync()
             .GetResultAsync();
@@ -42,11 +43,11 @@ namespace FFmpegWrapper.Models
             .Build()
             .StartAsync()
             .GetResultAsync();
-        public Task<ProcessResult> ConvertAsync(Stream input, string output, IFormat inputType) => _builder
+        public Task<ProcessResult> ConvertAsync(Stream input, string output, Action<IFormat> options) => _builder
             .CreateFFBuilder(Path)
             .RaiseErrorEvents(ErrorRecieved)
             .RaiseExitErrorEvent(ExitWithErrorRecieved)
-            .From(input, inputType)
+            .From(input, options)
             .To(output)
             .Build()
             .StartAsync()
