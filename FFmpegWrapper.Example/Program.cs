@@ -2,6 +2,7 @@
 using FFmpegWrapper.Formats;
 using FFmpegWrapper.Models;
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -34,7 +35,7 @@ namespace WebmPoc
                 o => o.WithFormat(FormatTypes.MP3)
             ).Result;
             var a = stringBuilder.ToString();
-
+            Console.WriteLine(a);
 
 
         }

@@ -13,6 +13,9 @@ namespace FFmpegWrapper.Builders
             IFormat format = new Format();
             options(format);
 
+            if (format.MediaFormat is null)
+                throw new ArgumentException("Media format cannot be null");
+
             return RedirectOutput(true)
             .AddArguments(format.MediaFormat)
             .AddArguments(format.Args)
@@ -31,6 +34,9 @@ namespace FFmpegWrapper.Builders
         {
             IFormat format = new Format();
             options(format);
+
+            if (format.MediaFormat is null)
+                throw new ArgumentException("Media format cannot be null");
 
             return AddArguments(format.MediaFormat)
             .AddArguments(format.Args)
