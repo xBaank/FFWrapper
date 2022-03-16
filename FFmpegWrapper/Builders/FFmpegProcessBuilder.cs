@@ -10,11 +10,7 @@ namespace FFmpegWrapper.Builders
 
         public FFmpegProcessBuilder To(Action<IFormat> options)
         {
-            IFormat format = new Format();
-            options(format);
-
-            if (format.MediaFormat is null)
-                throw new ArgumentException("Media format cannot be null");
+            var format = GetFormat(options);
 
             return RedirectOutput(true)
             .AddArguments(format.MediaFormat)
@@ -32,11 +28,7 @@ namespace FFmpegWrapper.Builders
 
         public FFmpegProcessBuilder From(Action<IFormat> options)
         {
-            IFormat format = new Format();
-            options(format);
-
-            if (format.MediaFormat is null)
-                throw new ArgumentException("Media format cannot be null");
+            var format = GetFormat(options);
 
             return AddArguments(format.MediaFormat)
             .AddArguments(format.Args)
@@ -51,6 +43,20 @@ namespace FFmpegWrapper.Builders
         public override FFmpegProcessBuilder From(string input) =>
             AddArguments($"-i {input}")
             .RedirectInput(false);
+
+        private IFormat GetFormat(Action<IFormat> options)
+        {
+            if (options is null)
+                throw new ArgumentNullException(nameof(options));
+
+            IFormat format = new Format();
+            options(format);
+
+            if (format is null)
+                throw new NullReferenceException("format cannot be null");
+
+            return format;
+        }
     }
 }
 

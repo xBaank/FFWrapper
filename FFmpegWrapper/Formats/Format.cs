@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace FFmpegWrapper.Formats
 {
     public class Format : IFormat
@@ -21,9 +23,12 @@ namespace FFmpegWrapper.Formats
             MediaFormat = format.ToString();
             return this;
         }
-        public IFormat WithFormat(string format)
+        public IFormat WithFormat(string mediaFormat)
         {
-            MediaFormat = format;
+            if (mediaFormat is null)
+                throw new NullReferenceException("MediaFormat is null");
+
+            MediaFormat = mediaFormat;
             return this;
         }
 
