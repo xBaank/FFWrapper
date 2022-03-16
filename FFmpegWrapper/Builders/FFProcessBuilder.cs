@@ -4,6 +4,7 @@ using System;
 using FFmpegWrapper.Extensions;
 using System.Text;
 using FFmpegWrapper.Utils;
+using System.Threading;
 
 namespace FFmpegWrapper.Builders
 {
@@ -111,6 +112,12 @@ namespace FFmpegWrapper.Builders
             ThrowUtils.ThrowFor<ArgumentException>(bufferSize <= 0, "BufferSize cannot be less or equal to 0");
 
             ffProcess.OutputBuffer = bufferSize;
+            return (T)this;
+        }
+
+        public T SetCancellationToken(CancellationToken cancellationToken)
+        {
+            ffProcess.cancellationToken = cancellationToken;
             return (T)this;
         }
 
