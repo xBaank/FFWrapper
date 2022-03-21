@@ -55,22 +55,19 @@ namespace FFmpegWrapper.Models
         private async Task<ProcessResult<List<Frame>?>> GetFramesDeserializeAsync(dynamic input, StreamType streamType, dynamic output, double timeStart, double timeAdded, int streamNumber)
         {
             FFProcess process = FramesProcessBuild(input, streamType, output, timeStart, timeAdded, streamNumber);
-            await process.StartAsync();
-            return process.GetResult((await process.DeserializeResultAsync<FrameRoot>())?.Frames);
+            return await process.StartAsync().GetResultAsync<List<Frame>?>("frames");
         }
 
         private async Task<ProcessResult<List<Packet>?>> GetPacketsDeserializeAsync(dynamic input, StreamType streamType, dynamic output, double timeStart = 0, double timeAdded = 0, int streamNumber = 0)
         {
             FFProcess process = PacketsProcessBuild(input, streamType, output, timeStart, timeAdded, streamNumber);
-            await process.StartAsync();
-            return process.GetResult((await process.DeserializeResultAsync<PacketRoot>())?.PacketsData);
+            return await process.StartAsync().GetResultAsync<List<Packet>?>("packets");
         }
 
         private async Task<ProcessResult<FormatMetadata?>> GetMetadataDeserializeAsync(dynamic input, dynamic output)
         {
             FFProcess process = MetadataProcessBuild(input, output);
-            await process.StartAsync();
-            return process.GetResult((await process.DeserializeResultAsync<FormatRoot>())?.Format);
+            return await process.StartAsync().GetResultAsync<FormatMetadata?>("format");
         }
 
         private FFProcess MetadataProcessBuild(dynamic input, dynamic output) => MetadataProcessBuilder()

@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 
 namespace FFmpegWrapper.Extensions
 {
-    public static class TaskExtension
+    internal static class TaskExtension
     {
-        public static async Task NotThrow(this Task task)
+        internal static async Task NotThrow(this Task task)
         {
             try
             {
@@ -15,7 +15,7 @@ namespace FFmpegWrapper.Extensions
             catch (OperationCanceledException) { }
         }
 
-        public static async ValueTask<T?> NotThrow<T>(this ValueTask<T?> task)
+        internal static async ValueTask<T?> NotThrow<T>(this ValueTask<T?> task)
         {
             try
             {
@@ -23,7 +23,7 @@ namespace FFmpegWrapper.Extensions
             }
             catch (OperationCanceledException)
             {
-                return default(T);
+                return default;
             }
         }
     }

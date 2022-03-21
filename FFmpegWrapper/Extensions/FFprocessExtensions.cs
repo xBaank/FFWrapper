@@ -5,9 +5,9 @@ using FFmpegWrapper.Models;
 
 namespace FFmpegWrapper.Extensions
 {
-    public static class FFprocessExtensions
+    internal static class FFprocessExtensions
     {
-        public async static Task<ProcessResult> GetResultAsync(this Task<FFProcess> task)
+        internal async static Task<ProcessResult> GetResultAsync(this Task<FFProcess> task)
         {
             var process = await task;
 
@@ -18,13 +18,20 @@ namespace FFmpegWrapper.Extensions
             return processResult;
 
         }
-
-        public static ProcessResult<T> GetResult<T>(this FFProcess process, T result)
+        internal async static Task<ProcessResult<T>> GetResultAsync<T>(this Task<FFProcess> task, string property)
         {
+            var process = await task;
+
+            await process.KillProcess();
+
+            var result = await process.DeserializeResultAsync<T>(property);
+
             ProcessResult<T> processResult = (ProcessResult<T>)new ProcessResult<T>()
-                .SetResult(result)
-                .SetExitCode(process.ExitCode);
+               .SetResult(result)
+               .SetExitCode(process.ExitCode);
+
             return processResult;
+
         }
     }
 }

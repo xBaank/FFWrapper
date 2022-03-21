@@ -4,7 +4,7 @@ namespace FFmpegWrapper.Models
     public class ProcessResult<T> : ProcessResult
     {
         public T? Result { get; set; } = default;
-        public ProcessResult SetResult(T result)
+        public ProcessResult SetResult(T? result)
         {
             Result = result;
             return this;

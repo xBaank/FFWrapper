@@ -41,17 +41,28 @@ namespace FFmpegWrapper.Models
             return this;
         }, cancellationToken);
 
-        public async Task<T?> DeserializeResultAsync<T>()
+        public async Task<T?> DeserializeResultAsync<T>(string property)
         {
             await tasks.WhenAll();
 
             if (Output is null || ExitCode is not 0 || cancellationToken.IsCancellationRequested)
                 return default;
 
-            Output.Seek(0, SeekOrigin.Begin);
+            if (Output.CanSeek)
+                Output.Seek(0, SeekOrigin.Begin);
+            else
+                throw new InvalidOperationException("Output stream type cannot seek");
 
-            var result = await JsonSerializer.DeserializeAsync<T?>(Output);
-            return result;
+            try
+            {
+                var document = await JsonDocument.ParseAsync(Output, cancellationToken: cancellationToken);
+                document.RootElement.TryGetProperty(property, out JsonElement result);
+                return result.ToObject<T>();
+            }
+            catch
+            {
+                return default;
+            }
         }
 
         private async Task PipeInput()
