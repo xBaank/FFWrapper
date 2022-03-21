@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace WebmPoc
 {
@@ -27,15 +28,17 @@ namespace WebmPoc
             //    lastPostTime = (double)(packets.Result?.LastOrDefault().DtsTime + packets.Result?.LastOrDefault().DurationTime);
             //}
 
+            CancellationTokenSource cancellation = new CancellationTokenSource();
 
-            FileStream file = new FileStream("eldenring.mp3", FileMode.OpenOrCreate);
-            var result = fFmpegClient.PipeError(stringBuilder).ConvertToStreamAsync(
+            MemoryStream memoryStream = new MemoryStream();
+            var result = fFmpegClient.PipeError(stringBuilder)
+                .WithCancellationToken(cancellation.Token)
+                .ConvertToStreamAsync(
                 streamInfo.Url,
-                file,
+                memoryStream,
                 o => o.WithFormat(FormatTypes.MP3)
-            ).Result;
-            var a = stringBuilder.ToString();
-            Console.WriteLine(a);
+            );
+            var b = result.Result;
 
 
         }

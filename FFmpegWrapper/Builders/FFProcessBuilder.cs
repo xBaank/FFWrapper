@@ -130,6 +130,7 @@ namespace FFmpegWrapper.Builders
         public T CreateFFBuilder(string path)
         {
             ffProcess.StartInfo.ArgumentList.Clear();
+            AddArguments("-hide_banner -loglevel error");
             return ShellExecute(false).CreateNoWindow(true).Path(path);
         }
     }

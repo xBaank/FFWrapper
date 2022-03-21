@@ -10,6 +10,9 @@ namespace FFmpegWrapper.Extensions
         public async static Task<ProcessResult> GetResultAsync(this Task<FFProcess> task)
         {
             var process = await task;
+
+            await process.KillProcess();
+
             ProcessResult processResult = new ProcessResult()
                 .SetExitCode(process.ExitCode);
             return processResult;

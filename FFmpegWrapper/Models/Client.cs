@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Text;
+using System.Threading;
 
 using FFmpegWrapper.Builders;
 
@@ -42,6 +43,12 @@ namespace FFmpegWrapper.Models
         public T SetOutputBuffer(int bufferSize)
         {
             _builder.SetOutputBuffer(bufferSize);
+            return (T)this;
+        }
+
+        public T WithCancellationToken(CancellationToken cancellationToken)
+        {
+            _builder.SetCancellationToken(cancellationToken);
             return (T)this;
         }
 

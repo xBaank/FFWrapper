@@ -119,7 +119,7 @@ namespace FFmpegWrapper.Models
         /// <summary>
         /// Kill the process if cancellation is requested beacuse ffmpeg may be waiting for pipe data
         /// </summary>
-        private async Task KillProcess()
+        internal async Task KillProcess()
         {
             await Task.WhenAll(tasks);
             if (cancellationToken.IsCancellationRequested)
