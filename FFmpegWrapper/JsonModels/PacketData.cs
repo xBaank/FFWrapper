@@ -44,9 +44,3 @@ public class Packet
     public string? Flags { get; set; }
 }
 
-public class PacketRoot
-{
-    [JsonPropertyName("packets")]
-    public List<Packet>? PacketsData { get; set; }
-}
-

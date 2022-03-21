@@ -63,9 +63,3 @@ public class Frame
     public string? ChannelLayout { get; set; }
 }
 
-public class FrameRoot
-{
-    [JsonPropertyName("frames")]
-    public List<Frame>? Frames { get; set; }
-}
-
