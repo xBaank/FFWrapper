@@ -5,9 +5,13 @@
 		<Nullable>enable</Nullable>
 		<Description>A ffmpeg wrapper</Description>
 		<Version>0.1.1.0</Version>
-		<AssemblyName>FFmpegWrapper</AssemblyName>
+		<AssemblyName>FFWrapper</AssemblyName>
 		<RootNamespace>FFmpegWrapper</RootNamespace>
 		<LangVersion>10.0</LangVersion>
+		<RepositoryUrl>https://github.com/xBaank/FFWrapper</RepositoryUrl>
+		<PackageLicenseUrl>https://raw.githubusercontent.com/xBaank/FFWrapper/master/LICENSE.md</PackageLicenseUrl>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<Authors>Bank</Authors>
 	</PropertyGroup>
 
 </Project>

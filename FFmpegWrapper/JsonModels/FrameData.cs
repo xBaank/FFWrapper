@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
+using FFmpegWrapper.JsonModels;
+
 public class Frame
 {
     [JsonPropertyName("media_type")]
@@ -59,11 +61,5 @@ public class Frame
 
     [JsonPropertyName("channel_layout")]
     public string? ChannelLayout { get; set; }
-}
-
-public class FrameRoot
-{
-    [JsonPropertyName("frames")]
-    public List<Frame>? Frames { get; set; }
 }
 

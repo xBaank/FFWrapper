@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 
 namespace FFmpegWrapper.Extensions
 {
-    public static class IEnumerableExtensions
+    internal static class IEnumerableExtensions
     {
-        public static Task WhenAll(this IEnumerable<Task> tasks) => Task.WhenAll(tasks);
+        internal static Task WhenAll(this IEnumerable<Task> tasks) => Task.WhenAll(tasks);
 
     }
 }

@@ -2,6 +2,9 @@
 using System.IO;
 using System;
 using FFmpegWrapper.Extensions;
+using System.Text;
+using FFmpegWrapper.Utils;
+using System.Threading;
 
 namespace FFmpegWrapper.Builders
 {
@@ -11,7 +14,7 @@ namespace FFmpegWrapper.Builders
     /// <typeparam name="T">Class implementation</typeparam>
     public abstract class FFProcessBuilder<T> where T : FFProcessBuilder<T>
     {
-        private FFProcess ffProcess = new FFProcess();
+        private readonly FFProcess ffProcess = new FFProcess();
 
         public FFProcess Build() => ffProcess;
 
@@ -71,19 +74,50 @@ namespace FFmpegWrapper.Builders
 
         public T SetInput(Stream stream)
         {
-            if (stream == null)
-                throw new NullReferenceException("Input cannot be set to null");
+            ThrowUtils.ThrowFor<ArgumentNullException>(stream is null, "Input cannot be set to null");
 
+            RedirectInput(true);
             ffProcess.Input = stream;
             return (T)this;
         }
 
         public T SetOutput(Stream stream)
         {
-            if (stream == null)
-                throw new NullReferenceException("Output cannot be set to null");
+            ThrowUtils.ThrowFor<ArgumentNullException>(stream is null, "Output cannot be set to null");
 
+            RedirectOutput(true);
             ffProcess.Output = stream;
+            return (T)this;
+        }
+
+        public T SetError(StringBuilder builder)
+        {
+            ThrowUtils.ThrowFor<ArgumentNullException>(builder is null, "Builder cannot be set to null");
+
+            RedirectError(true);
+            ffProcess.Error = builder;
+            return (T)this;
+        }
+
+        public T SetInputBuffer(int bufferSize)
+        {
+            ThrowUtils.ThrowFor<ArgumentException>(bufferSize <= 0, "BufferSize cannot be less or equal to 0");
+
+            ffProcess.InputBuffer = bufferSize;
+            return (T)this;
+        }
+
+        public T SetOutputBuffer(int bufferSize)
+        {
+            ThrowUtils.ThrowFor<ArgumentException>(bufferSize <= 0, "BufferSize cannot be less or equal to 0");
+
+            ffProcess.OutputBuffer = bufferSize;
+            return (T)this;
+        }
+
+        public T SetCancellationToken(CancellationToken cancellationToken)
+        {
+            ffProcess.cancellationToken = cancellationToken;
             return (T)this;
         }
 
@@ -95,8 +129,8 @@ namespace FFmpegWrapper.Builders
         /// </summary>
         public T CreateFFBuilder(string path)
         {
-            ffProcess.Dispose();
-            ffProcess = new FFProcess();
+            ffProcess.StartInfo.ArgumentList.Clear();
+            AddArguments("-hide_banner -loglevel error");
             return ShellExecute(false).CreateNoWindow(true).Path(path);
         }
     }

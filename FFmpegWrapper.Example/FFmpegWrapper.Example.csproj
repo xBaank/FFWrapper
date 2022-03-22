@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
@@ -8,6 +8,7 @@
 		<PackageId>FFmpegWrapper.Example</PackageId>
 		<AssemblyName>FFmpegWrapper.Example</AssemblyName>
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -1,21 +1,41 @@
 ﻿
+using System;
+
 namespace FFmpegWrapper.Formats
 {
     public class Format : IFormat
     {
-        public string? MediaFormat { get; set; }
-        public string? Args { get; set; }
-        public Format(FormatTypes format, string? args = default)
+        private string? _mediaFormat;
+        private string? _args;
+        public string MediaFormat
+        {
+            get => $" -f {_mediaFormat} ";
+            set => _mediaFormat = value;
+        }
+        public string Args
+        {
+            get => _args ?? string.Empty;
+            set => _args = value;
+        }
+
+        public IFormat WithFormat(FormatTypes format)
         {
             MediaFormat = format.ToString();
-            Args = args;
+            return this;
         }
-        public Format(string format, string? args = default)
+        public IFormat WithFormat(string mediaFormat)
         {
-            MediaFormat = format;
-            Args = args;
+            if (mediaFormat is null)
+                throw new NullReferenceException("MediaFormat is null");
+
+            MediaFormat = mediaFormat;
+            return this;
         }
-        public string GetFormatArg() => $" -f {MediaFormat} ";
-        public string GetCustomArgs() => Args ?? string.Empty;
+
+        public IFormat WithArgs(string args)
+        {
+            Args = args;
+            return this;
+        }
     }
 }

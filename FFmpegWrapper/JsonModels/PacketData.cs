@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
+using FFmpegWrapper.JsonModels;
+
 public class Packet
 {
     [JsonPropertyName("codec_type")]
@@ -40,11 +42,5 @@ public class Packet
 
     [JsonPropertyName("flags")]
     public string? Flags { get; set; }
-}
-
-public class PacketRoot
-{
-    [JsonPropertyName("packets")]
-    public List<Packet>? PacketsData { get; set; }
 }
 

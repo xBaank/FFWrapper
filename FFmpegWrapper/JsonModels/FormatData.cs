@@ -48,12 +48,6 @@ namespace FFmpegWrapper.JsonModels
         public Tags? Tags { get; set; }
     }
 
-    public class FormatRoot
-    {
-        [JsonPropertyName("format")]
-        public FormatMetadata? Format { get; set; }
-    }
-
 
 }
 
