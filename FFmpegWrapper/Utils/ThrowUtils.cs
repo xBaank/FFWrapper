@@ -3,7 +3,7 @@ using System;
 
 namespace FFmpegWrapper.Utils
 {
-    public class ThrowUtils
+    public static class ThrowUtils
     {
         /// <summary>
         /// Throw an exception if the condition is met
@@ -13,7 +13,7 @@ namespace FFmpegWrapper.Utils
         /// <param name="message">Exception message</param>
         public static void ThrowFor<K>(bool condition, string message) where K : Exception
         {
-            Exception? ex = (Exception?)Activator.CreateInstance(typeof(K), message);
+            var ex = (Exception?)Activator.CreateInstance(typeof(K), message);
             if (condition && ex is not null)
                 throw ex;
         }

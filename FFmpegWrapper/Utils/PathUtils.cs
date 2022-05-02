@@ -1,8 +1,7 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Runtime.InteropServices;
 
-namespace FFmpegWrapper.Helpers
+namespace FFmpegWrapper.Utils
 {
     internal static class PathUtils
     {

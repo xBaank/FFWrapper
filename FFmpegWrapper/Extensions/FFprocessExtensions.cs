@@ -7,18 +7,18 @@ namespace FFmpegWrapper.Extensions
 {
     internal static class FFprocessExtensions
     {
-        internal async static Task<ProcessResult> GetResultAsync(this Task<FFProcess> task)
+        internal static async Task<ProcessResult> GetResultAsync(this Task<FFProcess> task)
         {
             var process = await task;
 
             await process.KillProcess();
 
-            ProcessResult processResult = new ProcessResult()
+            var processResult = new ProcessResult()
                 .SetExitCode(process.ExitCode);
             return processResult;
 
         }
-        internal async static Task<ProcessResult<T>> GetResultAsync<T>(this Task<FFProcess> task, string property)
+        internal static async Task<ProcessResult<T>> GetResultAsync<T>(this Task<FFProcess> task, string property)
         {
             var process = await task;
 
@@ -26,7 +26,7 @@ namespace FFmpegWrapper.Extensions
 
             var result = await process.DeserializeResultAsync<T>(property);
 
-            ProcessResult<T> processResult = (ProcessResult<T>)new ProcessResult<T>()
+            var processResult = (ProcessResult<T>)new ProcessResult<T>()
                .SetResult(result)
                .SetExitCode(process.ExitCode);
 
