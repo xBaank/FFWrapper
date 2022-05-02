@@ -26,9 +26,9 @@ namespace FFmpegWrapper.Models
         internal StringBuilder? Error { get; set; }
         internal int InputBuffer { get; set; } = 4096;
         internal int OutputBuffer { get; set; } = 4096;
-        internal CancellationToken cancellationToken { get; set; } = default;
+        internal CancellationToken CancellationToken { get; set; }
 
-        private readonly List<Task> tasks = new List<Task>();
+        private readonly List<Task> _tasks = new();
 
         internal FFProcess()
         {
@@ -37,15 +37,15 @@ namespace FFmpegWrapper.Models
 
         public Task<FFProcess> StartAsync() => Task.Run(async () =>
         {
-            await StartProcess().tasks.WhenAll();
+            await StartProcess()._tasks.WhenAll();
             return this;
-        }, cancellationToken);
+        }, CancellationToken);
 
         public async Task<T?> DeserializeResultAsync<T>(string property)
         {
-            await tasks.WhenAll();
+            await _tasks.WhenAll();
 
-            if (Output is null || ExitCode is not 0 || cancellationToken.IsCancellationRequested)
+            if (Output is null || ExitCode is not 0 || CancellationToken.IsCancellationRequested)
                 return default;
 
             if (Output.CanSeek)
@@ -55,7 +55,7 @@ namespace FFmpegWrapper.Models
 
             try
             {
-                var document = await JsonDocument.ParseAsync(Output, cancellationToken: cancellationToken);
+                var document = await JsonDocument.ParseAsync(Output, cancellationToken: CancellationToken);
                 document.RootElement.TryGetProperty(property, out JsonElement result);
                 return result.ToObject<T>();
             }
@@ -72,24 +72,24 @@ namespace FFmpegWrapper.Models
                 Kill();
                 throw new NullReferenceException("Input cannot be null");
             }
-            byte[] bytes = new byte[InputBuffer];
+            var bytes = new byte[InputBuffer];
             int bytesRead;
 
-            while (!cancellationToken.IsCancellationRequested && !HasExited && (bytesRead = await Input.ReadAsync(bytes, cancellationToken).NotThrow()) is not 0)
-                await StandardInput.BaseStream.WriteAsync(bytes, 0, bytesRead, cancellationToken).NotThrow();
+            while (!CancellationToken.IsCancellationRequested && !HasExited && (bytesRead = await Input.ReadAsync(bytes, CancellationToken).NotThrow()) is not 0)
+                await StandardInput.BaseStream.WriteAsync(bytes, 0, bytesRead, CancellationToken).NotThrow();
 
             StandardInput.Close();
         }
 
         private async Task PipeOutput()
         {
-            byte[] bytes = new byte[OutputBuffer];
+            var bytes = new byte[OutputBuffer];
             int bytesRead;
 
-            while (!cancellationToken.IsCancellationRequested && (bytesRead = await StandardOutput.BaseStream.ReadAsync(bytes, cancellationToken).NotThrow()) is not 0)
+            while (!CancellationToken.IsCancellationRequested && (bytesRead = await StandardOutput.BaseStream.ReadAsync(bytes, CancellationToken).NotThrow()) is not 0)
             {
                 if (Output is not null)
-                    await Output.WriteAsync(bytes, 0, bytesRead, cancellationToken).NotThrow();
+                    await Output.WriteAsync(bytes, 0, bytesRead, CancellationToken).NotThrow();
 
                 CallOutputEvent(bytes.Take(bytesRead).ToArray());
             }
@@ -97,7 +97,7 @@ namespace FFmpegWrapper.Models
 
         private async Task PipeError()
         {
-            while (!cancellationToken.IsCancellationRequested && !StandardError.EndOfStream)
+            while (!CancellationToken.IsCancellationRequested && !StandardError.EndOfStream)
             {
                 var line = await StandardError.ReadLineAsync();
                 CallErrorEvent(line);
@@ -112,17 +112,17 @@ namespace FFmpegWrapper.Models
             Start();
 
             if (StartInfo.RedirectStandardOutput)
-                tasks.Add(PipeOutput());
+                _tasks.Add(PipeOutput());
 
             if (StartInfo.RedirectStandardInput)
-                tasks.Add(PipeInput());
+                _tasks.Add(PipeInput());
 
             if (StartInfo.RedirectStandardError)
-                tasks.Add(PipeError());
+                _tasks.Add(PipeError());
 
-            tasks.Add(Task.Run(() => WaitForExit(), cancellationToken).NotThrow());
+            _tasks.Add(Task.Run(WaitForExit, CancellationToken).NotThrow());
 
-            Task.Run(KillProcess);
+            Task.Run(KillProcess, CancellationToken);
 
             return this;
         }
@@ -132,8 +132,8 @@ namespace FFmpegWrapper.Models
         /// </summary>
         internal async Task KillProcess()
         {
-            await Task.WhenAll(tasks);
-            if (cancellationToken.IsCancellationRequested)
+            await Task.WhenAll(_tasks);
+            if (CancellationToken.IsCancellationRequested)
                 Kill();
         }
 
@@ -141,7 +141,7 @@ namespace FFmpegWrapper.Models
         private void CallErrorEvent(string? messageException) => ErrorDataReceived?.Invoke(this, messageException);
         private void CallExitEvent(object? sender, EventArgs e)
         {
-            Process? process = (Process?)sender;
+            var process = (Process?)sender;
 
             if (process?.ExitCode is not 0)
                 ExitedWithError?.Invoke(this);

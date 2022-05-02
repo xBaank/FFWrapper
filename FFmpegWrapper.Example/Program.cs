@@ -1,24 +1,21 @@
-﻿using FFmpegWrapper.Example;
-using FFmpegWrapper.Formats;
-using FFmpegWrapper.Models;
-
-using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using FFmpegWrapper.Formats;
+using FFmpegWrapper.Models;
 
-namespace WebmPoc
+namespace FFmpegWrapper.Example
 {
-    public class Program
+    public static class Program
     {
         public static void Main()
         {
-            FFmpegClient fFmpegClient = new FFmpegClient();
-            FFprobeClient fFprobeClient = new FFprobeClient();
+            var fFmpegClient = new FFmpegClient();
+            var fFprobeClient = new FFprobeClient();
             var song = YtUtils.GetSongsUrl("eldenring trailer").GetAwaiter().GetResult();
             var streamInfo = YtUtils.GetStreamInfo(song.FirstOrDefault().Id).GetAwaiter().GetResult();
-            StringBuilder stringBuilder = new StringBuilder();
+            var stringBuilder = new StringBuilder();
             var format = fFprobeClient.SetOutputBuffer(1024).PipeError(stringBuilder).GetMetadataAsync(streamInfo.Url).Result;
             double lastPostTime = 0;
             var duration = format.Result?.Duration + format.Result?.StartTime;
@@ -28,9 +25,9 @@ namespace WebmPoc
                 lastPostTime = (double)(packets.Result?.LastOrDefault().PktDtsTime + packets.Result?.LastOrDefault().PktDurationTime);
             }
 
-            CancellationTokenSource cancellation = new CancellationTokenSource();
+            var cancellation = new CancellationTokenSource();
 
-            MemoryStream memoryStream = new MemoryStream();
+            var memoryStream = new MemoryStream();
             var result = fFmpegClient.PipeError(stringBuilder)
                 .WithCancellationToken(cancellation.Token)
                 .ConvertToStreamAsync(

@@ -117,7 +117,7 @@ namespace FFmpegWrapper.Builders
 
         public T SetCancellationToken(CancellationToken cancellationToken)
         {
-            ffProcess.cancellationToken = cancellationToken;
+            ffProcess.CancellationToken = cancellationToken;
             return (T)this;
         }
 

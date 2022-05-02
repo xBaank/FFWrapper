@@ -5,9 +5,8 @@ using System.Threading.Tasks;
 using FFmpegWrapper.Builders;
 using FFmpegWrapper.Formats;
 using FFmpegWrapper.JsonModels;
-
-using FFmpegWrapper.Helpers;
 using FFmpegWrapper.Extensions;
+using FFmpegWrapper.Utils;
 
 namespace FFmpegWrapper.Models
 {
@@ -75,7 +74,7 @@ namespace FFmpegWrapper.Models
             .To(output)
             .Build();
 
-        private FFprobeProcessBuilder MetadataProcessBuilder() => _builder
+        private FFprobeProcessBuilder MetadataProcessBuilder() => new FFprobeProcessBuilder()
            .CreateFFBuilder(Path)
            .ShowFormat()
            .Reconnect()
@@ -87,7 +86,7 @@ namespace FFmpegWrapper.Models
             .To(output)
             .Build();
 
-        private FFprobeProcessBuilder PacketsProcessBuilder(StreamType streamType, double timeStart, double timeAdded, int streamNumber) => _builder
+        private FFprobeProcessBuilder PacketsProcessBuilder(StreamType streamType, double timeStart, double timeAdded, int streamNumber) => new FFprobeProcessBuilder()
             .CreateFFBuilder(Path)
             .SelectStreams(streamType, streamNumber)
             .ShowPackets()
@@ -102,7 +101,7 @@ namespace FFmpegWrapper.Models
             .To(output)
             .Build();
 
-        private FFprobeProcessBuilder FramesProcessBuilder(StreamType streamType, double timeStart, double timeAdded, int streamNumber) => _builder
+        private FFprobeProcessBuilder FramesProcessBuilder(StreamType streamType, double timeStart, double timeAdded, int streamNumber) => new FFprobeProcessBuilder()
             .CreateFFBuilder(Path)
             .SelectStreams(streamType, streamNumber)
             .ShowFrames()
