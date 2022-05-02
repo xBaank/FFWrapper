@@ -24,7 +24,7 @@ namespace FFmpegWrapper.Models
             .Build()
             .StartAsync()
             .GetResultAsync();
-
+            
         public Task<ProcessResult> ConvertToStreamAsync(Stream input, Action<IFormat> inputOptions, Stream output, Action<IFormat> outputOptions) => new FFmpegProcessBuilder()
             .CreateFFBuilder(Path)
             .RaiseErrorEvents(ErrorRecieved)
@@ -44,6 +44,7 @@ namespace FFmpegWrapper.Models
             .Build()
             .StartAsync()
             .GetResultAsync();
+
         public Task<ProcessResult> ConvertAsync(Stream input, string output, Action<IFormat> options) => new FFmpegProcessBuilder()
             .CreateFFBuilder(Path)
             .RaiseErrorEvents(ErrorRecieved)

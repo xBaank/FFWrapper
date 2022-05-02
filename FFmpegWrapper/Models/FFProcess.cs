@@ -121,9 +121,7 @@ namespace FFmpegWrapper.Models
                 _tasks.Add(PipeError());
 
             _tasks.Add(Task.Run(WaitForExit, CancellationToken).NotThrow());
-
             Task.Run(KillProcess, CancellationToken);
-
             return this;
         }
 

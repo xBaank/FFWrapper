@@ -16,6 +16,7 @@ namespace FFmpegWrapper.Example
             var song = YtUtils.GetSongsUrl("eldenring trailer").GetAwaiter().GetResult();
             var streamInfo = YtUtils.GetStreamInfo(song.FirstOrDefault().Id).GetAwaiter().GetResult();
             var stringBuilder = new StringBuilder();
+
             var format = fFprobeClient.SetOutputBuffer(1024).PipeError(stringBuilder).GetMetadataAsync(streamInfo.Url).Result;
             double lastPostTime = 0;
             var duration = format.Result?.Duration + format.Result?.StartTime;
