@@ -12,6 +12,7 @@
 		<PackageLicenseUrl>https://raw.githubusercontent.com/xBaank/FFWrapper/master/LICENSE.md</PackageLicenseUrl>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<Authors>Bank</Authors>
+		<PackageVersion>0.2.1</PackageVersion>
 	</PropertyGroup>
 
 </Project>
